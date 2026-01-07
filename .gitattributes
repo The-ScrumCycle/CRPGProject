@@ -1,0 +1,17 @@
+# Store consistent line endings in repo (LF)
+* text=auto eol=lf
+
+# Code / configs
+*.cs text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# Unity text assets
+*.meta text eol=lf
+*.unity text eol=lf
+*.prefab text eol=lf
+*.asset text eol=lf
