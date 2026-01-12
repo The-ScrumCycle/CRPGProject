@@ -67,22 +67,20 @@ public class PlayerController : MonoBehaviour
         Vector3 movement = Vector3.zero;
 
         // fix camera
-        Vector3 camForward = cameraTransform.forward;
-        camForward.y = 0f;
-        camForward.Normalize();
+        Vector3 camUP = cameraTransform.up;
+        camUP.Normalize();
 
         Vector3 camRight = cameraTransform.right;
-        camRight.y = 0f;
         camRight.Normalize();
 
         // WASD 
         if (Input.GetKey("w"))
         {
-            movement += camForward;
+            movement += camUP;
         }
         if (Input.GetKey("s"))
         {
-            movement -= camForward;
+            movement -= camUP;
         }
         if (Input.GetKey("a"))
         {
