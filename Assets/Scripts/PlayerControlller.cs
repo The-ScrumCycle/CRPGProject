@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
     private Renderer playerRenderer;
     public CharacterController characterController;
     public Transform cameraTransform;
+    public Animator characterAnimator;
     public Camera cam;
     public LayerMask groundMask;
     public UnityEngine.AI.NavMeshAgent agent;
@@ -58,6 +59,7 @@ public class PlayerController : MonoBehaviour
 
         // player movimentation 
         HandleClickMove();
+        UpdateAnimator();
 
     }
 
@@ -139,6 +141,17 @@ public class PlayerController : MonoBehaviour
                 agent.SetDestination(hit.point);
             }
         }
+    }
+
+    // so the animator knows if the character is running or not
+    private void UpdateAnimator()
+    {
+        if (characterAnimator == null || agent == null) return;
+
+        // speed of the player
+        float speed = agent.velocity.magnitude;
+
+        characterAnimator.SetFloat("Speed", speed);
     }
 
 
