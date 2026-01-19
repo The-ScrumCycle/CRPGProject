@@ -8,6 +8,10 @@ public class PlayerController : MonoBehaviour
     [Header("Movement Settings")]
     public float mouseSpeed = 20.0f;
     public float playerSpeed = 5f;
+    public float rotateSpeed = 20f;
+    private float rotationNum = 0;
+    private Vector3 distanceUP = new Vector3(0, 5f, 10f);
+    private Quaternion cameraRotation = Quaternion.Euler(60f, 180f, 0f);
 
     [Header("Camera")]
     public float zoom = 13f;
@@ -39,6 +43,7 @@ public class PlayerController : MonoBehaviour
     {
         // The camera goes to it's default position
         SetLockCamera();
+        cameraTransform.rotation = Quaternion.Euler(60f, 180f, 0f);
 
 
         // water is not walkable 
@@ -60,6 +65,10 @@ public class PlayerController : MonoBehaviour
             SetLockCamera();
         } else
         {
+            if (Input.GetKeyDown("q"))
+            {
+                cameraTransform.rotation = cameraRotation;
+            }
             setFreeCamera();
         }
 
@@ -107,6 +116,13 @@ public class PlayerController : MonoBehaviour
         // new position
         cameraTransform.position = cameraTransform.position + movement;
         cameraTransform.position = new Vector3(cameraTransform.position.x, zoom, cameraTransform.position.z);
+
+        // camera turn around 
+        if (Input.GetKey("r"))
+        {
+            cameraTransform.RotateAround(transform.position, Vector3.up, rotateSpeed * Time.deltaTime);
+            cameraRotation = cameraTransform.rotation;
+        }
     }
 
 
@@ -115,9 +131,46 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 playerPosition = transform.position;
 
+        // camera turn around 
+        if (Input.GetKeyDown("r"))
+        {
+            rotationNum = rotationNum + 1;
+            // set standard again 
+            if (rotationNum == 4)
+            {
+                rotationNum = 0;
+            }
+        }
+
+        // back
+        if (rotationNum == 0)
+        {
+            distanceUP = new Vector3(0, zoom, 10f);
+        }
+
+        // in front
+        if (rotationNum == 1)
+        {
+            distanceUP = new Vector3(0, zoom, -10f);
+        }
+
+        // in Left
+        if (rotationNum == 2)
+        {
+            distanceUP = new Vector3(-10f, zoom, 0f);
+        }
+
+        // in Right
+        if (rotationNum == 3)
+        {
+            distanceUP = new Vector3(10f, zoom, 0f);
+        }
+
+
         // Camera position
-        Vector3 distanceUP = new Vector3(0, zoom, 0);
+        Debug.Log(rotationNum);
         cameraTransform.position = playerPosition + distanceUP;
+        cameraTransform.LookAt(transform.position);
 
     }
 
@@ -130,8 +183,13 @@ public class PlayerController : MonoBehaviour
         // respect limits of the zoom
         if (Mathf.Abs(scroll) > 0)
         {
+            float playerPositionY = this.transform.position.y;
+            float minZ = playerPositionY + minZoom;
+            float maxZ = playerPositionY + maxZoom;
+
             zoom -= scroll * zoomSpeed;
-            zoom = Mathf.Clamp(zoom, minZoom, maxZoom);
+            zoom = Mathf.Clamp(zoom, minZ, maxZ);
+
         }
 
     }
