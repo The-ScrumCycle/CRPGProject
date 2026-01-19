@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float mouseSpeed = 20.0f;
+    public float playerSpeed = 5f;
 
     [Header("Camera")]
     public float zoom = 13f;
@@ -65,6 +66,7 @@ public class PlayerController : MonoBehaviour
         // player movimentation 
         HandleClickMove();
         UpdateAnimator();
+        agent.speed = playerSpeed;
 
     }
 
@@ -143,12 +145,6 @@ public class PlayerController : MonoBehaviour
             Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, groundMask, QueryTriggerInteraction.Ignore))
             {
-                // player will not walk in water
-                if (hit.collider.CompareTag("Water"))
-                {
-                    return;
-                }
-
                 agent.SetDestination(hit.point);
             }
         }
