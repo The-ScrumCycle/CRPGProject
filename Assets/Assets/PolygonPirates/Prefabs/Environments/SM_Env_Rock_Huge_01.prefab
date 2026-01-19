@@ -12,9 +12,8 @@ GameObject:
   - component: {fileID: 3334568}
   - component: {fileID: 2320380}
   - component: {fileID: 64275294871226284}
-  - component: {fileID: 7029364631840421490}
-  - component: {fileID: 8040303503342774468}
-  m_Layer: 0
+  - component: {fileID: 7594750104456838809}
+  m_Layer: 6
   m_Name: SM_Env_Rock_Huge_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -112,26 +111,10 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: ee789e7286a65894c882af3d22b75b76, type: 3}
---- !u!208 &7029364631840421490
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 154830}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Shape: 0
-  m_Extents: {x: 16, y: 10.826, z: 16}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: -2, y: 6, z: 4}
-  m_TimeToStationary: 0.5
---- !u!114 &8040303503342774468
+--- !u!114 &7594750104456838809
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
