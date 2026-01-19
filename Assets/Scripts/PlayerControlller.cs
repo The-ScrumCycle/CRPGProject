@@ -38,6 +38,11 @@ public class PlayerController : MonoBehaviour
     {
         // The camera goes to it's default position
         SetLockCamera();
+
+
+        // water is not walkable 
+        int water = UnityEngine.AI.NavMesh.GetAreaFromName("Water");
+        agent.areaMask &= ~(1 << water);
     }
 
     // Update is called once per frame
@@ -138,6 +143,12 @@ public class PlayerController : MonoBehaviour
             Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, groundMask, QueryTriggerInteraction.Ignore))
             {
+                // player will not walk in water
+                if (hit.collider.CompareTag("Water"))
+                {
+                    return;
+                }
+
                 agent.SetDestination(hit.point);
             }
         }
