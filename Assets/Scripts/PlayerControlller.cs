@@ -168,7 +168,6 @@ public class PlayerController : MonoBehaviour
 
 
         // Camera position
-        Debug.Log(rotationNum);
         cameraTransform.position = playerPosition + distanceUP;
         cameraTransform.LookAt(transform.position);
 
@@ -203,7 +202,6 @@ public class PlayerController : MonoBehaviour
             Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, groundMask, QueryTriggerInteraction.Ignore))
             {
-                Debug.Log("hit tag: " + hit.collider.tag);
                 if(hit.collider.CompareTag("Water"))
                 {
                     return;
