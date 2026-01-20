@@ -26,9 +26,9 @@ public class ShipController : MonoBehaviour
 
     void Start()
     {
-        // Ground is not walkable 
-        //int Ground = UnityEngine.AI.NavMesh.GetAreaFromName("Ground");
-        //agent.areaMask &= ~(1 << Ground);
+        // Only Water is walkable
+        int water = UnityEngine.AI.NavMesh.GetAreaFromName("Water");
+        agent.areaMask = 1 << water;
 
     }
 

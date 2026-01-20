@@ -184,4 +184,15 @@ public class CameraController : MonoBehaviour
     }
     
 
+    // set camera mode for ship settings ( change settings for ship)
+   public void SetShipCamera()
+    {
+        zoom = 40f;
+        cameraSpeed = 60f;
+        minZoom = 30f;
+        maxZoom = 150f;
+        zoomSpeed = 3f;
+        rotateSpeed = 90f;
+    }
+
 }

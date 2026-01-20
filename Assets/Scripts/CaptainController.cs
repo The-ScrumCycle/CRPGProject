@@ -34,6 +34,7 @@ public class CaptainController : MonoBehaviour
         playerController.SetControllable(false);
         shipController.SetControllable(true);
         cameraController.SetTarget(shipController.transform);
+        cameraController.SetShipCamera();
     }
 
     // when I click on Docks, I should be able to leave the boat
