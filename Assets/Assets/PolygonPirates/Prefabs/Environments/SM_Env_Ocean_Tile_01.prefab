@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 9518862}
   - component: {fileID: 1764429637428786923}
   - component: {fileID: 3634847373770080137}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: SM_Env_Ocean_Tile_01
   m_TagString: Water
   m_Icon: {fileID: 0}
