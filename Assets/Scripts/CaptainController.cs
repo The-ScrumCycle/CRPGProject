@@ -4,13 +4,10 @@ public class CaptainController : MonoBehaviour
 {
 
     [Header("Components")]
-    public GameObject Player;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public GameObject Player;   
+    public PlayerController playerController;
+    public ShipController shipController;
+    public CameraController cameraController;
 
     // Update is called once per frame
     void Update()
@@ -27,10 +24,24 @@ public class CaptainController : MonoBehaviour
         }
 
         Debug.Log("clicked");
+        BoardShip();
 
-       
+    }
 
+    // when I click on captain , I should be able to board the boat
+    public void BoardShip()
+    {
+        playerController.SetControllable(false);
+        shipController.SetControllable(true);
+        cameraController.SetTarget(shipController.transform);
+    }
 
+    // when I click on Docks, I should be able to leave the boat
+    public void LeaveShip()
+    {
+        shipController.SetControllable(false);
+        playerController.SetControllable(true);
+        cameraController.SetTarget(playerController.transform);
     }
 
 
