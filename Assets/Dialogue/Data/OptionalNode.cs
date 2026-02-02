@@ -1,4 +1,5 @@
-
+using UnityEngine;
+using System.Collections.Generic;
 namespace Dialogue.Data
 {
     public class OptionNode : Node

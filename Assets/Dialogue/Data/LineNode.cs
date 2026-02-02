@@ -4,9 +4,11 @@ namespace Dialogue.Data
 {
     public class LineNode : Node
     {
-        [SerializeField] private string LineText { get; set; }
+        [SerializeField] private string lineText;
+        public string LineText => lineText;
 
-        [SerializeField] private Node NextNode { get; set; }
+        [SerializeField] private Node nextNode;
+        public Node NextNode => nextNode;
 
         [SerializeField] private int minimumIntelligence { get; set; } = 0;
 

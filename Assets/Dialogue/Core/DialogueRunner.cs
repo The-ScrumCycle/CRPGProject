@@ -51,12 +51,12 @@ namespace Dialogue.Core
             else if (currentNode is LineNode lineNode)
             {
                 LineNodeAction?.Invoke(lineNode.LineText);
-                currentNode = lineNode.NextNode;
                 return;
                 }
             else if (currentNode is OptionNode optionNode)
             {
                 OptionNodeAction?.Invoke(optionNode.getOptionsText());
+                return;
             }
         }
 
@@ -67,7 +67,7 @@ namespace Dialogue.Core
         {
             if (currentNode is LineNode)
             {
-                currentNode = currentNode.NextNode;
+                currentNode = lineNode.NextNode;
                 ProccessNode();
             }
             else
