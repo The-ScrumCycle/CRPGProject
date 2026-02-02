@@ -12,7 +12,7 @@ namespace Dialogue.Core
 
         //actions will be used to trigger the UI
         public event Action<string> LineNodeAction;
-        public event Action<List<Node>> OptionNodeAction;
+        public event Action<List<string>> OptionNodeAction;
 
 
 
@@ -37,6 +37,11 @@ namespace Dialogue.Core
         }
 
         public void ProccessNode()
+        /*
+        Idea is: we pass the string through invoking the Actions --> the ui will pick up the string and display it
+        When we invoke options, it will return a list of nodes --> ui should have a helper, that will convert nodes to strings, or I will implement a 
+        helper function for it in the backend
+        */
         {
             if (currentNode is null)
             {
@@ -51,14 +56,18 @@ namespace Dialogue.Core
                 }
             else if (currentNode is OptionNode optionNode)
             {
-                OptionNodeAction?.Invoke(optionNode.Options);
+                OptionNodeAction?.Invoke(optionNode.getOptionsText());
             }
         }
 
         public void Next()
+        /*
+        use this when the user presses "continue" --> will then cycle to next node and send to UI
+        */
         {
             if (currentNode is LineNode)
             {
+                currentNode = currentNode.NextNode;
                 ProccessNode();
             }
             else
@@ -68,6 +77,10 @@ namespace Dialogue.Core
         }
 
         public void SelectOptions(int optionIndex)
+        /*
+        user will choose a dialogue option --> from 0 to x, frontend will calll this function with the index of the options selected
+        backend will process and then process the next node, sending back to frontend
+        */
         {
             if (!(currentNode is OptionNode))
             {
@@ -85,6 +98,9 @@ namespace Dialogue.Core
         }
 
         public void EndDialogue()
+        /*
+        once dialogue is finished
+        */
         {
             currentNode = null;
             DialogueEndAction?.Invoke();
