@@ -17,7 +17,6 @@ public class MonsterAI : MonoBehaviour
     public float maxDistanceFromBase = 30f;
 
     [Header("Targets")]
-    // ADD THIS LINE to make the slot appear in the Inspector
     public Transform playerCharacter;
 
     private Vector3 basePosition;
@@ -35,10 +34,8 @@ public class MonsterAI : MonoBehaviour
         agent.speed = monsterSpeed;
         basePosition = transform.position;
 
-        // Try to find the script automatically if not assigned
         playerController = FindAnyObjectByType<PlayerController>();
 
-        // If you drag the player into the new slot, this ensures we use that object
         if (playerCharacter == null && playerController != null)
         {
             playerCharacter = playerController.transform;
@@ -47,7 +44,6 @@ public class MonsterAI : MonoBehaviour
 
     void Update()
     {
-        // Safety check: Don't run logic if player is missing
         if (playerCharacter == null) return;
 
         bool canSee = CheckVisibility();
@@ -63,6 +59,7 @@ public class MonsterAI : MonoBehaviour
                 Debug.Log("Enemy attacked you!");
             }
 
+            // If monster goes too far from base, it gives up
             if (Vector3.Distance(transform.position, basePosition) > maxDistanceFromBase)
             {
                 StopChase();
@@ -127,13 +124,20 @@ public class MonsterAI : MonoBehaviour
     {
         if (playerController == null || !playerController.GetVisibleStatus()) return false;
 
+       //Checks if player is in monsters area
+        float distanceToPlayer = Vector3.Distance(transform.position, playerCharacter.position);
+        if (distanceToPlayer > patrolRadius)
+            return false;
+
+        
+
         Vector3 dir = (playerCharacter.position - transform.position).normalized;
+       
         if (Vector3.Angle(transform.forward, dir) < FOV * 0.5f)
         {
-            float dist = Vector3.Distance(transform.position, playerCharacter.position);
-            // Ensure Obstacles Mask is set to 'Default' or 'Environment' in inspector
-            return !Physics.Raycast(transform.position + Vector3.up, dir, dist, obstaclesMask);
+            return !Physics.Raycast(transform.position + Vector3.up, dir, distanceToPlayer, obstaclesMask);
         }
         return false;
     }
+
 }
