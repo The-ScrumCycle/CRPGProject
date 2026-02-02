@@ -65,7 +65,7 @@ namespace Dialogue.Core
         use this when the user presses "continue" --> will then cycle to next node and send to UI
         */
         {
-            if (currentNode is LineNode)
+            if (currentNode is LineNode lineNode)
             {
                 currentNode = lineNode.NextNode;
                 ProccessNode();

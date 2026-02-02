@@ -10,7 +10,7 @@ namespace Dialogue.Data
         [SerializeField] private Node nextNode;
         public Node NextNode => nextNode;
 
-        [SerializeField] private int minimumIntelligence { get; set; } = 0;
+        [SerializeField] private int minimumIntelligence = 0;
 
         public bool hasEnoughIntelligence(int playerIntelligence)
         //min amount of intelligence needed
