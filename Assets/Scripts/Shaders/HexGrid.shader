@@ -11,6 +11,7 @@ Shader "Custom/HexGrid"
         _GridDim("Grid Dimensions", Vector) = (1, 1, 0, 0)
         _LineWeight("Line Thickness", float) = 1.0
         _ClipEdges("Clip Edges", int) = 1
+        _ActiveHex("Active Hex", Vector) = (0, 0, 0, 0)
     }
 
     SubShader
@@ -56,6 +57,7 @@ Shader "Custom/HexGrid"
                 float _LineWeight;
                 float2 _GridDim;
                 int _ClipEdges;
+                float2 _ActiveHex;
             CBUFFER_END
 
             // Calculates distance from edge of hexagon given uv coords
@@ -124,6 +126,13 @@ Shader "Custom/HexGrid"
                     color = SAMPLE_TEXTURE2D(_HexTex, sampler_HexTex, IN.uv) * _HexColor;
                 }
 
+                color.rgb = float3(0.0, 0.0, 0.0);
+                color.rb = h.zw;
+
+                float2 active_hex = _ActiveHex+1.0;
+                if (distance(float2(active_hex.x - (active_hex.y%2 == 0 ? 0.0 : 0.5), active_hex.y * 0.5), h.zw) < 0.01){
+                    color.rgb = float3(0.0, 45.0, 45.0);
+                }
                 return color;
             }
             ENDHLSL
