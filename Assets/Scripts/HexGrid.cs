@@ -8,7 +8,7 @@ public class HexGrid : MonoBehaviour
     [SerializeField] [Range(0.0f, 1.0f)] float lineThickness; // Thickness of hexagon lines
     [SerializeField] [Min(0)] int hexScale;
     [SerializeField] [Min(0)] Vector2Int gridDim; // Desired dimensions of the grid
-    [SerializeField] bool useFixedDim; // Whether or not the grid dimensions are set manually
+    //[SerializeField] bool useFixedDim; // Whether or not the grid dimensions are set manually
     [SerializeField] bool clipEdges; // Whether partial hexagons outside of the grid should be drawn
 
     [Header("Entity Options")]
@@ -16,31 +16,44 @@ public class HexGrid : MonoBehaviour
 
     Vector2Int gridSize; // The dimensions of the grid
     Vector3 gridOrigin; // The position of the center of the (0, 0) hex in world space
+    Vector3 hexSize; // The world space dimensions of a single hexagon
     Vector3 mouseWorldPos;
     Vector3 activeHexPos;
     Material hexMat; // The material which renders the hex grid
     GameObject character;
     Camera cam;
 
+    const float canonicalSize = 10.0f; // The world space size of the plane mesh at default scale
+    const float s = 1.7320508f;
+
     void Start()
     {
         cam = Camera.main;
         hexMat = GetComponent<MeshRenderer>().material;
-        gridOrigin = GetComponent<Collider>().bounds.max - new Vector3(1.0f, 0.0f, 1.5f);
+
+        hexSize = new Vector3(canonicalSize/hexScale, 0.0f, canonicalSize / hexScale * s / 2.0f);
+        gridOrigin = GetComponent<Collider>().bounds.max - new Vector3(hexSize.x/2.0f, 0.0f, hexSize.z);
 
         character = Instantiate(characterObj, gridOrigin, Quaternion.identity);
     }
 
     void Update()
     {
-        gridOrigin = GetComponent<Collider>().bounds.max - new Vector3(1.0f, 0.0f, 1.5f);
+        hexSize = new Vector3(canonicalSize/hexScale, 0.0f, canonicalSize/hexScale * s / 2.0f);
+        gridOrigin = GetComponent<Collider>().bounds.max - new Vector3(hexSize.x/2.0f, 0.0f, hexSize.z);
+
+        gridSize = gridDim;
+        transform.localScale = new Vector3(
+            (float)gridDim.x/hexScale + (hexSize.x/canonicalSize/2.0f), 
+            transform.localScale.y, 
+            (float)gridDim.y/hexScale);
+
         mouseWorldPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane + cam.transform.position.y));
         activeHexPos = WorldToGrid(mouseWorldPos);
 
         if (Input.GetMouseButtonDown(0))
         {
             character.transform.position = GridToWorld(activeHexPos);
-            //Debug.Log(activeHexPos);
         }
 
         Debug.Log(AxialDistance(OffsetToAxial(activeHexPos), OffsetToAxial(WorldToGrid(character.transform.position))));
@@ -52,6 +65,7 @@ public class HexGrid : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawSphere(mouseWorldPos, 0.2f); // Debug, draw point at mouse pos
+
         Gizmos.color = Color.green;
 
         // Debug, draw point at every hex center
@@ -59,7 +73,7 @@ public class HexGrid : MonoBehaviour
         {
             for (int y = 0; y < gridSize.y; y++)
             {
-                Gizmos.DrawSphere(GridToWorld(new Vector3(x, 0.0f, y)), 0.2f);
+                Gizmos.DrawSphere(GridToWorld(new Vector3(x, 0.0f, y)), 1.0f/hexScale);
             }
         }
 
@@ -68,16 +82,18 @@ public class HexGrid : MonoBehaviour
         Gizmos.color = Color.red;
         foreach (Vector3 gridPos in GetNeighbours(activeHexPos))
         {
-            Gizmos.DrawSphere(GridToWorld(gridPos), 0.2f);
+            Gizmos.DrawSphere(GridToWorld(gridPos), 1.0f/hexScale);
         }
+
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawSphere(gridOrigin, 1.0f/hexScale);
     }
 
     // Takes world space pos and returns grid space pos
     public Vector3 WorldToGrid(Vector3 worldPos)
     {
-        float s = 1.7320508f;
-        int YCoord = (int)((gridOrigin.z+(s/2.0f) - worldPos.z)/s);
-        int XCoord = (int)((gridOrigin.x+1.0f - (YCoord%2==0 ? 0.0f : 1.0f) - worldPos.x)/2.0f);
+        int YCoord = (int)((gridOrigin.z+(hexSize.z/2.0f) - worldPos.z)/hexSize.z);
+        int XCoord = (int)((gridOrigin.x+(hexSize.x/2.0f) - (YCoord%2==0 ? 0.0f : hexSize.x/2.0f) - worldPos.x)/hexSize.x);
 
         return new Vector3(XCoord, 0.0f, YCoord);
     }
@@ -85,7 +101,7 @@ public class HexGrid : MonoBehaviour
     // Takes grid space pos and return world space pos (center of the hex)
     public Vector3 GridToWorld(Vector3 gridPos)
     {
-        return gridOrigin - new Vector3(gridPos.x*2.0f + (gridPos.z%2==0 ? 0.0f : 1.0f), 0.0f, gridPos.z*1.7320508f);
+        return gridOrigin - new Vector3(gridPos.x*hexSize.x + (gridPos.z%2==0 ? 0.0f : hexSize.x/2.0f), 0.0f, gridPos.z*hexSize.z);
     }
 
     // Takes a position in offset coordinates (typical grid position) and converts to axial coordinates
@@ -138,20 +154,9 @@ public class HexGrid : MonoBehaviour
 
     void SetShaderParams()
     {
-        if (useFixedDim)
-        {
-            gridSize = gridDim;
-            hexMat.SetFloat("_HexScale", 1.0f);
-            hexMat.SetVector("_GridScale", new Vector4(gridDim.x, gridDim.y, 0.0f, 0.0f));
-            hexMat.SetVector("_GridDim", new Vector4(gridSize.x, gridSize.y, 0.0f, 0.0f));
-        }
-        else
-        {
-            gridSize = new Vector2Int((int)transform.localScale.x, (int)transform.localScale.z) * hexScale;
-            hexMat.SetFloat("_HexScale", hexScale);
-            hexMat.SetVector("_GridScale", new Vector4(transform.localScale.x, transform.localScale.z, 0.0f, 0.0f));
-            hexMat.SetVector("_GridDim", new Vector4(gridSize.x, gridSize.y, 0.0f, 0.0f));
-        }
+        hexMat.SetFloat("_HexScale", hexScale);
+        hexMat.SetVector("_GridScale", new Vector4(transform.localScale.x, transform.localScale.z, 0.0f, 0.0f));
+        hexMat.SetVector("_GridDim", new Vector4(gridSize.x, gridSize.y, 0.0f, 0.0f));
 
         hexMat.SetFloat("_LineWeight", lineThickness);
         hexMat.SetColor("_BaseColor", baseColor);

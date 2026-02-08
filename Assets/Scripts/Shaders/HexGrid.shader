@@ -62,7 +62,6 @@ Shader "Custom/HexGrid"
 
             // Calculates distance from edge of hexagon given uv coords
             float hex(in float2 p){
-                const float hexSize = .1;
                 const float2 s = float2(1, 1.7320508);
                 
                 p = abs(p);
@@ -111,7 +110,6 @@ Shader "Custom/HexGrid"
 
                 // Scaled uv coords
                 float2 u = float2(IN.uv.x * _GridScale.x, IN.uv.y * _GridScale.y) * _HexScale;
-                u.y += 0.1;
 
                 float4 h = getHex(u);
 
