@@ -450,7 +450,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 388903291587df24797903f8a7445978, type: 2}
+  - {fileID: 2100000, guid: 7e2f71fd9915b224297d1659236fe8cc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -506,17 +506,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1781251598}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a933fb57b834d3f48a0ffacc17436a97, type: 3}
+  m_Script: {fileID: 11500000, guid: f10b69170965a75419a4558d88047639, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: '::'
-  baseColor: {r: 1, g: 1, b: 1, a: 0}
-  hexColor: {r: 0, g: 0, b: 0, a: 1}
-  lineThickness: 0.1
+  m_EditorClassIdentifier: Assembly-CSharp::HexGrid
+  baseColor: {r: 0, g: 0, b: 0, a: 0}
+  hexColor: {r: 0, g: 0, b: 0, a: 0}
+  lineThickness: 0.707
   hexScale: 5
-  gridDim: {x: 1, y: 1}
+  gridDim: {x: 5, y: 5}
   useFixedDim: 0
   clipEdges: 0
-  characterObj: {fileID: 988817027152967208, guid: f0215b0d8e4e2c643920f32770b8314b,
+  characterObj: {fileID: 988817027152967208, guid: 163f29f84f4f7ba4b9169cf06e6a5ad2,
     type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

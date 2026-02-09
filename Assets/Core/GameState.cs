@@ -1,16 +1,6 @@
-using UnityEngine;
-
-public class GameState : MonoBehaviour
+// This file defines the GameState enumeration, which represents the different states of the game.
+public enum GameState
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    Exploration,
+    Combat
 }

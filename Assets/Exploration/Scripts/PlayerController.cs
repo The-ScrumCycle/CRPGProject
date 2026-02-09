@@ -8,8 +8,10 @@ public class PlayerController : MonoBehaviour
     [Header("Movement Settings")]
     public float playerSpeed = 5f;
     [SerializeField] private bool isControllable = true;
+
     [Header("Visibility")]
     [SerializeField] private bool isVisible = true;
+
 
     [Header("Components")]
     private Renderer playerRenderer;
@@ -19,11 +21,16 @@ public class PlayerController : MonoBehaviour
     public UnityEngine.AI.NavMeshAgent agent;
 
 
+
     void Awake()
     {
         // Grab player renderer
         playerRenderer = GetComponent<Renderer>();
         if (cam == null) cam = Camera.main;
+
+
+        // Player should not be destroyed on scene load
+        DontDestroyOnLoad(gameObject);
 
     }
 
@@ -101,6 +108,8 @@ public class PlayerController : MonoBehaviour
     {
         return isVisible;
     }
+
+    
 
 
 }
