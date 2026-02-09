@@ -21,6 +21,7 @@ public class HexGrid : MonoBehaviour
     Material hexMat; // The material which renders the hex grid
     GameObject character;
     Camera cam;
+    
 
     void Start()
     {
@@ -28,7 +29,17 @@ public class HexGrid : MonoBehaviour
         hexMat = GetComponent<MeshRenderer>().material;
         gridOrigin = GetComponent<Collider>().bounds.max - new Vector3(1.0f, 0.0f, 1.5f);
 
-        character = Instantiate(characterObj, gridOrigin, Quaternion.identity);
+        // when loads, place player -- Carlos Change
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            character = player;
+        }
+        else
+        {
+            character = Instantiate(characterObj, gridOrigin, Quaternion.identity);
+        }
+
     }
 
     void Update()

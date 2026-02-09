@@ -28,6 +28,7 @@ public class MonsterAI : MonoBehaviour
 
     private NavMeshAgent agent;
     private PlayerController playerController;
+    GameStateManager gameStateManager;
 
     void Awake()
     {
@@ -45,9 +46,8 @@ public class MonsterAI : MonoBehaviour
 
         // Updating Monster stopping distance 
         agent.stoppingDistance = stoppingDistance;
- 
 
-
+        gameStateManager = FindAnyObjectByType<GameStateManager>();
     }
 
     void Update()
@@ -65,6 +65,7 @@ public class MonsterAI : MonoBehaviour
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f)
             {
                 Debug.Log("Enemy attacked you!");
+                GameStateManager.Instance.TransitionToCombat();
             }
 
             // If monster goes too far from base, it gives up

@@ -37,7 +37,7 @@ public class GameStateManager : MonoBehaviour
 
         // save player and camera positions/rotations
         combatTransitionData.SaveTransitionData();
-
+        playerController.agent.enabled = false;
         SceneManager.LoadScene("CombatScene");
     }
 
@@ -48,14 +48,13 @@ public class GameStateManager : MonoBehaviour
         SceneManager.LoadScene("Exploration");
 
         // restore player and camera positions/rotations
+        playerController.agent.enabled = true;
         playerController.agent.Warp(combatTransitionData.playerPosition);
         player.transform.rotation = combatTransitionData.playerRotation;
         MainCamera.transform.position = combatTransitionData.cameraPosition;
         MainCamera.transform.rotation = combatTransitionData.cameraRotation;
 
     }
-
-
 
     void Awake()
     {
