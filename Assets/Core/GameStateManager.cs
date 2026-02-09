@@ -31,14 +31,16 @@ public class GameStateManager : MonoBehaviour
     }
 
     // transition to combat state and scene
-    public void TransitionToCombat()
+    public void TransitionToCombat(GameObject ennemy)
     {
         SetState(GameState.Combat);
 
         // save player and camera positions/rotations
-        combatTransitionData.SaveTransitionData();
+        combatTransitionData.SaveTransitionData(ennemy);
         playerController.agent.enabled = false;
+
         SceneManager.LoadScene("CombatScene");
+        EnnemiesState.Instance.SetDeadEnnemy(ennemy);
     }
 
     // transition to exploration state and scene
@@ -56,11 +58,13 @@ public class GameStateManager : MonoBehaviour
 
     }
 
+
     void Awake()
     {
         Instance = this;
         DontDestroyOnLoad(gameObject);
         player = GameObject.FindGameObjectWithTag("Player");
+        MainCamera = GameObject.FindGameObjectWithTag("MainCamera");
     }
 
     void Start()
@@ -70,6 +74,7 @@ public class GameStateManager : MonoBehaviour
 
     void Update()
     {
-        
+
+
     }
 }

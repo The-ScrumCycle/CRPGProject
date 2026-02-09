@@ -518,6 +518,10 @@ MonoBehaviour:
   clipEdges: 1
   characterObj: {fileID: 988817027152967208, guid: 163f29f84f4f7ba4b9169cf06e6a5ad2,
     type: 3}
+  player: {fileID: 0}
+  ennemyObj: {fileID: 988817027152967208, guid: 163f29f84f4f7ba4b9169cf06e6a5ad2,
+    type: 3}
+  ennemy: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -15,6 +15,9 @@ public class CombatTransitionData : MonoBehaviour
     public Vector3 cameraPosition;
     public Quaternion cameraRotation;
 
+    // Store Ennemy type that triggered the combat transition
+    public string ennemyType;
+
 
     void Start()
     {
@@ -22,12 +25,16 @@ public class CombatTransitionData : MonoBehaviour
         MainCamera = GameObject.FindGameObjectWithTag("MainCamera");
     }
 
-    public void SaveTransitionData()
+    public void SaveTransitionData(GameObject Ennemy)
     {
+        // player and camera data
         playerPosition = player.transform.position;
         playerRotation = player.transform.rotation;
         cameraPosition = MainCamera.transform.position;
         cameraRotation = MainCamera.transform.rotation;
+
+        // Ennemy data
+        ennemyType = Ennemy.tag;
     }
 
     void Awake()

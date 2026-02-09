@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 public class HexGrid : MonoBehaviour
 {
     [Header("Hex Rendering Options")]
@@ -13,6 +14,12 @@ public class HexGrid : MonoBehaviour
 
     [Header("Entity Options")]
     [SerializeField] GameObject characterObj;
+    [SerializeField] GameObject player;
+
+    [Header("Ennemy Options")]
+    [SerializeField] GameObject ennemyObj;
+    [SerializeField] GameObject ennemy;
+
 
     Vector2Int gridSize; // The dimensions of the grid
     Vector3 gridOrigin; // The position of the center of the (0, 0) hex in world space
@@ -21,7 +28,10 @@ public class HexGrid : MonoBehaviour
     Material hexMat; // The material which renders the hex grid
     GameObject character;
     Camera cam;
-    
+   
+
+
+
 
     void Start()
     {
@@ -30,7 +40,7 @@ public class HexGrid : MonoBehaviour
         gridOrigin = GetComponent<Collider>().bounds.max - new Vector3(1.0f, 0.0f, 1.5f);
 
         // when loads, place player -- Carlos Change
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
             character = player;
@@ -39,6 +49,22 @@ public class HexGrid : MonoBehaviour
         {
             character = Instantiate(characterObj, gridOrigin, Quaternion.identity);
         }
+
+
+        // set ennemy position -- Carlos Change
+        string tag = CombatTransitionData.Instance.ennemyType;
+        ennemy     = TagToPrefab.Instance.GetPrefabForTag(tag);
+
+        if (ennemy != null)
+        {
+            ennemy = Instantiate(ennemy, GridToWorld(new Vector3(3.0f, 0.0f, 3.0f)), Quaternion.identity);
+        }
+        else
+        {
+            ennemy = Instantiate(ennemyObj, GridToWorld(new Vector3(3.0f, 0.0f, 3.0f)), Quaternion.identity);
+            Debug.Log("Ennemy prefab not found for tag: " + tag);
+        }
+
 
     }
 
@@ -57,9 +83,24 @@ public class HexGrid : MonoBehaviour
         Debug.Log(AxialDistance(OffsetToAxial(activeHexPos), OffsetToAxial(WorldToGrid(character.transform.position))));
 
         SetShaderParams();
+
+
+        TestTransition();
+
+
     }
 
-    void OnDrawGizmos()
+    void TestTransition()
+    {
+        // if both player and ennemy in same position, transition to exploration - Carlos Change 
+        if (ennemy.transform.position == character.transform.position)
+        {
+            Debug.Log("Transitioning to Exploration");
+            GameStateManager.Instance.TransitionToExploration();
+        }
+    }
+
+void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawSphere(mouseWorldPos, 0.2f); // Debug, draw point at mouse pos

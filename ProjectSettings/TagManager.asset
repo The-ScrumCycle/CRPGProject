@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Water
   - Obstacles
+  - Ennemy
+  - Medusa
+  - SceneManager
   layers:
   - Default
   - TransparentFX

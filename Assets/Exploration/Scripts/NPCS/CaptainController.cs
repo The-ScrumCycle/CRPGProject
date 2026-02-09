@@ -9,10 +9,15 @@ public class CaptainController : MonoBehaviour
     public ShipController shipController;
     public CameraController cameraController;
 
-    // Update is called once per frame
-    void Update()
+
+    void Start()
     {
-        
+        playerController = Player.GetComponent<PlayerController>();
+        shipController = GameObject.FindAnyObjectByType<ShipController>();
+        //cameraController = main.Camera.main.GetComponent<CameraController>();
+
+
+
     }
 
     // when I click on captain , I should be able to load in the boat

@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundMask;
     public UnityEngine.AI.NavMeshAgent agent;
 
+    public static PlayerController Instance { get; private set; }
+
 
 
     void Awake()
@@ -29,8 +32,15 @@ public class PlayerController : MonoBehaviour
         if (cam == null) cam = Camera.main;
 
 
-        // Player should not be destroyed on scene load
+        // Player should not be destroyed on scene load and should be only one instance. 
+        if(Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
         DontDestroyOnLoad(gameObject);
+        cam = Camera.main;
 
     }
 
@@ -109,7 +119,22 @@ public class PlayerController : MonoBehaviour
         return isVisible;
     }
 
-    
+    // standard Unity functions that handle scene loading
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != "Exploration")
+            return;
+        cam = Camera.main;
+    }
 
 }

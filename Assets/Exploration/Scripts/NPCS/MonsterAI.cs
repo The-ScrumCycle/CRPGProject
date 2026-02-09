@@ -37,7 +37,12 @@ public class MonsterAI : MonoBehaviour
         basePosition = transform.position;
 
         playerController = FindAnyObjectByType<PlayerController>();
+        if(playerController == null)
+        {
+            playerCharacter = GameObject.FindGameObjectWithTag("Player").transform;
+        }
 
+        playerCharacter = playerController.transform;
         if (playerCharacter == null && playerController != null)
         {
             playerCharacter = playerController.transform;
@@ -48,6 +53,9 @@ public class MonsterAI : MonoBehaviour
         agent.stoppingDistance = stoppingDistance;
 
         gameStateManager = FindAnyObjectByType<GameStateManager>();
+
+        EnnemiesState.Instance.AddEnnemy(gameObject);
+
     }
 
     void Update()
@@ -65,7 +73,7 @@ public class MonsterAI : MonoBehaviour
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f)
             {
                 Debug.Log("Enemy attacked you!");
-                GameStateManager.Instance.TransitionToCombat();
+                GameStateManager.Instance.TransitionToCombat(gameObject);
             }
 
             // If monster goes too far from base, it gives up
