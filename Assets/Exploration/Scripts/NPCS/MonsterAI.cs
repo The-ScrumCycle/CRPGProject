@@ -54,7 +54,7 @@ public class MonsterAI : MonoBehaviour
 
         gameStateManager = FindAnyObjectByType<GameStateManager>();
 
-        EnnemiesState.Instance.AddEnnemy(gameObject);
+        //EnnemiesState.Instance.AddEnnemy(gameObject);
 
     }
 
