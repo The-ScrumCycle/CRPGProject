@@ -94,6 +94,24 @@ Shader "Custom/HexGrid"
                 return frac(sin(p)*43758.5453123);
             }
 
+            int isEvenColumn(float2 gridPos){
+                if (ceil(gridPos.x)%2 == 1){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+
+            int isEvenRow(float2 gridPos){
+                if (frac(gridPos.y) != 0.0){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
@@ -114,7 +132,9 @@ Shader "Custom/HexGrid"
                 float4 h = getHex(u);
 
                 // Do not draw partial hexagons which are outside the grid
-                if (_ClipEdges == 1 && (h.z >= _GridDim.x || h.z <= 0.0 || h.w >= ceil(_GridDim.y/s.y) || h.w <= 0.0)){
+                if (_ClipEdges == 1 && 
+                    (h.z >= _GridDim.x+(isEvenRow(h.zw) ? 0.0 : 1.0) || h.z <= 0.0 || 
+                    h.w >= (_GridDim.y+1.0)/2.0 || h.w <= 0.0)){
                     discard;
                 }
 
@@ -123,9 +143,6 @@ Shader "Custom/HexGrid"
                 if (hex_dist > (1.0 - _LineWeight)*0.5){
                     color = SAMPLE_TEXTURE2D(_HexTex, sampler_HexTex, IN.uv) * _HexColor;
                 }
-
-                color.rgb = float3(0.0, 0.0, 0.0);
-                color.rb = h.zw;
 
                 float2 active_hex = _ActiveHex+1.0;
                 if (distance(float2(active_hex.x - (active_hex.y%2 == 0 ? 0.0 : 0.5), active_hex.y * 0.5), h.zw) < 0.01){

@@ -46,7 +46,7 @@ public class HexGrid : MonoBehaviour
         transform.localScale = new Vector3(
             (float)gridDim.x/hexScale + (hexSize.x/canonicalSize/2.0f), 
             transform.localScale.y, 
-            (float)gridDim.y/hexScale);
+            (float)((hexSize.z*gridDim.y + hexSize.z)/canonicalSize));
 
         mouseWorldPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane + cam.transform.position.y));
         activeHexPos = WorldToGrid(mouseWorldPos);
