@@ -2,7 +2,6 @@ using UnityEngine;
 using Dialogue.Data;
 using System.Collections.Generic;
 using System;
-using State;
 
 namespace Dialogue.Core
 {
@@ -15,7 +14,7 @@ namespace Dialogue.Core
         public event Action<string> LineNodeAction;
         public event Action<List<string>> OptionNodeAction;
 
-        private List<LineNode> playerCurrentOptions; //list of nodes player can say due to intelligence
+        private List<LineNode> playerCurrentOptions = new(); //list of nodes player can say due to intelligence
 
         public event Action DialogueEndAction;
         public event Action DialogueStartAction;
@@ -57,8 +56,9 @@ namespace Dialogue.Core
                 return;
             }
             else if (currentNode is OptionNode optionNode)
-            {   
+            {
                 //list of strings to send to frontend
+                playerCurrentOptions = new();
                 List<string> usableText = new();
                 foreach (var node in optionNode.Options)
                 {
@@ -67,7 +67,7 @@ namespace Dialogue.Core
                         if (lineNode.hasEnoughIntelligence(gameState.Intelligence)){
                             //check if player has min intelligence for all options
                             playerCurrentOptions.Add(lineNode);
-                            usableText.add(lineNode.LineText);
+                            usableText.Add(lineNode.LineText);
                         }
                     }
                     else
@@ -76,7 +76,7 @@ namespace Dialogue.Core
                         return;
                     }
                 }
-                optionNodeAction?.Invoke(usableText);
+                OptionNodeAction?.Invoke(usableText);
                 return;
             }
             else if (currentNode is ConditionalNode conditionalNode)
@@ -117,14 +117,14 @@ namespace Dialogue.Core
                 Debug.LogError("Current node is not an OptionNode");
                 return;
             }
-            List<LineNode> options = playerCurrrentOptions;
+            List<LineNode> options = playerCurrentOptions;
             if (optionIndex < 0 || optionIndex >= options.Count)
             {
                 Debug.LogError("Invalid option index selected");
                 return;
             }
             currentNode = options[optionIndex];
-            playerCurrrentOptions = new();
+            playerCurrentOptions = new();
             ProccessNode();
         }
 

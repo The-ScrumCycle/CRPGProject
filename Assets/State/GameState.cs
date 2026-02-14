@@ -5,7 +5,7 @@ public class GameState : MonoBehaviour
     public static GameState Instance {get; private set;}
     public HashSet<string> EventFlags {get; set;} = new();
 
-    [SerializeField] int intelligence {get; set;}
+    [SerializeField] private int intelligence;
     public int Intelligence => intelligence;
     private void Awake()
     {
@@ -25,7 +25,7 @@ public class GameState : MonoBehaviour
 
     public void setFlag(string flag)
     {
-        EventFlags.add(flag);
+        EventFlags.Add(flag);
     }
 
     public bool hasFlag(string flag)

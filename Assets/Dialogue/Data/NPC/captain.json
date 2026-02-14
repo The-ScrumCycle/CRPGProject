@@ -1,0 +1,49 @@
+{                                                                                                                                                                                                                                                                
+    "startNode": "1",                                                                                                                                                                                                                                            
+    "nodes": [                                                                                                                                                                                                                                                   
+        {                                                                                                                                                                                                                                                        
+            "id": "1",                                                                                                                                                                                                                                           
+            "type": "line",                                                                                                                                                                                                                                      
+            "text": "Ahoy! What brings you to my ship?",                                                                                                                                                                                                         
+            "next": "2"
+        },
+        {
+            "id": "2",
+            "type": "option",
+            "options": ["3", "4", "5"]
+        },
+        {
+            "id": "3",
+            "type": "line",
+            "text": "Nevermind, I'll be on my way.",
+            "minIntelligence": 0,
+            "next": null
+        },
+        {
+            "id": "4",
+            "type": "line",
+            "text": "I'd like to get on the boat.",
+            "minIntelligence": 0,
+            "next": "6"
+        },
+        {
+            "id": "5",
+            "type": "line",
+            "text": "Greetings captain, what wisdom do you have?",
+            "minIntelligence": 5,
+            "next": "7"
+        },
+        {
+            "id": "6",
+            "type": "line",
+            "text": "Welcome aboard! Make yourself comfortable.",
+            "next": null
+        },
+        {
+            "id": "7",
+            "type": "line",
+            "text": "The sea teaches patience. And that a storm is never as far as you think.",
+            "next": null
+        }
+    ]
+  }
