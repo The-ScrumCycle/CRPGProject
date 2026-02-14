@@ -13,6 +13,8 @@ namespace Dialogue.Core
         // backend dialogue source that emits line and option events
         [SerializeField] private DialogueRunner dialogueRunner;
 
+        public DialogueRunner DialogueRunner {get => dialogueRunner; set => dialogueRunner = value;}
+
         [Header("Dialogue UI")]
         // root dialogue panel to show and hide
         [SerializeField] private GameObject dialogueUIRoot;
@@ -113,7 +115,6 @@ namespace Dialogue.Core
                 optionButtons[i].onClick.AddListener(optionButtonActions[i]);
             }
         }
-
         private void UnbindUIListeners()
         {
             // remove continue callback

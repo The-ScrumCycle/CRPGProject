@@ -8,6 +8,8 @@ namespace Dialogue.Core
     public class DialogueRunner : MonoBehaviour
     {
         [SerializeField] private DialogueGraph dialogueGraph;
+
+        public DialogueGraph DialogueGraph {get => dialogueGraph; set => dialogueGraph = value;}
         private Node currentNode;
 
         //actions will be used to trigger the UI

@@ -1,5 +1,6 @@
 using UnityEngine;
 using Dialogue.Core;
+using Dialogue.Data;
 
 public class CaptainController : MonoBehaviour
 {
@@ -25,11 +26,23 @@ public class CaptainController : MonoBehaviour
 
     private void Awake()
     {
-        // subscribe to generic ui runner events so this npc only handles outcomes
+        // find the ui runner in scene if not assigned in inspector
         if (uiRunner == null)
         {
+            uiRunner = FindObjectOfType<UIRunner>();
+        }
+
+        if (uiRunner == null)
+        {
+            Debug.LogError("CaptainController: No UIRunner found in scene.");
             return;
         }
+
+        // load captain dialogue graph and create a runner component
+        DialogueGraph graph = DialogueGraphLoader.LoadGraph("captain");
+        DialogueRunner runner = gameObject.AddComponent<DialogueRunner>();
+        runner.DialogueGraph = graph;
+        uiRunner.DialogueRunner = runner;
 
         uiRunner.OptionSelectedAction += OnOptionSelected;
         uiRunner.DialogueEndedAction += OnDialogueEnded;
@@ -112,7 +125,7 @@ public class CaptainController : MonoBehaviour
             playerController.SetControllable(false);
         }
 
-        uiRunner.BeginDialogue("Captain");
+        uiRunner.BeginDialogue("captain");
     }
 
     private void OnOptionSelected(int optionIndex)
