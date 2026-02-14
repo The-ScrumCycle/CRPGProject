@@ -2,6 +2,7 @@ using UnityEngine;
 using Dialogue.Data;
 using System.Collections.Generic;
 using System;
+using State;
 
 namespace Dialogue.Core
 {
@@ -14,10 +15,12 @@ namespace Dialogue.Core
         public event Action<string> LineNodeAction;
         public event Action<List<string>> OptionNodeAction;
 
-
+        private List<LineNode> playerCurrentOptions; //list of nodes player can say due to intelligence
 
         public event Action DialogueEndAction;
         public event Action DialogueStartAction;
+
+        private GameState gameState;
 
         public void BeginDialogue()
         {
@@ -30,10 +33,10 @@ namespace Dialogue.Core
                 Debug.LogError("dialogue graph has no start node");
                 return;
             }
+            gameState = GameState.Instance;
             currentNode = dialogueGraph.StartNode;
             DialogueStartAction?.Invoke();
-            //proccessNode
-            
+            ProccessNode();
         }
 
         public void ProccessNode()
@@ -48,15 +51,42 @@ namespace Dialogue.Core
                 DialogueEndAction?.Invoke();
                 return;
             }
-            else if (currentNode is LineNode lineNode)
+            else if (currentNode is LineNode ln)
             {
-                LineNodeAction?.Invoke(lineNode.LineText);
+                LineNodeAction?.Invoke(ln.LineText);
                 return;
-                }
+            }
             else if (currentNode is OptionNode optionNode)
-            {
-                OptionNodeAction?.Invoke(optionNode.getOptionsText());
+            {   
+                //list of strings to send to frontend
+                List<string> usableText = new();
+                foreach (var node in optionNode.Options)
+                {
+                    if(node is LineNode lineNode)
+                    {
+                        if (lineNode.hasEnoughIntelligence(gameState.Intelligence)){
+                            //check if player has min intelligence for all options
+                            playerCurrentOptions.Add(lineNode);
+                            usableText.add(lineNode.LineText);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError("Current node is not an OptionNode");
+                        return;
+                    }
+                }
+                optionNodeAction?.Invoke(usableText);
                 return;
+            }
+            else if (currentNode is ConditionalNode conditionalNode)
+            //check if certain event has happened to display conditional dialogue
+            {
+                bool met = gameState.hasFlag(conditionalNode.EventName);
+                Node result =  met ? conditionalNode.ConditionMetNode : conditionalNode.ConditionNotMetNode;
+                //LineNodeAction?.Invoke(result.LineText);
+                currentNode = result;
+                ProccessNode();
             }
         }
 
@@ -78,7 +108,7 @@ namespace Dialogue.Core
 
         public void SelectOptions(int optionIndex)
         /*
-        user will choose a dialogue option --> from 0 to x, frontend will calll this function with the index of the options selected
+        user will choose a dialogue option --> from 0 to x, frontend will call this function with the index of the options selected
         backend will process and then process the next node, sending back to frontend
         */
         {
@@ -87,13 +117,14 @@ namespace Dialogue.Core
                 Debug.LogError("Current node is not an OptionNode");
                 return;
             }
-            List<Node> options = ((OptionNode)currentNode).Options;
+            List<LineNode> options = playerCurrrentOptions;
             if (optionIndex < 0 || optionIndex >= options.Count)
             {
                 Debug.LogError("Invalid option index selected");
                 return;
             }
             currentNode = options[optionIndex];
+            playerCurrrentOptions = new();
             ProccessNode();
         }
 

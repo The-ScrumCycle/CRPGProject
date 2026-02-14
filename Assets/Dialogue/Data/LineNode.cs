@@ -12,11 +12,12 @@ namespace Dialogue.Data
 
         [SerializeField] private int minimumIntelligence = 0;
 
-        public bool hasEnoughIntelligence(int playerIntelligence)
-        //min amount of intelligence needed
+        public int MinimumIntelligence => minimumIntelligence;
+
+        public bool hasEnoughIntelligence(int currIntelligence)
         {
-            
-            return playerIntelligence >= minimumIntelligence;
+            return currIntelligence >= minimumIntelligence;
         }
+
     }
 }
