@@ -60,7 +60,7 @@ Shader "Custom/HexGrid"
                 float2 _ActiveHex;
             CBUFFER_END
 
-            // Calculates distance from edge of hexagon given uv coords
+            // Calculates distance from edge of hexagon given local coords
             float hex(in float2 p){
                 const float2 s = float2(1, 1.7320508);
                 
@@ -93,7 +93,8 @@ Shader "Custom/HexGrid"
 
                 return frac(sin(p)*43758.5453123);
             }
-
+            
+            // if given position is within an even column
             int isEvenColumn(float2 gridPos){
                 if (ceil(gridPos.x)%2 == 1){
                     return 1;
@@ -103,6 +104,7 @@ Shader "Custom/HexGrid"
                 }
             }
 
+            // if given position is within an even row
             int isEvenRow(float2 gridPos){
                 if (frac(gridPos.y) != 0.0){
                     return 1;
@@ -128,7 +130,8 @@ Shader "Custom/HexGrid"
 
                 // Scaled uv coords
                 float2 u = float2(IN.uv.x * _GridScale.x, IN.uv.y * _GridScale.y) * _HexScale;
-
+                
+                // Get info on nearest hexagon
                 float4 h = getHex(u);
 
                 // Do not draw partial hexagons which are outside the grid
@@ -137,13 +140,16 @@ Shader "Custom/HexGrid"
                     h.w >= (_GridDim.y+1.0)/2.0 || h.w <= 0.0)){
                     discard;
                 }
-
+                
+                // Get distance from nearest hexagon
                 float hex_dist = hex(h.xy);
-
+                
+                // Set to hex colour if within range
                 if (hex_dist > (1.0 - _LineWeight)*0.5){
                     color = SAMPLE_TEXTURE2D(_HexTex, sampler_HexTex, IN.uv) * _HexColor;
                 }
 
+                // Set active hex to unique color
                 float2 active_hex = _ActiveHex+1.0;
                 if (distance(float2(active_hex.x - (active_hex.y%2 == 0 ? 0.0 : 0.5), active_hex.y * 0.5), h.zw) < 0.01){
                     color.rgb = float3(0.0, 45.0, 45.0);
