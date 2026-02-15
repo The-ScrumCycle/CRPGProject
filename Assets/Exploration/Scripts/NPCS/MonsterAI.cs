@@ -36,6 +36,15 @@ public class MonsterAI : MonoBehaviour
         agent.speed = monsterSpeed;
         basePosition = transform.position;
 
+                
+        // Updating Monster stopping distance 
+        agent.stoppingDistance = stoppingDistance;
+
+        gameStateManager = FindAnyObjectByType<GameStateManager>();
+    }
+
+    void Start()
+    {
         playerController = FindAnyObjectByType<PlayerController>();
         if(playerController == null)
         {
@@ -48,14 +57,7 @@ public class MonsterAI : MonoBehaviour
             playerCharacter = playerController.transform;
         }
 
-
-        // Updating Monster stopping distance 
-        agent.stoppingDistance = stoppingDistance;
-
-        gameStateManager = FindAnyObjectByType<GameStateManager>();
-
         EnnemiesState.Instance.AddEnnemy(gameObject);
-
     }
 
     void Update()
