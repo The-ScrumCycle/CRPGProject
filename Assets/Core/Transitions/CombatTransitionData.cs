@@ -1,46 +1,81 @@
 using UnityEngine;
 
-public class CombatTransitionData : MonoBehaviour
+namespace Game.Core.Transitions
 {
-
-    GameObject player;
-    GameObject MainCamera;
-
-    // Only one instance 
-    public static CombatTransitionData Instance { get; private set; }
-
-    // Store Player and main camera positions and rotations for transition back to exploration
-    public Vector3 playerPosition;
-    public Quaternion playerRotation;
-    public Vector3 cameraPosition;
-    public Quaternion cameraRotation;
-
-    // Store Ennemy type that triggered the combat transition
-    public string ennemyType;
-
-
-    void Start()
+    /// <summary>
+    /// Stores data needed to transition between Exploration and Combat.
+    /// Persists across scene loads.
+    /// </summary>
+    public class CombatTransitionData : MonoBehaviour
     {
-        player = GameObject.FindGameObjectWithTag("Player");
-        MainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+        public static CombatTransitionData Instance { get; private set; }
+
+        [Header("Exploration Return Data")]
+        public Vector3 playerPosition;
+        public Quaternion playerRotation;
+        public Vector3 cameraPosition;
+        public Quaternion cameraRotation;
+
+        [Header("Enemy Data")]
+        public string enemyTag;
+        public string enemyName;
+
+        private GameObject _player;
+        private GameObject _mainCamera;
+
+        void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        void Start()
+        {
+            CacheReferences();
+        }
+
+        private void CacheReferences()
+        {
+            if (_player == null)
+                _player = GameObject.FindGameObjectWithTag("Player");
+            if (_mainCamera == null)
+                _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+        }
+
+        // Called before transitioning to combat to save exploration state.
+        public void SaveTransitionData(GameObject enemy)
+        {
+            CacheReferences();
+
+            if (_player != null)
+            {
+                playerPosition = _player.transform.position;
+                playerRotation = _player.transform.rotation;
+            }
+
+            if (_mainCamera != null)
+            {
+                cameraPosition = _mainCamera.transform.position;
+                cameraRotation = _mainCamera.transform.rotation;
+            }
+
+            if (enemy != null)
+            {
+                enemyTag = enemy.tag;
+                enemyName = enemy.name;
+            }
+        }
+
+        // Clears cached references when returning to exploration.
+        public void ClearCache()
+        {
+            _player = null;
+            _mainCamera = null;
+        }
     }
-
-    public void SaveTransitionData(GameObject Ennemy)
-    {
-        // player and camera data
-        playerPosition = player.transform.position;
-        playerRotation = player.transform.rotation;
-        cameraPosition = MainCamera.transform.position;
-        cameraRotation = MainCamera.transform.rotation;
-
-        // Ennemy data
-        ennemyType = Ennemy.tag;
-    }
-
-    void Awake()
-    {
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
 }

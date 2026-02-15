@@ -9,6 +9,7 @@ TagManager:
   - Ennemy
   - Medusa
   - SceneManager
+  - Enemy
   layers:
   - Default
   - TransparentFX

@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
+using Game.Core;
+using Game.Combat;
 
 public class MonsterAI : MonoBehaviour
 {

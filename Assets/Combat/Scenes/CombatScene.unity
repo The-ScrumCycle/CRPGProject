@@ -246,6 +246,100 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &780205442
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 780205444}
+  - component: {fileID: 780205443}
+  m_Layer: 0
+  m_Name: CombatManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &780205443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 780205442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e515a8b50455d64c95c6263d389fc69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.CombatManager
+  gridRenderer: {fileID: 1781251604}
+  gridWidth: 8
+  gridHeight: 8
+  unitFactory: {fileID: 1945263018}
+  victoryExperience: 100
+--- !u!4 &780205444
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 780205442}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 77.0292, y: -0, z: -132.45154}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1462715935
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1462715937}
+  - component: {fileID: 1462715936}
+  m_Layer: 0
+  m_Name: TagToPrefab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1462715936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1462715935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93239daa87cd2ed4f958848a91eaf081, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TagToPrefab
+  prefabs: []
+--- !u!4 &1462715937
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1462715935}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 77.0292, y: -0, z: -132.45154}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1466644754
 GameObject:
   m_ObjectHideFlags: 0
@@ -395,7 +489,7 @@ GameObject:
   - component: {fileID: 1781251601}
   - component: {fileID: 1781251600}
   - component: {fileID: 1781251599}
-  - component: {fileID: 1781251603}
+  - component: {fileID: 1781251604}
   m_Layer: 0
   m_Name: HexGrid
   m_TagString: Untagged
@@ -497,7 +591,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1781251603
+--- !u!114 &1781251604
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -506,26 +600,76 @@ MonoBehaviour:
   m_GameObject: {fileID: 1781251598}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f10b69170965a75419a4558d88047639, type: 3}
+  m_Script: {fileID: 11500000, guid: 9652038949555ad4988bfca6dd6201e4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HexGrid
-  baseColor: {r: 0.9811321, g: 0.4265791, b: 0.16352192, a: 1}
-  hexColor: {r: 0.9333334, g: 0.8666667, b: 0.509804, a: 1}
-  lineThickness: 0.707
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Grid.HexGridRenderer
+  gridWidth: 8
+  gridHeight: 8
+  baseColor: {r: 1, g: 1, b: 1, a: 1}
+  hexColor: {r: 0, g: 0, b: 0, a: 1}
+  highlightColor: {r: 0, g: 1, b: 1, a: 1}
+  reachableColor: {r: 0, g: 1, b: 0, a: 1}
+  lineThickness: 0.1
   hexScale: 5
-  gridDim: {x: 5, y: 5}
-  useFixedDim: 0
   clipEdges: 1
-  characterObj: {fileID: 988817027152967208, guid: 163f29f84f4f7ba4b9169cf06e6a5ad2,
+--- !u!1 &1945263017
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1945263019}
+  - component: {fileID: 1945263018}
+  m_Layer: 0
+  m_Name: UnitFactory
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1945263018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945263017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 554373de7e832f9459b5af64df7170e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitFactory
+  playerPrefab: {fileID: 988817027152967208, guid: 163f29f84f4f7ba4b9169cf06e6a5ad2,
     type: 3}
-  player: {fileID: 0}
-  ennemyObj: {fileID: 988817027152967208, guid: 163f29f84f4f7ba4b9169cf06e6a5ad2,
+  playerStats: {fileID: 11400000, guid: 697c80d39473d5a47b61513269c1df26, type: 2}
+  fallbackEnemyPrefab: {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489,
     type: 3}
-  ennemy: {fileID: 0}
+  defaultEnemyStats: {fileID: 11400000, guid: 44de93b8063ef3e429553f822bf8a641, type: 2}
+  tagToPrefab: {fileID: 1462715936}
+--- !u!4 &1945263019
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945263017}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 77.0292, y: -0, z: -132.45154}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1466644757}
   - {fileID: 301771631}
+  - {fileID: 780205444}
   - {fileID: 1781251602}
+  - {fileID: 1945263019}
+  - {fileID: 1462715937}
