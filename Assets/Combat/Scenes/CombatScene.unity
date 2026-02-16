@@ -276,8 +276,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.CombatManager
   gridRenderer: {fileID: 1781251604}
-  gridWidth: 8
-  gridHeight: 8
+  gridWidth: 13
+  gridHeight: 13
   unitFactory: {fileID: 1945263018}
   victoryExperience: 100
 --- !u!4 &780205444
@@ -603,14 +603,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9652038949555ad4988bfca6dd6201e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Grid.HexGridRenderer
-  gridWidth: 8
-  gridHeight: 8
+  gridWidth: 13
+  gridHeight: 13
   baseColor: {r: 1, g: 1, b: 1, a: 1}
   hexColor: {r: 0, g: 0, b: 0, a: 1}
   highlightColor: {r: 0, g: 1, b: 1, a: 1}
   reachableColor: {r: 0, g: 1, b: 0, a: 1}
   lineThickness: 0.1
-  hexScale: 5
+  hexScale: 13
   clipEdges: 1
 --- !u!1 &1945263017
 GameObject:
