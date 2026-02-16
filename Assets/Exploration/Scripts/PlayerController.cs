@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.AI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -19,7 +20,7 @@ public class PlayerController : MonoBehaviour
     public Animator characterAnimator;
     public Camera cam;
     public LayerMask groundMask;
-    public UnityEngine.AI.NavMeshAgent agent;
+    public NavMeshAgent agent;
 
     public static PlayerController Instance { get; private set; }
 

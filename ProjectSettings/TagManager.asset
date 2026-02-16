@@ -9,6 +9,7 @@ TagManager:
   - Ennemy
   - Medusa
   - SceneManager
+  - Robert
   layers:
   - Default
   - TransparentFX
