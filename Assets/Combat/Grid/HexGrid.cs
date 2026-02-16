@@ -93,6 +93,10 @@ public class HexGrid : MonoBehaviour
     void TestTransition()
     {
         // if both player and ennemy in same position, transition to exploration - Carlos Change 
+
+        if (ennemy == null) return;
+        if (character == null) return;
+
         if (ennemy.transform.position == character.transform.position)
         {
             Debug.Log("Transitioning to Exploration");

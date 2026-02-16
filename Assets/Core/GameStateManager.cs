@@ -6,6 +6,7 @@ public class GameStateManager : MonoBehaviour
     GameObject player;
     public PlayerController playerController;
     GameObject MainCamera;
+    private bool returningFromCombat = false;
 
     // singleton instance of the GameStateManager
     public static GameStateManager Instance { get; private set; }
@@ -46,18 +47,36 @@ public class GameStateManager : MonoBehaviour
     // transition to exploration state and scene
     public void TransitionToExploration()
     {
+        returningFromCombat = true;
         SetState(GameState.Exploration);
         SceneManager.LoadScene("Exploration");
 
-        // restore player and camera positions/rotations
-        playerController.agent.enabled = true;
-        playerController.agent.Warp(combatTransitionData.playerPosition);
-        player.transform.rotation = combatTransitionData.playerRotation;
-        MainCamera.transform.position = combatTransitionData.cameraPosition;
-        MainCamera.transform.rotation = combatTransitionData.cameraRotation;
-
     }
 
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "Exploration" && returningFromCombat)
+        {
+            // restore player and camera positions/rotations
+            playerController.agent.enabled = true;
+            playerController.agent.Warp(combatTransitionData.playerPosition);
+            player.transform.rotation = combatTransitionData.playerRotation;
+            MainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+            MainCamera.transform.position = combatTransitionData.cameraPosition;
+            MainCamera.transform.rotation = combatTransitionData.cameraRotation;
+            returningFromCombat = false;
+        }
+    }
 
     void Awake()
     {
