@@ -78,6 +78,12 @@ namespace Dialogue.Core
                         return;
                     }
                 }
+                if (usableText.Count == 0)
+                {
+                    Debug.LogWarning("DialogueRunner: no valid options available for current player state, ending dialogue");
+                    EndDialogue();
+                    return;
+                }
                 OptionNodeAction?.Invoke(usableText);
                 return;
             }

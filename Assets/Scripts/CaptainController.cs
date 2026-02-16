@@ -42,7 +42,7 @@ public class CaptainController : MonoBehaviour
         DialogueGraph graph = DialogueGraphLoader.LoadGraph("captain");
         DialogueRunner runner = gameObject.AddComponent<DialogueRunner>();
         runner.DialogueGraph = graph;
-        uiRunner.DialogueRunner = runner;
+        uiRunner.SetDialogueRunner(runner);
 
         uiRunner.OptionSelectedAction += OnOptionSelected;
         uiRunner.DialogueEndedAction += OnDialogueEnded;

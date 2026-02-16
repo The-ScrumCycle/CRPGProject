@@ -12,8 +12,11 @@ namespace Dialogue.Core
         [Header("Backend")]
         // backend dialogue source that emits line and option events
         [SerializeField] private DialogueRunner dialogueRunner;
-
-        public DialogueRunner DialogueRunner {get => dialogueRunner; set => dialogueRunner = value;}
+        public DialogueRunner DialogueRunner
+        {
+            get => dialogueRunner;
+            set => SetDialogueRunner(value);
+        }
 
         [Header("Dialogue UI")]
         // root dialogue panel to show and hide
@@ -53,12 +56,44 @@ namespace Dialogue.Core
             UnsubscribeDialogueEvents();
         }
 
+        private void Update()
+        {
+            // allow user to cancel dialogue with escape to avoid hard lock
+            if (!IsDialogueActive)
+            {
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                EndDialogue();
+            }
+        }
+
+        public void SetDialogueRunner(DialogueRunner runner)
+        {
+            if (ReferenceEquals(dialogueRunner, runner))
+            {
+                return;
+            }
+
+            // rebind event subscriptions when the runner instance changes at runtime
+            UnsubscribeDialogueEvents();
+            dialogueRunner = runner;
+            SubscribeDialogueEvents();
+        }
+
         public void BeginDialogue(string speakerName)
         {
             // guard against missing backend wiring
             if (dialogueRunner == null)
             {
                 Debug.LogError("UIRunner: DialogueRunner is not assigned.");
+                return;
+            }
+            if (dialogueRunner.DialogueGraph == null || dialogueRunner.DialogueGraph.StartNode == null)
+            {
+                Debug.LogError("UIRunner: dialogue graph is not ready on DialogueRunner.");
                 return;
             }
 
@@ -215,6 +250,12 @@ namespace Dialogue.Core
             // display selectable options and hide continue button
             if (!IsDialogueActive)
             {
+                return;
+            }
+            if (options == null || options.Count == 0)
+            {
+                Debug.LogWarning("UIRunner: no dialogue options are available, ending dialogue.");
+                EndDialogue();
                 return;
             }
 
