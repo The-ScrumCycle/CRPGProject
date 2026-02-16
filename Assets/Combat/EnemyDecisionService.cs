@@ -97,44 +97,10 @@ namespace Game.Combat
 
         public ActionIntent GenerateIntentForEnemy(Unit enemy, IReadOnlyList<Unit> allUnits)
         {
-            var target = FindNearestPlayerUnit(enemy, allUnits);
-            if (target == null) return null;
+            var action = DecideAction(enemy, allUnits);
+            if (action == null) return null;
 
-            int distance = _grid.GetDistance(enemy.Coordinates, target.Coordinates);
-
-            ICombatAction plannedAction = null;
-
-            switch (enemy.AIBehavior)
-            {
-                case AIBehavior.Aggressive:
-                    if (distance == 1)
-                    {
-                        plannedAction = _actionResolver.CreateMeleeAttack(enemy, target);
-                    }
-                    else
-                    {
-                        plannedAction = CreateMoveTowardTarget(enemy, target);
-                    }
-                    break;
-
-                case AIBehavior.Defensive:
-                    if (distance <= enemy.Stats.attackRange && distance > 1)
-                    {
-                        plannedAction = _actionResolver.CreateRangedAttack(enemy, target);
-                    }
-                    else
-                    {
-                        plannedAction = CreateMoveTowardTarget(enemy, target);
-                    }
-                    break;
-            }
-
-            if (plannedAction != null)
-            {
-                return _actionResolver.Preview(plannedAction);
-            }
-
-            return null;
+            return _actionResolver.Preview(action);
         }
 
         public MoveAction CreateMoveTowardTarget(Unit mover, Unit target)
