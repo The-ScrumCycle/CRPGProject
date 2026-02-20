@@ -14,6 +14,8 @@ public class DialogueJsonData
 public class NodeData
 {
     public string id;
+    public string speaker;
+    public string action;
     public string type;
     public string eventName;
     public string trueNode;
@@ -62,6 +64,8 @@ namespace Dialogue.Core
                     LineNode line = (LineNode)nodeMap[node.id];
                     line.LineText = node.text;
                     line.MinimumIntelligence = node.minIntelligence;
+                    line.Action = node.action;
+                    line.Speaker = node.speaker == "player" ? SpeakerType.Player : SpeakerType.Npc;
                     if (node.next != null && nodeMap.ContainsKey(node.next))
                     {
                         line.NextNode = nodeMap[node.next];

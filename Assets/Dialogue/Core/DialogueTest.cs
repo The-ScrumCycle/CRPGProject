@@ -1,6 +1,7 @@
 using UnityEngine;
 using Dialogue.Data;
 using System.Collections.Generic;
+using State;
 
 namespace Dialogue.Core
 {

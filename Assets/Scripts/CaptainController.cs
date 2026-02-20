@@ -1,6 +1,7 @@
 using UnityEngine;
 using Dialogue.Core;
 using Dialogue.Data;
+using State;
 
 public class CaptainController : MonoBehaviour
 {
@@ -10,22 +11,26 @@ public class CaptainController : MonoBehaviour
     public GameObject Player;   
     // movement/controller references switched when boarding or leaving ship
     public PlayerController playerController;
+
     public ShipController shipController;
     public CameraController cameraController;
     // reusable dialogue ui driver that connects DialogueRunner to dialogue widgets
     [SerializeField] private UIRunner uiRunner;
 
-    [Header("Dialogue Choice Mapping")]
-    // option index that means board the ship
-    [SerializeField] private int boardBoatOptionIndex = 0;
-    // option index that means stay on land
-    [SerializeField] private int stayOffBoatOptionIndex = 1;
-
     // tracks whether this dialogue ended because player chose to board
     private bool boardedFromDialogue;
 
+    private GameState state;
+
+    private string actionBoard = "board";
+    private string actionLeave = "leave";
+    private string increaseIntelligence = "intelligence";
+    private string insultedCaptain = "insult";
+    private string apology = "apology";
+
     private void Awake()
     {
+        state = GameState.Instance;
         // find the ui runner in scene if not assigned in inspector
         if (uiRunner == null)
         {
@@ -37,13 +42,8 @@ public class CaptainController : MonoBehaviour
             Debug.LogError("CaptainController: No UIRunner found in scene.");
             return;
         }
-
         // load captain dialogue graph and create a runner component
-        DialogueGraph graph = DialogueGraphLoader.LoadGraph("captain");
-        DialogueRunner runner = gameObject.AddComponent<DialogueRunner>();
-        runner.DialogueGraph = graph;
-        uiRunner.SetDialogueRunner(runner);
-
+        uiRunner.InitializeDialogue(from:gameObject, characterName:"captain");
         uiRunner.OptionSelectedAction += OnOptionSelected;
         uiRunner.DialogueEndedAction += OnDialogueEnded;
     }
@@ -128,27 +128,37 @@ public class CaptainController : MonoBehaviour
         uiRunner.BeginDialogue("captain");
     }
 
-    private void OnOptionSelected(int optionIndex)
+    private void OnOptionSelected(string action)
     {
         // map generic option index to captain-specific game actions
-        if (uiRunner == null || !uiRunner.IsDialogueActive)
-        {
-            return;
-        }
+        Debug.Log(action);
+        Debug.Log($"Setting flag, current flags: {string.Join(", ", state.EventFlags)}");
 
-        if (optionIndex == boardBoatOptionIndex)
+        if (actionBoard == action)
         {
             boardedFromDialogue = true;
             BoardShip();
-            uiRunner.EndDialogue();
-            return;
         }
-
-        if (optionIndex == stayOffBoatOptionIndex)
+        else if (actionLeave == action)
         {
             LeaveShip();
-            uiRunner.EndDialogue();
         }
+        else if (increaseIntelligence == action)
+        {
+            //test to see intelligence words
+            Debug.Log("CaptainController");
+            this.state.intelligencePowerUp(5);
+            Debug.Log(state.Intelligence);
+        }
+        else if (action == insultedCaptain)
+        {
+            this.state.setFlag("insult");
+        }
+        else if (action == apology)
+        {
+            this.state.removeFlag("insult");
+        }
+
     }
 
     private void OnDialogueEnded()

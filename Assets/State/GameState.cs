@@ -1,43 +1,52 @@
 using UnityEngine;
 using System.Collections.Generic;
-public class GameState : MonoBehaviour
-{
-    public static GameState Instance {get; private set;}
-    public HashSet<string> EventFlags {get; set;} = new();
 
-    [SerializeField] private int intelligence;
-    public int Intelligence => intelligence;
-    private void Awake()
+namespace State
     {
-        if (Instance != null && Instance != this)
+    public class GameState : MonoBehaviour
+    {
+        public static GameState Instance {get; private set;}
+        public HashSet<string> EventFlags {get; set;} = new();
+
+        [SerializeField] private int intelligence;
+        public int Intelligence => intelligence;
+        private void Awake()
         {
-            Destroy(this.gameObject);
-            return;
+            if (Instance != null && Instance != this)
+            {
+                Destroy(this.gameObject);
+                return;
+            }
+            Instance = this;
+            DontDestroyOnLoad(this.gameObject);
         }
-        Instance = this;
-        DontDestroyOnLoad(this.gameObject);
-    }
 
-    public void intelligencePowerUp(int incr)
-    {
-        intelligence += incr;
-    }
+        public void intelligencePowerUp(int incr)
+        {
+            intelligence += incr;
+        }
 
-    public void setFlag(string flag)
-    {
-        EventFlags.Add(flag);
-    }
+        public void setFlag(string flag)
+        {
+            EventFlags.Add(flag);
+        }
 
-    public bool hasFlag(string flag)
-    //this will be used on ConditionalNodes for npcs
-    {
-        return EventFlags.Contains(flag);
-    }
+        public void removeFlag(string flag)
+        {
+            EventFlags.Remove(flag);
+        }
 
-    public bool hasIntelligence(int requiredIntelligence)
-    //this is used if player has enough intelligence to say a linenode
-    {
-        return intelligence >= requiredIntelligence;
-    }
+        public bool hasFlag(string flag)
+        //this will be used on ConditionalNodes for npcs
+        {
+            return EventFlags.Contains(flag);
+        }
 
+        public bool hasIntelligence(int requiredIntelligence)
+        //this is used if player has enough intelligence to say a linenode
+        {
+            return intelligence >= requiredIntelligence;
+        }
+
+    }
 }

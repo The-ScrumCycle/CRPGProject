@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dialogue.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -34,10 +35,11 @@ namespace Dialogue.Core
         private UnityAction[] optionButtonActions;
 
         // true while a dialogue session is currently active
+        private List<DialogueOptions> currPlayerOptions;
         public bool IsDialogueActive { get; private set; }
 
         // lets npc controllers react to user choice without owning ui plumbing
-        public event Action<int> OptionSelectedAction;
+        public event Action<string> OptionSelectedAction;
         // lets npc controllers react when dialogue fully closes
         public event Action DialogueEndedAction;
 
@@ -123,6 +125,19 @@ namespace Dialogue.Core
             CloseDialogueUI();
         }
 
+        public void InitializeDialogue(GameObject from, string characterName)
+        {
+            Debug.Log("Init dialogue");
+            DialogueGraph graph = DialogueGraphLoader.LoadGraph(characterName);
+            if(graph == null)
+            {
+                Debug.LogError("graph did not load correctly");
+            }
+            DialogueRunner runner = from.AddComponent<DialogueRunner>();
+            runner.DialogueGraph = graph;
+            SetDialogueRunner(runner);
+        }
+
         private void BindUIListeners()
         {
             // continue button advances current line node
@@ -204,6 +219,7 @@ namespace Dialogue.Core
         private void OnContinuePressed()
         {
             // continue only when dialogue is active and backend exists
+            Debug.Log("Continue button pressed!");
             if (!IsDialogueActive || dialogueRunner == null)
             {
                 return;
@@ -221,7 +237,9 @@ namespace Dialogue.Core
             }
 
             dialogueRunner.SelectOptions(optionIndex);
-            OptionSelectedAction?.Invoke(optionIndex);
+            string action = this.currPlayerOptions[optionIndex].action;
+            OptionSelectedAction?.Invoke(action);
+            this.currPlayerOptions = new List<DialogueOptions>();
         }
 
         private void OnDialogueLine(string line)
@@ -242,11 +260,12 @@ namespace Dialogue.Core
                 continueButton.gameObject.SetActive(true);
             }
 
-            SetOptionButtons(new List<string>());
+            SetOptionButtons(new List<DialogueOptions>());
         }
 
-        private void OnDialogueOptions(List<string> options)
+        private void OnDialogueOptions(List<DialogueOptions> options)
         {
+            this.currPlayerOptions = options;
             // display selectable options and hide continue button
             if (!IsDialogueActive)
             {
@@ -263,7 +282,7 @@ namespace Dialogue.Core
             {
                 continueButton.gameObject.SetActive(false);
             }
-
+            
             SetOptionButtons(options);
         }
 
@@ -307,7 +326,7 @@ namespace Dialogue.Core
                 continueButton.gameObject.SetActive(false);
             }
 
-            SetOptionButtons(new List<string>());
+            SetOptionButtons(new List<DialogueOptions>());
         }
 
         private void SetSpeakerName(string speakerName)
@@ -319,7 +338,7 @@ namespace Dialogue.Core
             }
         }
 
-        private void SetOptionButtons(List<string> options)
+        private void SetOptionButtons(List<DialogueOptions> options)
         {
             // show only available options and write option text for each visible button
             if (optionButtons == null)
@@ -344,7 +363,7 @@ namespace Dialogue.Core
                 TMP_Text optionText = optionButtons[i].GetComponentInChildren<TMP_Text>(true);
                 if (optionText != null)
                 {
-                    optionText.text = options[i];
+                    optionText.text = options[i].text;
                 }
             }
         }
