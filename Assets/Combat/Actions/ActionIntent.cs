@@ -15,14 +15,27 @@ namespace Game.Combat.Actions
         public List<HexCoordinates> TargetCells { get; }
         public int PredictedDamage { get; }
         public Unit TargetUnit { get; }
+        public ActionVisualType VisualType { get; }
+        public List<HexCoordinates> MovementPath { get; }
+        public bool IsValid { get; }
 
-        public ActionIntent(Unit actor, ICombatAction action, Unit targetUnit = null, int predictedDamage = 0)
+        public ActionIntent(
+            Unit actor,
+            ICombatAction action,
+            Unit targetUnit,
+            int predictedDamage,
+            ActionVisualType visualType,
+            List<HexCoordinates> movementPath,
+            bool isValid)
         {
             Actor = actor;
             Action = action;
             TargetCells = new List<HexCoordinates>(action.GetTargetCells());
             TargetUnit = targetUnit;
             PredictedDamage = predictedDamage;
+            VisualType = visualType;
+            MovementPath = movementPath ?? new List<HexCoordinates>();
+            IsValid = isValid;
         }
 
         public override string ToString()

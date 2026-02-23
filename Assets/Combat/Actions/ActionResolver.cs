@@ -52,26 +52,50 @@ namespace Game.Combat.Actions
         // Generate a preview (ActionIntent) for an action.
         public ActionIntent Preview(ICombatAction action)
         {
-            if (!Validate(action))
+            if (action == null || action.Actor == null)
+            {
+                return null;
+            }
+
+            bool isValid = Validate(action);
+
+            if (!isValid)
             {
                 return null;
             }
 
             Unit targetUnit = null;
             int predictedDamage = 0;
+            ActionVisualType visualType = ActionVisualType.None;
+            List<HexCoordinates> movementPath = null;
 
-            if (action is MeleeAttackAction melee)
+            if (action is MoveAction move)
             {
+                visualType = ActionVisualType.Move;
+                movementPath = new List<HexCoordinates>(move.Path);
+            }
+            else if (action is MeleeAttackAction melee)
+            {
+                visualType = ActionVisualType.MeleeAttack;
                 targetUnit = melee.Target;
                 predictedDamage = melee.Damage;
             }
             else if (action is RangedAttackAction ranged)
             {
+                visualType = ActionVisualType.RangedAttack;
                 targetUnit = ranged.Target;
                 predictedDamage = ranged.Damage;
             }
 
-            return new ActionIntent(action.Actor, action, targetUnit, predictedDamage);
+            return new ActionIntent(
+                action.Actor,
+                action,
+                targetUnit,
+                predictedDamage,
+                visualType,
+                movementPath,
+                isValid
+            );
         }
 
         // Get all valid move destinations for a unit.
@@ -111,8 +135,8 @@ namespace Game.Combat.Actions
 
             foreach (var cell in neighbors)
             {
-                if (cell.Occupant != null && 
-                    cell.Occupant.IsAlive && 
+                if (cell.Occupant != null &&
+                    cell.Occupant.IsAlive &&
                     cell.Occupant.Role != attacker.Role)
                 {
                     validTargets.Add(cell.Occupant);
@@ -136,8 +160,8 @@ namespace Game.Combat.Actions
 
             foreach (var cell in cellsInRange)
             {
-                if (cell.Occupant != null && 
-                    cell.Occupant.IsAlive && 
+                if (cell.Occupant != null &&
+                    cell.Occupant.IsAlive &&
                     cell.Occupant.Role != attacker.Role &&
                     cell.Occupant != attacker)
                 {
