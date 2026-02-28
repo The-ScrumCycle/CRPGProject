@@ -9,6 +9,12 @@ using Game.Combat.Actions;
 
 namespace Game.Combat
 {
+    // Player action mode - tracks player action selection
+    public enum PlayerActionMode
+    {
+        Move,
+        Attack
+    }
     /// <summary>
     /// Main orchestrator for the combat system.
     /// Handles the combat engine's lifecycle, input, unity visuals and transitions between states.
@@ -31,6 +37,8 @@ namespace Game.Combat
         [SerializeField] private int victoryExperience = 100;
 
         public CombatState CurrentState => _state.CurrentState;
+        public PlayerActionMode CurrentActionMode => _currentActionMode;
+        private PlayerActionMode _currentActionMode = PlayerActionMode.Move;
 
         private HexGrid _grid;
         private TurnSystem _turnSystem;
@@ -69,7 +77,7 @@ namespace Game.Combat
         #endregion
 
         #region Initialization
-	// Initalize our combat, handles visual layers and starts all systems necessary to manage combat
+	    // Initalize our combat, handles visual layers and starts all systems necessary to manage combat
         private void InitializeCombat()
         {
             Debug.Log("[CombatManager] Initializing combat...");
@@ -127,43 +135,59 @@ namespace Game.Combat
         #endregion
 
         #region Highlight Management
+        // Set the player action mode and refresh highlights accordingly
+        public void SetActionMode(PlayerActionMode mode)
+        {
+            _currentActionMode = mode;
+            Debug.Log($"[CombatManager] Action mode set to: {_currentActionMode}");
+            RefreshPlayerHighlights();
+        }
 
-        /// <summary>
-        /// Build and push all active highlights to the renderer.
-        /// Player move highlights first, then AI intents layered on top via priority of the action intents.
-        /// </summary>
-        private void RefreshHighlights(List<HexCoordinates> playerMoveDestinations)
+        // Build and push all active highlights to the renderer.
+        // Player move highlights first, then AI intents layered on top via priority of the action intents.
+        private void RefreshPlayerHighlights()
         {
             gridRenderer.ClearHighlights();
+            var currentUnit = _flowController.GetCurrentUnit();
 
-            // Layer 1: player move destinations
-            if (playerMoveDestinations != null)
+            // Layer 1: Player highlights
+            if (currentUnit != null && currentUnit.IsPlayerControlled)
             {
-                foreach (var coord in playerMoveDestinations)
+                if (_currentActionMode == PlayerActionMode.Move)
                 {
-                    gridRenderer.AddHighlight(coord, HighlightType.PlayerMove);
+                    var validMoves = _flowController.GetValidMoves(currentUnit);
+                    foreach (var coord in validMoves)
+                        gridRenderer.AddHighlight(coord, HighlightType.PlayerMove);
+                }
+                else if (_currentActionMode == PlayerActionMode.Attack)
+                {
+                    var validTargets = _flowController.GetValidAttackTargets(currentUnit);
+                    foreach (var coord in validTargets)
+                        gridRenderer.AddHighlight(coord, HighlightType.PlayerAttack);
                 }
             }
 
-            // Layer 2: AI intents (priority handles overlap)
+            // Layer 2: AI intents (Always draw these)
             _intentRenderer.Clear();
             _intentRenderer.RenderAll(_state.GetIntents());
-
             foreach (var kvp in _intentRenderer.GetHighlights())
             {
                 gridRenderer.AddHighlight(kvp.Key, kvp.Value);
             }
-        }
-
+        } 
+        
         #endregion
 
         #region Turn Management
-	// Our turn management through the flow controller, manages the turn transitions
-        private void BeginPlayerTurn()
+	    // Our turn management through the flow controller, manages the turn transitions
+            private void BeginPlayerTurn()
         {
-            var validMoves = _flowController.StartPlayerTurn();
-            RefreshHighlights(validMoves);
+            _flowController.StartPlayerTurn();
+
+            _currentActionMode = PlayerActionMode.Move;
+            RefreshPlayerHighlights();
         }
+        
 
         private void BeginEnemyTurn()
         {
@@ -203,8 +227,8 @@ namespace Game.Combat
         #endregion
 
         #region Player Input
-	// Handle all player input in the combat engine
-	// NOTE: considering refactoring this to a seperate PlayerController
+	    // Handle all player input in the combat engine
+	    // NOTE: considering refactoring this to a seperate PlayerController
         private void HandlePlayerInput()
         {
             if (_flowController.HasPlayerActed()) return;
@@ -212,6 +236,18 @@ namespace Game.Combat
             var currentUnit = _flowController.GetCurrentUnit();
             if (currentUnit == null || !currentUnit.IsPlayerControlled) return;
 
+            // Mode switching
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                SetActionMode(PlayerActionMode.Move);
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                SetActionMode(PlayerActionMode.Attack);
+            }
+
+            // Action execution based on current mode
             if (Input.GetMouseButtonDown(0))
             {
                 var clickedHex = gridRenderer.GetHoveredHex();
@@ -219,16 +255,23 @@ namespace Game.Combat
 
                 if (clickedCell == null) return;
 
-                if (clickedCell.Occupant != null && clickedCell.Occupant.Role == UnitRole.Enemy)
+                if (_currentActionMode == PlayerActionMode.Move)
                 {
-                    TryPlayerAttack(currentUnit, clickedCell.Occupant);
+                    if (clickedCell.CanEnter())
+                    {
+                        TryPlayerMove(currentUnit, clickedHex);
+                    }
                 }
-                else if (clickedCell.CanEnter())
+                else if (_currentActionMode == PlayerActionMode.Attack)
                 {
-                    TryPlayerMove(currentUnit, clickedHex);
+                    if (clickedCell.Occupant != null && clickedCell.Occupant.Role == UnitRole.Enemy)
+                    {
+                        TryPlayerAttack(currentUnit, clickedCell.Occupant);
+                    }
                 }
             }
 
+            // End turn early
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 Debug.Log("[CombatManager] Player ended turn early");
