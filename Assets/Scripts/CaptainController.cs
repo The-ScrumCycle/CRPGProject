@@ -30,7 +30,6 @@ public class CaptainController : MonoBehaviour
 
     private void Awake()
     {
-        state = GameState.Instance;
         // find the ui runner in scene if not assigned in inspector
         if (uiRunner == null)
         {
@@ -46,6 +45,11 @@ public class CaptainController : MonoBehaviour
         uiRunner.InitializeDialogue(from:gameObject, characterName:"captain");
         uiRunner.OptionSelectedAction += OnOptionSelected;
         uiRunner.DialogueEndedAction += OnDialogueEnded;
+    }
+
+    private void Start()
+    {
+        state = GameState.Instance;
     }
 
     private void OnDestroy()
