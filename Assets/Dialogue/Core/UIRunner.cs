@@ -31,6 +31,10 @@ namespace Dialogue.Core
         // option buttons that get populated from option nodes
         [SerializeField] private Button[] optionButtons;
 
+        // cached reference to camera controller for input blocking during dialogue
+        [Header("Input Blocking")]
+        [SerializeField] private CameraController cameraController;
+
         // cached button actions so listeners can be removed safely
         private UnityAction[] optionButtonActions;
 
@@ -311,6 +315,11 @@ namespace Dialogue.Core
             {
                 dialogueUIRoot.SetActive(true);
             }
+            // block camera input when dialogue opens to prevent unwanted movement during conversations
+            if (cameraController != null)
+            {
+                cameraController.SetInputBlocked(true);
+            }
         }
 
         private void HideDialogueUI()
@@ -327,6 +336,11 @@ namespace Dialogue.Core
             }
 
             SetOptionButtons(new List<DialogueOptions>());
+
+            // unblock camera input when dialogue closes
+            if (cameraController != null){
+                cameraController.SetInputBlocked(false);
+            }
         }
 
         private void SetSpeakerName(string speakerName)
