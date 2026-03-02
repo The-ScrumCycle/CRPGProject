@@ -82,6 +82,11 @@ DIALOGUE WORKFLOW:
 
 you will need to perform overrides for OnOptionSelected, OnDialogueEnded
 OnOptionSelected function signature is --> OnOptionSelected(string action) --> where action is a user action to perform, ex: "board ship"
+
+example:
+
+
+
 OnDialogueEnded --> what do you want the player to do once dialogue ends
 
 Add the following to make sure to unsubscribe from uiRunner actions.
