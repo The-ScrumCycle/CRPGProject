@@ -50,6 +50,9 @@ public class CaptainController : MonoBehaviour
     private void Start()
     {
         state = GameState.Instance;
+        SearchForPlayer();
+
+
     }
 
     private void OnDestroy()
@@ -70,6 +73,25 @@ public class CaptainController : MonoBehaviour
         
     }
 
+    // set up player object and player controller reference
+    void SearchForPlayer()
+    {
+        if (Player == null)
+        {
+            Player = GameObject.FindGameObjectWithTag("Player");
+            if (Player == null)
+            {
+                Debug.LogError("Player not found");
+                return;
+            }
+        }
+
+        if (playerController == null)
+        {
+            playerController = Player.GetComponent<PlayerController>();
+        }
+    }
+
     // when I click on captain , I should be able to load in the boat
     void OnMouseDown ()
     {
@@ -81,8 +103,17 @@ public class CaptainController : MonoBehaviour
 
         if (Player == null)
         {
-            Debug.LogError("CaptainController: Player reference is missing.");
-            return;
+            SearchForPlayer();
+            if (Player == null)
+            {
+                Debug.LogError("Player not found");
+                return;
+            }
+            else if (playerController == null)
+            {
+                Debug.LogError("PlayerController not found on player");
+                return;
+            }
         }
 
         if (Vector3.Distance(Player.transform.position, transform.position) > 10f)

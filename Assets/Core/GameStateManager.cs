@@ -12,10 +12,10 @@ public class GameStateManager : MonoBehaviour
     public static GameStateManager Instance { get; private set; }
 
     // current state of the game
-    public GameState CurrentState { get; private set; } = GameState.Exploration;
+    public GameStates CurrentState { get; private set; } = GameStates.Exploration;
 
     // set up the state used.
-    private void SetState(GameState newState)
+    private void SetState(GameStates newState)
     {
         if (CurrentState == newState)
             return;
@@ -25,7 +25,7 @@ public class GameStateManager : MonoBehaviour
     }
 
     // get the current state of the game.
-    public GameState GetCurrentState()
+    public GameStates GetCurrentState()
     {
         Debug.Log("Current game state: " + CurrentState);
         return CurrentState;
@@ -34,7 +34,7 @@ public class GameStateManager : MonoBehaviour
     // transition to combat state and scene
     public void TransitionToCombat(GameObject ennemy)
     {
-        SetState(GameState.Combat);
+        SetState(GameStates.Combat);
 
         // save player and camera positions/rotations
         combatTransitionData.SaveTransitionData(ennemy);
@@ -48,7 +48,7 @@ public class GameStateManager : MonoBehaviour
     public void TransitionToExploration()
     {
         returningFromCombat = true;
-        SetState(GameState.Exploration);
+        SetState(GameStates.Exploration);
         SceneManager.LoadScene("Exploration");
 
     }
