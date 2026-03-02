@@ -27,6 +27,7 @@ public class CaptainController : MonoBehaviour
     private string actionLeave = "leave";
     private string increaseIntelligence = "intelligence";
     private string insultedCaptain = "insult";
+    private string SkipIntro = "introOver";
     private string apology = "apology";
 
     private void Awake()
@@ -177,30 +178,42 @@ public class CaptainController : MonoBehaviour
         Debug.Log(action);
         Debug.Log($"Setting flag, current flags: {string.Join(", ", state.EventFlags)}");
 
-        if (actionBoard == action)
+        string[] actions = action.Split(',');
+
+        foreach(string currentAction in actions)
         {
-            boardedFromDialogue = true;
-            BoardShip();
+            string curAction = currentAction.Trim();
+
+            if (actionBoard == curAction)
+            {
+                boardedFromDialogue = true;
+                BoardShip();
+            }
+            else if (actionLeave == curAction)
+            {
+                LeaveWithoutBoarding();
+            }
+            else if (increaseIntelligence == curAction)
+            {
+                //test to see intelligence words
+                Debug.Log("CaptainController");
+                this.state.intelligencePowerUp(5);
+                Debug.Log(state.Intelligence);
+            }
+            else if (curAction == insultedCaptain)
+            {
+                this.state.setFlag("insult");
+            }
+            else if (curAction == apology)
+            {
+                this.state.removeFlag("insult");
+            }
+            else if (curAction == SkipIntro)
+            {
+                this.state.setFlag("introOver");
+            }
         }
-        else if (actionLeave == action)
-        {
-            LeaveWithoutBoarding();
-        }
-        else if (increaseIntelligence == action)
-        {
-            //test to see intelligence words
-            Debug.Log("CaptainController");
-            this.state.intelligencePowerUp(5);
-            Debug.Log(state.Intelligence);
-        }
-        else if (action == insultedCaptain)
-        {
-            this.state.setFlag("insult");
-        }
-        else if (action == apology)
-        {
-            this.state.removeFlag("insult");
-        }
+       
 
     }
 

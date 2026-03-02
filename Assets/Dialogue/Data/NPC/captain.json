@@ -1,6 +1,15 @@
 {
-  "startNode": "1",
+  "startNode": "1000",
   "nodes": [
+
+    {
+      "id": "1000",
+      "type": "conditional",
+      "eventName": "introOver",
+      "trueNode": "42",
+      "falseNode": "1"
+    },
+
     {
       "id": "1",
       "type": "line",
@@ -78,7 +87,7 @@
       "type": "line",
       "speaker": "npc",
       "action": "",
-      "text": "\"So, Jade ... allow me to ask you a question, why come all this way,\" After months wondering, the captain decides it's time to ask the so important question.",
+      "text": "After months wondering, the captain decides it's time to ask the so important question. \"So, Jade ... allow me to ask you a question, why come all this way.\" ",
       "next": "90"
     },
     {
@@ -92,7 +101,7 @@
       "type": "line",
       "speaker": "player",
       "action": "",
-      "text": "\"Well, you know about them, I'm sure you heard the crew talking. My parents were killed by the creature 20 years ago ... It's my duty to avenge them\"",
+      "text": "\"Well, you know about them, I'm sure you heard the crew talking. My parents were killed by the creature 20 years ago ... It's my duty to avenge them.\"",
       "minIntelligence": 0,
       "next": "14"
     },
@@ -101,7 +110,7 @@
       "type": "line",
       "action": "",
       "speaker": "player",
-      "text": "\"Why I came to the end of the world to fight a creature that no one has killed before ? Money, what else could it be\"",
+      "text": "\"Why I came to the end of the world to fight a creature that no one has killed before ? Money, what else could it be.\"",
       "next": "14"
     },
     {
@@ -109,7 +118,7 @@
       "type": "line",
       "action": "",
       "speaker": "player",
-      "text": "\"Truth is that I was bored, but I always liked the idea of becoming the greatest pirate the world has ever seen\"",
+      "text": "\"Truth is that I was bored, but I always liked the idea of becoming the greatest pirate the world has ever seen.\"",
       "next": "15"
     },
 
@@ -289,7 +298,7 @@
       "id": "37",
       "type": "line",
       "speaker": "player",
-      "action": "leave",
+      "action": "introOver, leave",
       "text": "\"Thanks, I will need it\"",
       "minIntelligence": 0,
       "next": null
@@ -298,7 +307,7 @@
       "id": "38",
       "type": "line",
       "speaker": "player",
-      "action": "leave",
+      "action": "introOver, leave",
       "text": "\"Thanks, but no thanks, I don't believe in luck \"",
       "minIntelligence": 0,
       "next": null
@@ -307,7 +316,7 @@
       "id": "39",
       "type": "line",
       "speaker": "player",
-      "action": "",
+      "action": "introOver",
       "text": "\"Wait, could you tell me more about what happened here?\"",
       "minIntelligence": 0,
       "next": "40"
@@ -327,6 +336,46 @@
       "action": "leave",
       "text": "\" If by some miracle you aren't killed. Please kill them all. Every last of those animals.\" Even with all his calm demeanor, It's clear he is a victim of the creatures just like everyone else who ever lived on the Verge. The captain turns his back to you and waits for you to go somewhere else. '",
       "next": null
+    },
+    {
+      "id": "42",
+      "type": "line",
+      "speaker": "npc",
+      "action": "leave",
+      "text": "\"Hey kid, how is the big adventure going? Need something or ready to give up?\" he asks sarcastically",
+      "next": "43"
+    },
+    {
+      "id": "43",
+      "type": "option",
+      "options": [ "44", "45", "46" ]
+    },
+    {
+      "id": "44",
+      "type": "line",
+      "speaker": "player",
+      "action": "leave",
+      "text": "\" Nah, nothing new.\"",
+      "minIntelligence": 0,
+      "next": null
+    },
+    {
+      "id": "45",
+      "type": "line",
+      "speaker": "player",
+      "action": "leave",
+      "text": "\" Almost, but not yet\"",
+      "minIntelligence": 0,
+      "next": null
+    },
+    {
+      "id": "46",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Could you tell me more about what happened here?\"",
+      "minIntelligence": 0,
+      "next": "40"
     }
 
   ]
