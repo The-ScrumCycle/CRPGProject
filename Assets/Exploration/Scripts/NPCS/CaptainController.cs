@@ -21,6 +21,7 @@ public class CaptainController : MonoBehaviour
     private bool boardedFromDialogue;
 
     private GameState state;
+    public Sprite Face;
 
     private string actionBoard = "board";
     private string actionLeave = "leave";
@@ -51,7 +52,6 @@ public class CaptainController : MonoBehaviour
     {
         state = GameState.Instance;
         SearchForPlayer();
-
 
     }
 
@@ -116,12 +116,13 @@ public class CaptainController : MonoBehaviour
             }
         }
 
-        if (Vector3.Distance(Player.transform.position, transform.position) > 10f)
+        if (Vector3.Distance(Player.transform.position, transform.position) > 8f)
         {
             return;
         }
 
         // start captain dialogue flow
+        playerController.StopMovement();
         BeginCaptainDialogue();
 
     }
@@ -145,6 +146,12 @@ public class CaptainController : MonoBehaviour
         cameraController.SetTarget(playerController.transform);
     }
 
+    // leave conversation withoout boarding, re-nable player control
+    private void LeaveWithoutBoarding()
+    {
+        playerController.SetControllable(true);
+    }
+
     private void BeginCaptainDialogue()
     {
         // open dialogue ui and lock player while choice is pending
@@ -160,6 +167,7 @@ public class CaptainController : MonoBehaviour
             playerController.SetControllable(false);
         }
 
+        uiRunner.UpdateFace(Face);
         uiRunner.BeginDialogue("captain");
     }
 
@@ -176,7 +184,7 @@ public class CaptainController : MonoBehaviour
         }
         else if (actionLeave == action)
         {
-            LeaveShip();
+            LeaveWithoutBoarding();
         }
         else if (increaseIntelligence == action)
         {
@@ -204,7 +212,7 @@ public class CaptainController : MonoBehaviour
             return;
         }
 
-        LeaveShip();
+        LeaveWithoutBoarding();
     }
 
 

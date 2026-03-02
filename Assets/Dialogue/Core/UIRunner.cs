@@ -47,6 +47,8 @@ namespace Dialogue.Core
         // lets npc controllers react when dialogue fully closes
         public event Action DialogueEndedAction;
 
+        [SerializeField] private UnityEngine.UI.Image faceContainer;
+
         private void Awake()
         {
             // bind ui events and backend events once at startup
@@ -73,6 +75,20 @@ namespace Dialogue.Core
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 EndDialogue();
+            }
+        }
+
+        public void UpdateFace(Sprite newFace)
+        {
+            if(faceContainer == null)
+            {
+                Debug.LogError("face container image is not found");
+                return;
+            }
+
+            if (newFace != null)
+            {
+                faceContainer.sprite = newFace;
             }
         }
 

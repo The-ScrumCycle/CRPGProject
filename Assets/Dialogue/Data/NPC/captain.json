@@ -1,153 +1,333 @@
-{                                                                                                                                                                                                                                                                
-    "startNode": "20",                                                                                                                                                                                                                                            
-    "nodes": [
-        
-        {
-            "id": "20",
-            "type": "conditional",
-            "eventName" : "insult",
-            "trueNode" : "21",
-            "falseNode" : "1"
-        },
-        {                                                                                                                                                                                                                                                        
-            "id": "21",                                                                                                                                                                                                                                           
-            "type": "line",
-            "speaker": "npc",
-            "text": "You think I want to talk to you after you insulted me!?",                                                                                                                                                                                                         
-            "next": "22"
-        },
-        {                                                                                                                                                                                                                                                        
-            "id": "22",
-            "type": "option",
-            "options": ["23", "24"]
-        },
-        {                                                                                                                                                                                                                                                        
-            "id": "23",                                                                                                                                                                                                                                           
-            "type": "line",
-            "speaker": "player",
-            "text": "I was only joking captain, I am terribly sorry.",
-            "action": "apology",                                                                                                                                                                                                         
-            "next": "25"
-        },
-        {                                                                                                                                                                                                                                                        
-            "id": "24",                                                                                                                                                                                                                                           
-            "type": "line",
-            "speaker": "player",
-            "text": "Whatever, I'll be on my way.",
-            "action": "leave",                                                                                                                                                                                                         
-            "next": null
-        },
-        {                                                                                                                                                                                                                                                        
-            "id": "25",                                                                                                                                                                                                                                           
-            "type": "line",
-            "speaker": "npc",
-            "text": "All is good. I hope you learned your lesson, what can I help you with today?",                                                                                                                                                                                                         
-            "next": "2"
-        },
-        {                                                                                                                                                                                                                                                        
-            "id": "1",                                                                                                                                                                                                                                           
-            "type": "line",
-            "speaker": "npc",
-            "text": "Ahoy! What brings you to my ship?",                                                                                                                                                                                                         
-            "next": "2"
-        },
-        {
-            "id": "2",
-            "type": "option",
-            "options": ["3", "4", "5", "12"]
-        },
-        {
-            "id": "3",
-            "type": "line",
-            "speaker": "player",
-            "action": "leave",
-            "text": "Nothing, I'll be on my way.",
-            "minIntelligence": 0,
-            "next": null
-        },
-        {
-            "id": "4",
-            "type": "line",
-            "speaker": "player",
-            "action": "board",
-            "text": "I'd like to get on the boat.",
-            "minIntelligence": 5,
-            "next": "6"
-        },
-        {
-            "id": "5",
-            "type": "line",
-            "speaker": "player",
-            "action": "intelligence",
-            "text": "Greetings captain, what wisdom do you have?",
-            "minIntelligence": 0,
-            "next": "7"
-        },
-        {
-            "id": "12",
-            "type": "line",
-            "speaker": "player",
-            "action": "insult",
-            "text": "You call yourself a captain? Pathetic.",
-            "minIntelligence": 0,
-            "next": "13"
-        },
-        {
-            "id": "13",
-            "type": "line",
-            "speaker": "npc",
-            "text": "How dare you! Get off my dock!",
-            "next": null
-        },
-        {
-            "id": "6",
-            "type": "line",
-            "speaker": "npc",
-            "text": "Welcome aboard! Make yourself comfortable.",
-            "next": null
-        },
-        {
-            "id": "7",
-            "type": "line",
-            "speaker": "npc",
-            "text": "The sea teaches patience. And that a storm is never as far as you think.",
-            "next": "8"
-        },
-        {
-            "id": "8",
-            "type": "option",
-            "options" : ["11", "16"]
-        },
-        {
-            "id": "16",
-            "type": "conditional",
-            "eventName": "insult",
-            "trueNode": "15",
-            "falseNode": "9"
-        },
-        {
-            "id" : "9",
-            "type" : "line",
-            "speaker": "player",
-            "action": "board",
-            "minIntelligence" : 5,
-            "text" : "Cool! Can I board your ship?",
-            "next" : "10"
-        },
-        {
-            "id" : "10",
-            "type" : "line",
-            "speaker": "npc",
-            "text" : "Yeah, welcome aboard!",
-            "next" : null
-        },
-        {
-            "id" : "11",
-            "type" : "line",
-            "speaker": "player",
-            "action": "leave",
-            "text" : "Alright! Have a good day.",
-            "next" : null
-        }
-    ]
+{
+  "startNode": "1",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"Aye, we're here.\"",
+      "next": "2"
+    },
+
+    {
+      "id": "2",
+      "type": "line",
+      "speaker": "npc",
+      "text": "The captain calmly remembers the reason he aggred to follow you to the end of the world. \"If it's not much to ask, pay up.\" ",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "type": "option",
+      "options": [ "4", "5", "6", "7" ]
+    },
+    {
+      "id": "4",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Whaaat ? After all this, not even a hug ?\"",
+      "minIntelligence": 0,
+      "next": "8"
+    },
+    {
+      "id": "5",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Sure, when the job is done\"",
+      "minIntelligence": 0,
+      "next": "9"
+    },
+    {
+      "id": "6",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Sure, when the job is done (lie)\"",
+      "minIntelligence": 0,
+      "next": "9"
+    },
+    {
+      "id": "7",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"When the creatured is slain, we can talk\"",
+      "minIntelligence": 0,
+      "next": "9"
+    },
+    {
+      "id": "8",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"No\", he frowns",
+      "next": "10"
+    },
+    {
+      "id": "9",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"You may be killed for all I know, but fine, I promised to take you here and I am a man of my word.\"",
+      "next": "10"
+    },
+    {
+      "id": "10",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"So, Jade ... allow me to ask you a question, why come all this way,\" After months wondering, the captain decides it's time to ask the so important question.",
+      "next": "90"
+    },
+    {
+      "id": "90",
+      "type": "option",
+      "options": [ "11", "12", "13" ]
+    },
+
+    {
+      "id": "11",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Well, you know about them, I'm sure you heard the crew talking. My parents were killed by the creature 20 years ago ... It's my duty to avenge them\"",
+      "minIntelligence": 0,
+      "next": "14"
+    },
+    {
+      "id": "12",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\"Why I came to the end of the world to fight a creature that no one has killed before ? Money, what else could it be\"",
+      "next": "14"
+    },
+    {
+      "id": "13",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\"Truth is that I was bored, but I always liked the idea of becoming the greatest pirate the world has ever seen\"",
+      "next": "15"
+    },
+
+    {
+      "id": "14",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" You don't strike as the sentimental type, who could have thought your intentions were so noble. You know you will probably die right ?\"",
+      "next": "16"
+    },
+    {
+      "id": "15",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" You can't be serious, \" he screams laughing like a maniac. \" Well, I knew I liked you for a reson. You know you will die right ? \"",
+      "next": "16"
+    },
+    {
+      "id": "16",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" Before I let you go, \" he stops, for a second there, you can even detect a sign of worry in his voice \" just tell me a thing. are you even strong ? \"",
+      "next": "17"
+    },
+    {
+      "id": "17",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "(You may select up to 15 points in Strength, Charisma and Intelligence in our SCI stats, for a max of 10 by stat. Be careful this is an important choice.) ",
+      "next": "18"
+    },
+    {
+      "id": "18",
+      "type": "option",
+      "options": [ "19", "20", "21" ]
+    },
+    {
+      "id": "19",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\" I'm better with words than fighting.\" (2 as base stat) ",
+      "next": "22"
+    },
+    {
+      "id": "20",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\" I may not be the best fighter in the world, But I have a chance. \" (5 as base stat) ",
+      "next": "22"
+    },
+    {
+      "id": "21",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\" I killed a lot of people and monsters in the path that lead me here, this time will not be different. \" (8 as base stat) ",
+      "next": "23"
+    },
+    {
+      "id": "22",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Well kid, I hope your boss pays me for my troubles after your death,\" he laughs for quite a while ... \" At least you're more intelligent than you look right ?'",
+      "next": "24"
+    },
+    {
+      "id": "23",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Well kid, I respect you, I hope for the best,\" he said calmly, he wishes for the best, but he doubts being a good fighter will be enough \" Are you as smart as you are good at using swords ? ",
+      "next": "24"
+    },
+    {
+      "id": "24",
+      "type": "option",
+      "options": [ "25", "26", "27" ]
+    },
+    {
+      "id": "25",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\" Well, I'm not much of a reader, I prefer to learn by doing. \" (2 as base stat) ",
+      "next": "28"
+    },
+    {
+      "id": "26",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\" I know my way around a map and basic alchemy ... Well at least enough to survive. \" (5 as base stat) ",
+      "next": "28"
+    },
+    {
+      "id": "27",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\" I studied years for this back at the continent, my mind is my greatest weapon. \" (8 as base stat) ",
+      "next": "29"
+    },
+    {
+      "id": "28",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" All muscle, no brain \" he sighs, rubbing his temples. \" What about people? Can you at least talk your way out of a bad situation? \"",
+      "next": "30"
+    },
+    {
+      "id": "29",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" A scholar, huh? Well, that big brain might just keep your head attached to your shoulders, \" he nods approvingly. \" But what about people? Can you talk your way out of a bad situation? \"",
+      "next": "30"
+    },
+    {
+      "id": "30",
+      "type": "option",
+      "options": [ "31", "32", "33" ]
+    },
+    {
+      "id": "31",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\" Look, I was not the most popular girl in college \" (2 as base stat) ",
+      "next": "34"
+    },
+    {
+      "id": "32",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\" I can negotiate a fair price at the market, but I'm no diplomat. \" (5 as base stat) ",
+      "next": "34"
+    },
+    {
+      "id": "33",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\" I could sell a drowning man a glass of water. \" (8 as base stat) ",
+      "next": "35"
+    },
+    {
+      "id": "34",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" Well, you better hope your sword or your spells do the talking then.\" He shakes his head, turning back to his ship. \"Good luck Jade.\" ",
+      "next": "36"
+    },
+    {
+      "id": "35",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Ha! A silver tongue. Unfortunately for us, the monsters don't like to talk much '\" He smirks, turning back to his ship. \"Good luck Jade.\"",
+      "next": "36"
+    },
+    {
+      "id": "36",
+      "type": "option",
+      "options": [ "37", "38", "39" ]
+    },
+    {
+      "id": "37",
+      "type": "line",
+      "speaker": "player",
+      "action": "leave",
+      "text": "\"Thanks, I will need it\"",
+      "minIntelligence": 0,
+      "next": null
+    },
+    {
+      "id": "38",
+      "type": "line",
+      "speaker": "player",
+      "action": "leave",
+      "text": "\"Thanks, but no thanks, I don't believe in luck \"",
+      "minIntelligence": 0,
+      "next": null
+    },
+    {
+      "id": "39",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Wait, could you tell me more about what happened here?\"",
+      "minIntelligence": 0,
+      "next": "40"
+    },
+    {
+      "id": "40",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" What always happens, we had a good thing,\" he stops. He is serious for a change, It's clear he does not like to talk about it. \" It was really something, but then someone or something came and destroyed it all. It's what always happens with us, people, we are not made to have a good and peaceful life. God always finds a way of fucking us in the ass when we least expect it.\"  ",
+      "next": "41"
+    },
+    {
+      "id": "41",
+      "type": "line",
+      "speaker": "npc",
+      "action": "leave",
+      "text": "\" If by some miracle you aren't killed. Please kill them all. Every last of those animals.\" Even with all his calm demeanor, It's clear he is a victim of the creatures just like everyone else who ever lived on the Verge. The captain turns his back to you and waits for you to go somewhere else. '",
+      "next": null
+    }
+
+  ]
 }

@@ -98,6 +98,14 @@ public class PlayerController : MonoBehaviour
         characterAnimator.SetFloat("Speed", speed);
     }
 
+    // stop player movement and animation
+    public void StopMovement()
+    {
+        if (agent == null) return;
+        agent.ResetPath();
+        characterAnimator.SetFloat("Speed", 0f);
+    }
+
     // update player speed
     private void updatePlayerSpeed()
     {

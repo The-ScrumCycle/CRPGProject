@@ -7,7 +7,7 @@ public class FollowerController : MonoBehaviour
 {
     [Header("Party Settings")]
     [SerializeField] private bool inParty = false;
-    [SerializeField] private FollowerID followerID;
+    [SerializeField] public FollowerID followerID;
 
     [Header("Distance Settings")]
     [SerializeField] float maxDistanceToPlayer = 50f;
