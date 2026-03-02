@@ -25,6 +25,7 @@ public class NPCDialogue : MonoBehaviour
     private string increaseIntelligence = "intelligence";
     private string insultedCaptain = "insult";
     private string apology = "apology";
+    private string SkipIntro = "introOver";
 
     private void Awake()
     {
@@ -142,29 +143,38 @@ public class NPCDialogue : MonoBehaviour
 
     private void OnOptionSelected(string action)
     {
+        // map generic option index to captain-specific game actions
         Debug.Log(action);
         Debug.Log($"Setting flag, current flags: {string.Join(", ", state.EventFlags)}");
 
-      
-        if (actionLeave == action)
+        string[] actions = action.Split(',');
+
+        foreach (string currentAction in actions)
         {
-            return;
+            string curAction = currentAction.Trim();
+
+            if (actionLeave == curAction)
+            {
+ 
+            }
+            else if (increaseIntelligence == curAction)
+            {
+
+            }
+            else if (curAction == insultedCaptain)
+            {
+                this.state.setFlag("insult");
+            }
+            else if (curAction == apology)
+            {
+                this.state.removeFlag("insult");
+            }
+            else if (curAction == SkipIntro)
+            {
+                this.state.setFlag("introOver");
+            }
         }
-        else if (increaseIntelligence == action)
-        {
-            //test to see intelligence words
-            Debug.Log("CaptainController");
-            this.state.intelligencePowerUp(5);
-            Debug.Log(state.Intelligence);
-        }
-        else if (action == insultedCaptain)
-        {
-            this.state.setFlag("insult");
-        }
-        else if (action == apology)
-        {
-            this.state.removeFlag("insult");
-        }
+
 
     }
 
