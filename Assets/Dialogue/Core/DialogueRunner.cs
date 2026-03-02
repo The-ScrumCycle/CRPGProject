@@ -84,8 +84,8 @@ namespace Dialogue.Core
                     {
                         Debug.Log("DialogueRunner");
                         Debug.Log(gameState.Intelligence);
-                        if (lineNode.hasEnoughIntelligence(gameState.Intelligence)){
-                            //check if player has min intelligence for all options
+                        if (lineNode.meetRequirements(gameState.Intelligence, gameState.Charisma, gameState.Strength)){
+                            //check if player the required stats to select the option
                             playerCurrentOptions.Add(lineNode);
                             DialogueOptions temp = new DialogueOptions();
                             temp.action = lineNode.Action;

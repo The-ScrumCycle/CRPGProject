@@ -16,6 +16,7 @@ public class CaptainController : MonoBehaviour
     public CameraController cameraController;
     // reusable dialogue ui driver that connects DialogueRunner to dialogue widgets
     [SerializeField] private UIRunner uiRunner;
+    [SerializeField] private DialogueRunner runner;
 
     // tracks whether this dialogue ended because player chose to board
     private bool boardedFromDialogue;
@@ -44,9 +45,8 @@ public class CaptainController : MonoBehaviour
             return;
         }
         // load captain dialogue graph and create a runner component
-        uiRunner.InitializeDialogue(from:gameObject, characterName:"captain");
-        uiRunner.OptionSelectedAction += OnOptionSelected;
-        uiRunner.DialogueEndedAction += OnDialogueEnded;
+        runner = gameObject.AddComponent<DialogueRunner>();
+        runner.DialogueGraph = DialogueGraphLoader.LoadGraph("Captain Jack");
     }
 
     private void Start()
@@ -169,7 +169,11 @@ public class CaptainController : MonoBehaviour
         }
 
         uiRunner.UpdateFace(Face);
-        uiRunner.BeginDialogue("captain");
+
+        uiRunner.SetDialogueRunner(runner);
+        uiRunner.OptionSelectedAction += OnOptionSelected;
+        uiRunner.DialogueEndedAction += OnDialogueEnded;
+        uiRunner.BeginDialogue("Captain Jack");
     }
 
     private void OnOptionSelected(string action)
@@ -219,6 +223,10 @@ public class CaptainController : MonoBehaviour
 
     private void OnDialogueEnded()
     {
+
+        uiRunner.OptionSelectedAction -= OnOptionSelected;
+        uiRunner.DialogueEndedAction -= OnDialogueEnded;
+
         // default fallback when dialogue ends without choosing board option
         if (boardedFromDialogue)
         {

@@ -18,7 +18,7 @@ public class NPCDialogue : MonoBehaviour
 
     private UnityEngine.AI.NavMeshAgent agent;
     private GameState state;
-
+    [SerializeField] private DialogueRunner runner;
 
     [Header("Actions")]
     private string actionLeave = "leave";
@@ -46,9 +46,8 @@ public class NPCDialogue : MonoBehaviour
         }
 
         // load npc dialogue graph and create a runner component
-        uiRunner.InitializeDialogue(from: gameObject, characterName: characterDialogueID);
-        uiRunner.OptionSelectedAction += OnOptionSelected;
-        uiRunner.DialogueEndedAction += OnDialogueEnded;
+        runner = gameObject.AddComponent<DialogueRunner>();
+        runner.DialogueGraph = DialogueGraphLoader.LoadGraph(characterDialogueID);
     }
 
     private void Start()
@@ -137,6 +136,9 @@ public class NPCDialogue : MonoBehaviour
         }
 
         uiRunner.UpdateFace(Face);
+        uiRunner.SetDialogueRunner(runner);
+        uiRunner.OptionSelectedAction += OnOptionSelected;
+        uiRunner.DialogueEndedAction += OnDialogueEnded;
         uiRunner.BeginDialogue(characterDialogueID);
     }
 
@@ -185,6 +187,10 @@ public class NPCDialogue : MonoBehaviour
         {
             agent.isStopped = false;
         }
+
+        playerController.SetControllable(true);
+        uiRunner.OptionSelectedAction -= OnOptionSelected;
+        uiRunner.DialogueEndedAction -= OnDialogueEnded;
 
 
     }

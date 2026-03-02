@@ -9,7 +9,13 @@ namespace State
         public HashSet<string> EventFlags {get; set;} = new();
 
         [SerializeField] private int intelligence;
+        [SerializeField] private int charisma;
+        [SerializeField] private int strength;
         public int Intelligence => intelligence;
+        public int Charisma => charisma;
+        public int Strength => strength;
+
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -24,6 +30,16 @@ namespace State
         public void intelligencePowerUp(int incr)
         {
             intelligence += incr;
+        }
+
+        public void charismaPowerUp(int incr)
+        {
+            charisma += incr;
+        }
+
+        public void strengthPowerUp(int incr)
+        {
+            strength += incr;
         }
 
         public void setFlag(string flag)
@@ -46,6 +62,16 @@ namespace State
         //this is used if player has enough intelligence to say a linenode
         {
             return intelligence >= requiredIntelligence;
+        }
+
+        public bool hasCharisma(int requiredCharisma)
+        {
+            return charisma >= requiredCharisma;
+        }
+
+        public bool hasStrength(int requiredStrength)
+        {
+            return strength >= requiredStrength;
         }
 
     }

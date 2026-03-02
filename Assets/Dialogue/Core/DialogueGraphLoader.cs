@@ -23,6 +23,11 @@ public class NodeData
     public string text;
     public string next;
     public int minIntelligence;
+    public int minCharisma;
+    public int minStrength;
+    public int maxIntelligence  = 11;
+    public int maxCharisma = 11;
+    public int maxStrength = 11;
     public string[] options;
 }
 
@@ -64,6 +69,11 @@ namespace Dialogue.Core
                     LineNode line = (LineNode)nodeMap[node.id];
                     line.LineText = node.text;
                     line.MinimumIntelligence = node.minIntelligence;
+                    line.MinimumCharisma = node.minCharisma;
+                    line.MinimumStrength = node.minStrength;
+                    line.MaximumIntelligence = node.maxIntelligence;
+                    line.MaximumCharisma = node.maxCharisma;
+                    line.MaximumStrength = node.maxStrength;
                     line.Action = node.action;
                     line.Speaker = node.speaker == "player" ? SpeakerType.Player : SpeakerType.Npc;
                     if (node.next != null && nodeMap.ContainsKey(node.next))
