@@ -62,7 +62,7 @@ namespace Game.Combat.Grid
         public List<HexCell> GetNeighbors(HexCoordinates coords)
         {
             var neighbors = new List<HexCell>();
-            var offsets = HexCoordinates.GetNeighborOffsets();
+            var offsets = HexCoordinates.GetNeighborOffsets(coords);
 
             foreach (var offset in offsets)
             {

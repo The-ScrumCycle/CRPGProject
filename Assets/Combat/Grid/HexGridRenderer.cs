@@ -13,6 +13,7 @@ namespace Game.Combat.Grid
         [Header("Grid Configuration")]
         [SerializeField] private int gridWidth = 13;
         [SerializeField] private int gridHeight = 13;
+        [SerializeField][Min(1)] private int hexScale = 13;
 
 	// All the movement, attack and highlighting coloring for the visual telegraphing
         [Header("Hex Rendering")]
@@ -27,7 +28,6 @@ namespace Game.Combat.Grid
         [SerializeField][Range(1.0f, 2.0f)] private float hoverBrightnessMultiplier = 1.3f;
         [SerializeField][Range(1.0f, 10.0f)] private float pulseSpeed = 4.0f;
         [SerializeField][Range(0.0f, 1.0f)] private float lineThickness = 0.1f;
-        [SerializeField][Min(1)] private int hexScale = 13;
         [SerializeField] private bool clipEdges = true;
 
         private Material _hexMaterial;
@@ -59,7 +59,36 @@ namespace Game.Combat.Grid
             }
         }
 
-	// Initialize the renderer with a logical grid.
+        void OnDrawGizmos()
+        {
+            if (!Application.isPlaying) return;
+
+            Gizmos.color = Color.green;
+
+            // Draw point at every hex center
+            for (int x = 0; x < gridWidth; x++)
+            {
+                for (int y = 0; y < gridHeight; y++)
+                {
+                    Gizmos.DrawSphere(HexToWorld(new HexCoordinates(x, y)), 1.0f/hexScale);
+                }
+            }
+
+            // Draw point at all neighbours of active hex
+            Gizmos.color = Color.red;
+            foreach (HexCell hex in _logicalGrid.GetNeighbors(_hoveredHex))
+            {
+                Gizmos.DrawSphere(HexToWorld(hex.Coordinates), 1.0f/hexScale);
+            }
+
+            Debug.Log(HexCoordinates.Distance(_hoveredHex, WorldToHex(GridOrigin)));
+
+            // Draw point at grid origin
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawSphere(GridOrigin, 1.0f/hexScale);
+        }
+
+	    // Initialize the renderer with a logical grid.
         public void Initialize(HexGrid logicalGrid)
         {
             _logicalGrid = logicalGrid;
@@ -83,14 +112,14 @@ namespace Game.Combat.Grid
                 CANONICAL_SIZE / hexScale * SQRT3 / 2.0f
             );
 
-            var colliderBounds = GetComponent<Collider>().bounds;
-            GridOrigin = colliderBounds.max - new Vector3(HexSize.x / 2.0f, 0.0f, HexSize.z);
-
             transform.localScale = new Vector3(
                 (float)gridWidth / hexScale + (HexSize.x / CANONICAL_SIZE / 2.0f),
                 transform.localScale.y,
                 (float)((HexSize.z * gridHeight + HexSize.z) / CANONICAL_SIZE)
             );
+            Physics.SyncTransforms(); // Force collider to update
+
+            GridOrigin = GetComponent<Collider>().bounds.max - new Vector3(HexSize.x / 2.0f, 0.0f, HexSize.z);
         }
 
         private void UpdateHoveredHex()

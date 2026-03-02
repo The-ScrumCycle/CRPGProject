@@ -96,6 +96,26 @@ Shader "Custom/HexGrid"
                     : float4(h.zw, hC.zw + 0.5);
             }
 
+            // if given position is within an even column
+            int isEvenColumn(float2 gridPos){
+                if (ceil(gridPos.x)%2 == 1){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+
+            // if given position is within an even row
+            int isEvenRow(float2 gridPos){
+                if (frac(gridPos.y) != 0.0){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
@@ -112,12 +132,12 @@ Shader "Custom/HexGrid"
                 half4 color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv) * _BaseColor;
 
                 float2 u = float2(IN.uv.x * _GridScale.x, IN.uv.y * _GridScale.y) * _HexScale;
-                u.y += 0.1;
                 float4 h = getHex(u);
 
                 // Clip partial hexagons outside the grid
-                if (_ClipEdges == 1 && (h.z >= _GridDim.x || h.z <= 0.0 || h.w >= ceil(_GridDim.y / s.y) || h.w <= 0.0))
-                {
+                if (_ClipEdges == 1 && 
+                    (h.z >= _GridDim.x+(isEvenRow(h.zw) ? 0.0 : 1.0) || h.z <= 0.0 || 
+                    h.w >= (_GridDim.y+1.0)/2.0 || h.w <= 0.0)){
                     discard;
                 }
 

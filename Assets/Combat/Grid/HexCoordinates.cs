@@ -22,29 +22,57 @@ namespace Game.Combat.Grid
             this.r = r;
         }
 
+        // Takes a position in offset coordinates (typical grid position) and converts to axial coordinates
+        // This makes some algorithms easier
+        public static HexCoordinates OffsetToAxial(HexCoordinates offsetPos)
+        {
+            float parity = offsetPos.r%2;
+            return new HexCoordinates(
+                (int)(offsetPos.q - (offsetPos.r - parity) / 2.0f),
+                offsetPos.r);
+        }
+
+        // Takes two positions in axial coordinates and calculates distance between them
+        public static float AxialDistance(HexCoordinates A, HexCoordinates B)
+        {
+            HexCoordinates inter = A - B;
+            return (Mathf.Abs(inter.q) + Mathf.Abs(inter.q + inter.r) + Mathf.Abs(inter.r)) / 2.0f;
+        }
+
         // Calculate the distance between two hex cells.
         public static int Distance(HexCoordinates a, HexCoordinates b)
         {
-            return (Mathf.Abs(a.q - b.q) + Mathf.Abs(a.r - b.r) + Mathf.Abs(a.S - b.S)) / 2;
+            return (int)AxialDistance(OffsetToAxial(a), OffsetToAxial(b));
         }
 
         // Get all six neighboring coordinates.
-        public static HexCoordinates[] GetNeighborOffsets()
+        public static HexCoordinates[] GetNeighborOffsets(HexCoordinates inPos)
         {
-            return new HexCoordinates[]
+            if (inPos.r % 2 == 0)
             {
-                new HexCoordinates(1, 0),   // East
-                new HexCoordinates(1, -1),  // Northeast
-                new HexCoordinates(0, -1),  // Northwest
-                new HexCoordinates(-1, 0),  // West
-                new HexCoordinates(-1, 1),  // Southwest
-                new HexCoordinates(0, 1)    // Southeast
-            };
+                // Even offsets
+                return new HexCoordinates[]
+                {
+                    new HexCoordinates(1, 0), new HexCoordinates(-1, 0),
+                    new HexCoordinates(0, 1), new HexCoordinates(0, -1),
+                    new HexCoordinates(-1, 1), new HexCoordinates(-1, -1)
+                };
+            }
+            else
+            {
+                // Odd offsets
+                return new HexCoordinates[]
+                {
+                    new HexCoordinates(1, 0), new HexCoordinates(-1, 0),
+                    new HexCoordinates(0, 1), new HexCoordinates(0, -1),
+                    new HexCoordinates(1, -1), new HexCoordinates(1, 1)
+                };
+            }
         }
 
-        public HexCoordinates GetNeighbor(int direction)
+        public HexCoordinates GetNeighbor(int direction, HexCoordinates inPos)
         {
-            var offsets = GetNeighborOffsets();
+            var offsets = GetNeighborOffsets(inPos);
             direction = ((direction % 6) + 6) % 6; // Normalize to 0-5
             return this + offsets[direction];
         }

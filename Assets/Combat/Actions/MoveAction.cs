@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Collections.Generic;
 using Game.Combat.Units;
 using Game.Combat.Grid;
@@ -35,8 +36,10 @@ namespace Game.Combat.Actions
 
             // Check if destination is in range
             int distance = grid.GetDistance(Actor.Coordinates, Destination);
+            Debug.Log("distance is: " + distance + " movementrange is: " + Actor.Stats.movementRange);
             if (distance > Actor.Stats.movementRange)
             {
+                Debug.Log("out of range");
                 return false;
             }
 
