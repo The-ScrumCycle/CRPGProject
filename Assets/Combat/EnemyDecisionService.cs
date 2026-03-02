@@ -1,5 +1,5 @@
+
 using System.Collections.Generic;
-using UnityEngine;
 using Game.Combat.Grid;
 using Game.Combat.Units;
 using Game.Combat.Actions;
@@ -98,8 +98,10 @@ namespace Game.Combat
         public ActionIntent GenerateIntentForEnemy(Unit enemy, IReadOnlyList<Unit> allUnits)
         {
             var action = DecideAction(enemy, allUnits);
-            if (action == null) return null;
-
+            if (action == null)
+            {
+                return null;
+            }
             return _actionResolver.Preview(action);
         }
 
@@ -175,4 +177,7 @@ namespace Game.Combat
             return nearest;
         }
     }
-}
+} 
+
+
+

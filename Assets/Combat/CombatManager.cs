@@ -39,9 +39,10 @@ namespace Game.Combat
         private CombatRuntimeState _state;
         private CombatFlowController _flowController;
         private EnemyDecisionService _enemyAI;
+        private CombatIntentRenderer _intentRenderer;
 
         #region Unity Lifecycle
-	
+
         void Awake()
         {
             if (Instance != null && Instance != this)
@@ -85,6 +86,7 @@ namespace Game.Combat
             _state = new CombatRuntimeState();
             _enemyAI = new EnemyDecisionService(_grid, _actionResolver);
             _flowController = new CombatFlowController(_state, _turnSystem, _actionResolver, _grid, _enemyAI);
+            _intentRenderer = new CombatIntentRenderer();
 
             SpawnUnits();
 
@@ -124,17 +126,48 @@ namespace Game.Combat
 
         #endregion
 
+        #region Highlight Management
+
+        /// <summary>
+        /// Build and push all active highlights to the renderer.
+        /// Player move highlights first, then AI intents layered on top via priority of the action intents.
+        /// </summary>
+        private void RefreshHighlights(List<HexCoordinates> playerMoveDestinations)
+        {
+            gridRenderer.ClearHighlights();
+
+            // Layer 1: player move destinations
+            if (playerMoveDestinations != null)
+            {
+                foreach (var coord in playerMoveDestinations)
+                {
+                    gridRenderer.AddHighlight(coord, HighlightType.PlayerMove);
+                }
+            }
+
+            // Layer 2: AI intents (priority handles overlap)
+            _intentRenderer.Clear();
+            _intentRenderer.RenderAll(_state.GetIntents());
+
+            foreach (var kvp in _intentRenderer.GetHighlights())
+            {
+                gridRenderer.AddHighlight(kvp.Key, kvp.Value);
+            }
+        }
+
+        #endregion
+
         #region Turn Management
 	// Our turn management through the flow controller, manages the turn transitions
         private void BeginPlayerTurn()
         {
             var validMoves = _flowController.StartPlayerTurn();
-            gridRenderer.SetHighlightedCells(validMoves);
+            RefreshHighlights(validMoves);
         }
 
         private void BeginEnemyTurn()
         {
-            gridRenderer.ClearHighlight();
+            gridRenderer.ClearHighlights();
             _flowController.StartEnemyTurn();
 
             var currentUnit = _flowController.GetCurrentUnit();
@@ -170,10 +203,8 @@ namespace Game.Combat
         #endregion
 
         #region Player Input
-
-
 	// Handle all player input in the combat engine
-	// NOTE considering refactoring this to a seperate PlayerController
+	// NOTE: considering refactoring this to a seperate PlayerController
         private void HandlePlayerInput()
         {
             if (_flowController.HasPlayerActed()) return;
@@ -216,7 +247,7 @@ namespace Game.Combat
                 visual?.RefreshPosition();
 
                 _flowController.SetPlayerActed();
-                gridRenderer.ClearHighlight();
+                gridRenderer.ClearHighlights();
 
                 Invoke(nameof(EndTurn), 0.3f);
             }
@@ -252,7 +283,7 @@ namespace Game.Combat
                 }
 
                 _flowController.SetPlayerActed();
-                gridRenderer.ClearHighlight();
+                gridRenderer.ClearHighlights();
 
                 Invoke(nameof(EndTurn), 0.3f);
             }
@@ -380,4 +411,3 @@ namespace Game.Combat
         #endregion
     }
 }
-    
