@@ -37,7 +37,7 @@ public class FollowerController : MonoBehaviour
         agent.speed      = followSpeed;
 
         // testing, add followers to party
-        PartyManager.Instance.AddFollowerActive(followerID);
+        //PartyManager.Instance.AddFollowerActive(followerID);
 
 
     }

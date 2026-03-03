@@ -25,11 +25,22 @@ public class CaptainController : MonoBehaviour
     public Sprite Face;
 
     private string actionBoard = "board";
-    private string actionLeave = "leave";
-    private string increaseIntelligence = "intelligence";
     private string insultedCaptain = "insult";
     private string SkipIntro = "introOver";
     private string apology = "apology";
+
+    // stats selection 
+    private string set_strength_2     = "set_strength_2";
+    private string set_strength_5     = "set_strength_5";
+    private string set_strength_8     = "set_strength_8";
+    private string set_intelligence_2 = "set_intelligence_2";
+    private string set_intelligence_5 = "set_intelligence_5";
+    private string set_intelligence_8 = "set_intelligence_8";
+    private string set_charisma_2     = "set_charisma_2";
+    private string set_charisma_5     = "set_charisma_5";
+    private string set_charisma_8     = "set_charisma_8";
+    private string respec             = "respec";
+
 
     private void Awake()
     {
@@ -193,17 +204,69 @@ public class CaptainController : MonoBehaviour
                 boardedFromDialogue = true;
                 BoardShip();
             }
-            else if (actionLeave == curAction)
+
+            // stats selection 
+            else if (set_strength_2 == curAction)
             {
-                LeaveWithoutBoarding();
-            }
-            else if (increaseIntelligence == curAction)
-            {
-                //test to see intelligence words
-                Debug.Log("CaptainController");
-                this.state.intelligencePowerUp(5);
+                this.state.strengthPowerUp(2);
                 Debug.Log(state.Intelligence);
             }
+
+            else if (set_strength_5 == curAction)
+            {
+                this.state.strengthPowerUp(5);
+                Debug.Log(state.Intelligence);
+            }
+
+            else if (set_strength_8 == curAction)
+            {
+                this.state.strengthPowerUp(8);
+                Debug.Log(state.Intelligence);
+            }
+            else if (set_intelligence_2 == curAction)
+            {
+                this.state.intelligencePowerUp(2);
+                Debug.Log(state.Charisma);
+            }
+            else if (set_intelligence_5 == curAction)
+            {
+                this.state.intelligencePowerUp(5);
+                Debug.Log(state.Charisma);
+            }
+            else if (set_intelligence_8 == curAction)
+            {
+                this.state.intelligencePowerUp(8);
+                Debug.Log(state.Charisma);
+            }
+             else if (set_charisma_2 == curAction)
+            {
+                this.state.charismaPowerUp(2);
+                Debug.Log(state.Strength);
+            }
+            else if (set_charisma_5 == curAction)
+            {
+                this.state.charismaPowerUp(5);
+                Debug.Log(state.Strength);
+            }
+             else if (set_charisma_8 == curAction)
+            {
+                this.state.charismaPowerUp(8);
+                Debug.Log(state.Strength);
+            }
+
+            else if (respec == curAction)
+            {
+                this.state.resetStats();
+            }
+
+
+
+
+
+
+
+
+
             else if (curAction == insultedCaptain)
             {
                 this.state.setFlag("insult");

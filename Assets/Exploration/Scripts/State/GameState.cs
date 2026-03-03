@@ -42,6 +42,13 @@ namespace State
             strength += incr;
         }
 
+        public void resetStats()
+        {
+            intelligence = 0;
+            charisma = 0;
+            strength = 0;
+        }
+
         public void setFlag(string flag)
         {
             EventFlags.Add(flag);

@@ -162,7 +162,7 @@
     {
       "id": "19",
       "type": "line",
-      "action": "",
+      "action": "set_strength_2",
       "speaker": "player",
       "text": "\" I'm better with words than fighting.\" (2 as base stat) ",
       "next": "22"
@@ -170,7 +170,7 @@
     {
       "id": "20",
       "type": "line",
-      "action": "",
+      "action": "set_strength_5",
       "speaker": "player",
       "text": "\" I may not be the best fighter in the world, But I have a chance. \" (5 as base stat) ",
       "next": "22"
@@ -178,7 +178,7 @@
     {
       "id": "21",
       "type": "line",
-      "action": "",
+      "action": "set_strength_8",
       "speaker": "player",
       "text": "\" I killed a lot of people and monsters in the path that lead me here, this time will not be different. \" (8 as base stat) ",
       "next": "23"
@@ -207,7 +207,7 @@
     {
       "id": "25",
       "type": "line",
-      "action": "",
+      "action": "set_intelligence_2",
       "speaker": "player",
       "text": "\" Well, I'm not much of a reader, I prefer to learn by doing. \" (2 as base stat) ",
       "next": "28"
@@ -215,7 +215,7 @@
     {
       "id": "26",
       "type": "line",
-      "action": "",
+      "action": "set_intelligence_5",
       "speaker": "player",
       "text": "\" I know my way around a map and basic alchemy ... Well at least enough to survive. \" (5 as base stat) ",
       "next": "28"
@@ -223,9 +223,10 @@
     {
       "id": "27",
       "type": "line",
-      "action": "",
+      "action": "set_intelligence_8",
       "speaker": "player",
       "text": "\" I studied years for this back at the continent, my mind is my greatest weapon. \" (8 as base stat) ",
+      "maxCurrentStats": 7,
       "next": "29"
     },
     {
@@ -252,25 +253,27 @@
     {
       "id": "31",
       "type": "line",
-      "action": "",
+      "action": "set_charisma_2",
       "speaker": "player",
-      "text": "\" Look, I was not the most popular girl in college \" (2 as base stat) ",
+      "text": "\" Look, I was not the most popular girl in school \" (2 as base stat) ",
       "next": "34"
     },
     {
       "id": "32",
       "type": "line",
-      "action": "",
+      "action": "set_charisma_5",
       "speaker": "player",
       "text": "\" I can negotiate a fair price at the market, but I'm no diplomat. \" (5 as base stat) ",
+      "maxCurrentStats": 10,
       "next": "34"
     },
     {
       "id": "33",
       "type": "line",
-      "action": "",
+      "action": "set_charisma_8",
       "speaker": "player",
       "text": "\" I could sell a drowning man a glass of water. \" (8 as base stat) ",
+      "maxCurrentStats": 7,
       "next": "35"
     },
     {
@@ -292,13 +295,31 @@
     {
       "id": "36",
       "type": "option",
-      "options": [ "37", "38", "39" ]
+      "options": [ "37", "38", "39", "500" ]
     },
+    {
+      "id": "500",
+      "type": "line",
+      "speaker": "player",
+      "action": "respec",
+      "text": "\"Actually, I lied about something.\"",
+      "minIntelligence": 0,
+      "next": "501"
+    },
+    {
+      "id": "501",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Ha! Better be honest this time kid. Are you even strong?",
+      "next": "17"
+    },
+
     {
       "id": "37",
       "type": "line",
       "speaker": "player",
-      "action": "introOver, leave",
+      "action": "introOver",
       "text": "\"Thanks, I will need it\"",
       "minIntelligence": 0,
       "next": null
@@ -307,7 +328,7 @@
       "id": "38",
       "type": "line",
       "speaker": "player",
-      "action": "introOver, leave",
+      "action": "introOver",
       "text": "\"Thanks, but no thanks, I don't believe in luck \"",
       "minIntelligence": 0,
       "next": null
@@ -333,7 +354,7 @@
       "id": "41",
       "type": "line",
       "speaker": "npc",
-      "action": "leave",
+      "action": "",
       "text": "\" If by some miracle you aren't killed. Please kill them all. Every last of those animals.\" Even with all his calm demeanor, It's clear he is a victim of the creatures just like everyone else who ever lived on the Verge. The captain turns his back to you and waits for you to go somewhere else. '",
       "next": null
     },
@@ -341,20 +362,20 @@
       "id": "42",
       "type": "line",
       "speaker": "npc",
-      "action": "leave",
+      "action": "",
       "text": "\"Hey kid, how is the big adventure going? Need something or ready to give up?\" he asks sarcastically",
       "next": "43"
     },
     {
       "id": "43",
       "type": "option",
-      "options": [ "44", "45", "46" ]
+      "options": [ "45", "47", "44" ]
     },
     {
       "id": "44",
       "type": "line",
       "speaker": "player",
-      "action": "leave",
+      "action": "",
       "text": "\" Nah, nothing new.\"",
       "minIntelligence": 0,
       "next": null
@@ -363,20 +384,137 @@
       "id": "45",
       "type": "line",
       "speaker": "player",
-      "action": "leave",
-      "text": "\" Almost, but not yet\"",
+      "action": "",
+      "text": "\"Any idea what I should do first?\"",
       "minIntelligence": 0,
-      "next": null
+      "next": "61"
     },
     {
-      "id": "46",
+      "id": "47",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"I have questions about this place... about Verge\"",
+      "minIntelligence": 0,
+      "next": "48"
+    },
+    {
+      "id": "48",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Sure kid, it's only right. What is bothering your little head ?\"",
+      "next": "49"
+    },
+    {
+      "id": "49",
+      "type": "option",
+      "options": [ "50", "51", "52", "53", "59" ]
+    },
+    {
+      "id": "50",
       "type": "line",
       "speaker": "player",
       "action": "",
       "text": "\"Could you tell me more about what happened here?\"",
       "minIntelligence": 0,
       "next": "40"
+    },
+    {
+      "id": "51",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Is it true this place was once one island?\"",
+      "minIntelligence": 0,
+      "next": "54"
+    },
+    {
+      "id": "52",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"[Dumb] Ok sorry, but before that, I need to ask. Your name is Jack right... like the famous captain? I like that guy so much.\"",
+      "maxIntelligence": 3,
+      "next": "57"
+    },
+    {
+      "id": "53",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"[Charisma 7] Come on Cap... you can tell me. What's the real story?\"",
+      "minCharisma": 7,
+      "next": "58"
+    },
+    {
+      "id": "59",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"[Intelligence 7] Look, I can smell bullshit from a mile away. What's the real story?\"",
+      "minIntelligence": 7,
+      "next": "60"
+    },
+    {
+      "id": "54",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Aye, I lived here for forty years. My parents lived here, and theirs before them.\" The captain pauses, his gaze drifting toward the ruined horizon. \"Then those... things arrived. Slaughtered our people without a second thought.\"",
+      "next": "55"
+    },
+    {
+      "id": "55",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"But they didn't stop at taking our lives and stealing our resources. They tore the very earth apart, shattering the Verge, humanity's final frontier, into this pathetic archipelago.\"",
+      "next": "56"
+    },
+    {
+      "id": "56",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "He sighs heavily, shaking off the bitter memories. \"Anyway... this chunk of rock used to be the heart of the old mainland. That bastard has to be hiding here somewhere. Go give it hell, Jade.\"",
+      "next": null
+    },
+    {
+      "id": "57",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" Jade... you don't have anything better to do ? Go kill that monster.\"",
+      "next": null
+    },
+    {
+      "id": "58",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Nice try, kid. But that charm of yours doesn't work on an old salt like me... alright, maybe a little.\" He clears his throat, getting serious. \"Here is a real tip. The creatures were obsessed with the crystal deposits deep in the rock. If you see those crystals, be on your guard.\"",
+      "next": null
+    },
+    {
+      "id": "60",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Sorry kid, That's all I know... well,\" \" He clears his throat, getting serious. \"I guess you should know this. For some reason, the creatures were obsessed with the crystal deposits deep in the rock. If you see those crystals, be on your guard.\"",
+      "next": null
+    },
+    {
+      "id": "61",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Fucking hell... I didn't expect to see anyone alive on this rock.\" He squints, pointing down the path. \"Maybe start with the guy living in that mansion to the right. Assuming he hasn't lost his mind yet.\"",
+      "next": null
     }
+
+
+
 
   ]
 }

@@ -67,12 +67,17 @@ namespace Dialogue.Data
             return currStrength > maximumStrength;
         }
 
+        [SerializeField] private int maximumCurrentStats = 30;
+        public int MaximumCurrentStats { get => maximumCurrentStats; internal set => maximumCurrentStats = value; }
 
         // function to check if player meets the requirements 
         public bool meetRequirements(int currIntelligence, int currCharisma, int currStrength)
         {
+            int total = currIntelligence + currCharisma + currStrength;
+
             return hasEnoughIntelligence(currIntelligence) && !hasTooMuchIntelligence(currIntelligence) &&
-                   hasEnoughCharisma(currCharisma) && !hasTooMuchCharisma(currCharisma) && hasEnoughStrength(currStrength) && !hasTooMuchStrength(currStrength);
+                   hasEnoughCharisma(currCharisma) && !hasTooMuchCharisma(currCharisma) && hasEnoughStrength(currStrength) && !hasTooMuchStrength(currStrength)
+                   && total <= maximumCurrentStats;
         }
 
 
