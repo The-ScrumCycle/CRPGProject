@@ -256,10 +256,10 @@ namespace Dialogue.Core
                 return;
             }
 
-            dialogueRunner.SelectOptions(optionIndex);
             string action = this.currPlayerOptions[optionIndex].action;
             OptionSelectedAction?.Invoke(action);
             this.currPlayerOptions = new List<DialogueOptions>();
+            dialogueRunner.SelectOptions(optionIndex);
         }
 
         private void OnDialogueLine(string line)

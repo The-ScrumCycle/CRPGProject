@@ -28,6 +28,7 @@ public class NodeData
     public int maxIntelligence  = 11;
     public int maxCharisma = 11;
     public int maxStrength = 11;
+    public int maxCurrentStats = 30;
     public string[] options;
 }
 
@@ -74,6 +75,7 @@ namespace Dialogue.Core
                     line.MaximumIntelligence = node.maxIntelligence;
                     line.MaximumCharisma = node.maxCharisma;
                     line.MaximumStrength = node.maxStrength;
+                    line.MaximumCurrentStats = node.maxCurrentStats;
                     line.Action = node.action;
                     line.Speaker = node.speaker == "player" ? SpeakerType.Player : SpeakerType.Npc;
                     if (node.next != null && nodeMap.ContainsKey(node.next))

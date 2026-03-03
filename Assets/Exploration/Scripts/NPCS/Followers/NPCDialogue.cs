@@ -22,10 +22,14 @@ public class NPCDialogue : MonoBehaviour
 
     [Header("Actions")]
     private string actionLeave = "leave";
-    private string increaseIntelligence = "intelligence";
-    private string insultedCaptain = "insult";
-    private string apology = "apology";
-    private string SkipIntro = "introOver";
+  
+    // john actions
+    private string johnInParty    = "johnInParty";
+    private string johnNotInParty = "johnNotInParty";
+    private string JohnIntroOver  = "johnIntroOver";
+    private string johnWait       = "johnWait";
+    private string johnFollow     = "johnFollow";
+
 
     private void Awake()
     {
@@ -149,6 +153,12 @@ public class NPCDialogue : MonoBehaviour
         Debug.Log(action);
         Debug.Log($"Setting flag, current flags: {string.Join(", ", state.EventFlags)}");
 
+        if (string.IsNullOrEmpty(action))
+        {
+            Debug.LogWarning("Received empty action from dialogue option.");
+            return;
+        }
+
         string[] actions = action.Split(',');
 
         foreach (string currentAction in actions)
@@ -157,24 +167,37 @@ public class NPCDialogue : MonoBehaviour
 
             if (actionLeave == curAction)
             {
- 
+
             }
-            else if (increaseIntelligence == curAction)
+
+            // john actions
+            else if (curAction == johnInParty)
+            {
+                this.state.setFlag("johnInParty");
+                PartyManager.Instance.AddFollowerActive(FollowerID.Warrior);
+            }
+            else if (curAction == johnNotInParty)
+            {
+                this.state.removeFlag("johnInParty");
+                PartyManager.Instance.RemoveFollowerActive(FollowerID.Warrior);
+            }
+
+            else if (curAction == JohnIntroOver)
+            {
+                this.state.setFlag("johnIntroOver");
+            } 
+
+            else if (curAction == johnWait)
             {
 
             }
-            else if (curAction == insultedCaptain)
+            else if (curAction == johnFollow)
             {
-                this.state.setFlag("insult");
+
             }
-            else if (curAction == apology)
-            {
-                this.state.removeFlag("insult");
-            }
-            else if (curAction == SkipIntro)
-            {
-                this.state.setFlag("introOver");
-            }
+
+
+
         }
 
 
