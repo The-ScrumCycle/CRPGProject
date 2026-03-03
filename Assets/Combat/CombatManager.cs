@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Game.Core;
 using Game.Core.Transitions;
 using Game.Combat.Grid;
@@ -251,6 +252,13 @@ namespace Game.Combat
             // Action execution based on current mode
             if (Input.GetMouseButtonDown(0))
             {
+                // Check if player mouse is over a UI canvas, if so it's not a grid click so ignore.
+                if (UnityEngine.EventSystems.EventSystem.current != null && 
+                    UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                {
+                    return; 
+                }
+
                 var clickedHex = gridRenderer.GetHoveredHex();
                 var clickedCell = _grid.GetCell(clickedHex);
 

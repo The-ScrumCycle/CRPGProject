@@ -36,7 +36,6 @@ namespace Game.Combat.Actions
 
             // Check if destination is in range
             int distance = grid.GetDistance(Actor.Coordinates, Destination);
-            Debug.Log("distance is: " + distance + " movementrange is: " + Actor.Stats.movementRange);
             if (distance > Actor.Stats.movementRange)
             {
                 Debug.Log("out of range");
