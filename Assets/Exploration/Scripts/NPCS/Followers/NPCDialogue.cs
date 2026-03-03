@@ -189,11 +189,13 @@ public class NPCDialogue : MonoBehaviour
 
             else if (curAction == johnWait)
             {
-
+                this.state.setFlag("johnWait");
+                followerController.WaitHere();
             }
             else if (curAction == johnFollow)
             {
-
+                this.state.removeFlag("johnWait");
+                followerController.FollowMe();
             }
 
 

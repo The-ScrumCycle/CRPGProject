@@ -473,13 +473,29 @@
       "text": "He rests his hand on his hilt.\"Always am. Hard to sleep anyway with all the screaming. I'll watch your back.\"",
       "next": null
     },
+
     {
       "id": "65",
+      "type": "conditional",
+      "eventName": "johnWait",
+      "trueNode": "85",
+      "falseNode": "84"
+    },
+    {
+      "id": "84",
       "type": "line",
       "speaker": "player",
       "action": "johnWait",
       "text": "\"Wait here. Don't move until I get back.\"",
       "next": "69"
+    },
+    {
+      "id": "85",
+      "type": "line",
+      "speaker": "player",
+      "action": "johnFollow",
+      "text": "\"Follow me.\"",
+      "next": "86"
     },
     {
       "id": "66",
@@ -508,6 +524,13 @@
       "type": "line",
       "speaker": "npc",
       "text": "\"Fine by me. Gives me a chance to relax. Try not to die while I'm not looking, alright?\"",
+      "next": null
+    },
+    {
+      "id": "86",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"So Soon? I was beginning to get relaxed.\"",
       "next": null
     },
     {

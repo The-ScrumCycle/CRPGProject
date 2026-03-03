@@ -6,7 +6,8 @@ using System.Collections;
 public class FollowerController : MonoBehaviour
 {
     [Header("Party Settings")]
-    [SerializeField] private bool inParty = false;
+    [SerializeField] private bool inParty   = false;
+    [SerializeField] private bool isWaiting = false;
     [SerializeField] public FollowerID followerID;
 
     [Header("Distance Settings")]
@@ -36,10 +37,6 @@ public class FollowerController : MonoBehaviour
         WanderSpeed      = playerController.playerSpeed * 0.7f;
         agent.speed      = followSpeed;
 
-        // testing, add followers to party
-        //PartyManager.Instance.AddFollowerActive(followerID);
-
-
     }
 
     void Update()
@@ -49,6 +46,8 @@ public class FollowerController : MonoBehaviour
         if (playerCharacter == null) return;
         float distanceToPlayer = Vector3.Distance(transform.position, playerCharacter.position);
         UpdateAnimator();
+
+        if (isWaiting) return;
         GetCloseToPlayer(distanceToPlayer);
         FollowPlayer(distanceToPlayer);
         WanderAround(distanceToPlayer);
@@ -121,6 +120,21 @@ public class FollowerController : MonoBehaviour
         float speed = agent.velocity.magnitude;
 
         characterAnimator.SetFloat("Speed", speed);
+    }
+
+    // agent will not move anymore until FollowMe is called
+    public void WaitHere()
+    {
+        
+        agent.isStopped = true;
+        isWaiting = true;
+
+    }
+
+    public void FollowMe()
+    {
+        agent.isStopped = false;
+        isWaiting = false;
     }
 
 
