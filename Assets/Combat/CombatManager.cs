@@ -6,6 +6,7 @@ using Game.Combat.Grid;
 using Game.Combat.Turn;
 using Game.Combat.Units;
 using Game.Combat.Actions;
+using Game.Combat.UI;
 
 namespace Game.Combat
 {
@@ -175,7 +176,7 @@ namespace Game.Combat
                 gridRenderer.AddHighlight(kvp.Key, kvp.Value);
             }
         } 
-        
+
         #endregion
 
         #region Turn Management
@@ -450,6 +451,11 @@ namespace Game.Combat
         {
             return _state.GetIntents();
         }
+
+        // Check if the player has acted this turn
+        public bool HasPlayerActed => _flowController != null && _flowController.HasPlayerActed();
+
+        public bool IsPlayerTurn => _state != null && _state.CurrentState == CombatState.PlayerTurn;
 
         #endregion
     }
