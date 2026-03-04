@@ -6,7 +6,7 @@ namespace Dialogue.Data
     {
         [SerializeField] private List<Node> options = new List<Node>();
 
-        public List<Node> Options { get => options; internal set => options = value; }
+        public List<Node> Options => options;
 
         public List<string> getOptionsText()
         /*
@@ -24,6 +24,5 @@ namespace Dialogue.Data
             }
             return optionsText;
         }
-
     }
 }

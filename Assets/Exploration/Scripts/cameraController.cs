@@ -23,8 +23,6 @@ public class CameraController : MonoBehaviour
     private float rotationNum = 0;
     private Vector3 distanceUP = new Vector3(0, 5f, 10f);
     private Quaternion cameraRotation = Quaternion.Euler(60f, 180f, 0f);
-    // flag to block camera movement when dialogue is open
-    private bool inputBlocked = false;
 
 
 
@@ -43,9 +41,6 @@ public class CameraController : MonoBehaviour
     {
         // if we don't have a target, return 
         if (target == null) return;
-
-        // if input is blocked, return
-        if (inputBlocked) return;
 
         // set camera mode
         zoomController();
@@ -67,11 +62,6 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    // to block camera movement when dialogue is open
-    public void SetInputBlocked(bool blocked)
-    {
-        inputBlocked = blocked;
-    }
 
     // to switch between player / ship as focus of the camera
     public void SetTarget(Transform newTarget)
