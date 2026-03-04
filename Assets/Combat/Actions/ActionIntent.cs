@@ -18,15 +18,21 @@ namespace Game.Combat.Actions
         public ActionVisualType VisualType { get; }
         public List<HexCoordinates> MovementPath { get; }
         public bool IsValid { get; }
+        public HexCoordinates? PushDestination { get; }
+        public bool TargetTakesBumpDamage { get; }
+        public Unit SecondaryBumpTarget { get; }
 
         public ActionIntent(
-            Unit actor,
-            ICombatAction action,
-            Unit targetUnit,
-            int predictedDamage,
-            ActionVisualType visualType,
-            List<HexCoordinates> movementPath,
-            bool isValid)
+        Unit actor,
+        ICombatAction action,
+        Unit targetUnit,
+        int predictedDamage,
+        ActionVisualType visualType,
+        List<HexCoordinates> movementPath,
+        bool isValid,
+        HexCoordinates? pushDestination = null,
+        bool targetTakesBumpDamage = false,
+        Unit secondaryBumpTarget = null)
         {
             Actor = actor;
             Action = action;
@@ -36,7 +42,11 @@ namespace Game.Combat.Actions
             VisualType = visualType;
             MovementPath = movementPath ?? new List<HexCoordinates>();
             IsValid = isValid;
-        }
+            
+            PushDestination = pushDestination;
+            TargetTakesBumpDamage = targetTakesBumpDamage;
+            SecondaryBumpTarget = secondaryBumpTarget;
+        } 
 
         public override string ToString()
         {

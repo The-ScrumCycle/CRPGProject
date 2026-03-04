@@ -35,6 +35,9 @@ namespace Game.Combat
         [SerializeField] private HexCoordinates playerStartPosition = new HexCoordinates(1, 1);
         [SerializeField] private HexCoordinates enemyStartPosition = new HexCoordinates(6, 6);
 
+        [Header("Prefabs")]
+        [SerializeField] private GameObject shoveArrowPrefab;
+
         [Header("Combat Settings")]
         [SerializeField] private int victoryExperience = 100;
 
@@ -50,6 +53,8 @@ namespace Game.Combat
         private CombatFlowController _flowController;
         private EnemyDecisionService _enemyAI;
         private CombatIntentRenderer _intentRenderer;
+        private HexCoordinates? _lastHoveredHex = null;
+        private ActionIntent _currentHoverIntent = null;
 
         #region Unity Lifecycle
 
@@ -72,7 +77,9 @@ namespace Game.Combat
         {
             if (_state.CurrentState == CombatState.PlayerTurn)
             {
+                // The only two current player "input types" we can handle e.g an actual input and a hover
                 HandlePlayerInput();
+                HandlePlayerHoverPreview();
             }
         }
 
@@ -96,7 +103,7 @@ namespace Game.Combat
             _state = new CombatRuntimeState();
             _enemyAI = new EnemyDecisionService(_grid, _actionResolver);
             _flowController = new CombatFlowController(_state, _turnSystem, _actionResolver, _grid, _enemyAI);
-            _intentRenderer = new CombatIntentRenderer();
+            _intentRenderer = new CombatIntentRenderer(shoveArrowPrefab);
 
             SpawnUnits();
 
@@ -137,17 +144,49 @@ namespace Game.Combat
         #endregion
 
         #region Highlight Management
+        private void UpdateUnitWorldUIs(ActionIntent hoverIntent = null)
+        {
+            var intents = new List<ActionIntent>(_state.GetIntents());
+            if (hoverIntent != null) intents.Add(hoverIntent);
+
+            // Get current hovered unit for UI visibility rules
+            var hoveredHex = gridRenderer.GetHoveredHex();
+            var hoveredCell = _grid.GetCell(hoveredHex);
+            Unit hoveredUnit = hoveredCell?.Occupant;
+
+            foreach (var unit in _state.AllUnits)
+            {
+                var visual = _state.GetVisual(unit);
+                if (visual == null) continue;
+
+                var worldUI = visual.GetComponentInChildren<UI.UnitWorldUI>();
+                if (worldUI == null) continue;
+
+                int incomingDamage = 0;
+                foreach (var intent in intents)
+                {
+                    if (intent.TargetUnit == unit) incomingDamage += intent.PredictedDamage;
+                    if (intent.SecondaryBumpTarget == unit) incomingDamage += 10; // BUMP_DAMAGE
+                }
+
+                // Pass the unified state to the UI
+                bool isHovered = (unit == hoveredUnit);
+                worldUI.UpdateState(unit.Stats.currentHealth, unit.Stats.maxHealth, incomingDamage, isHovered, unit.IsPlayerControlled);
+            }
+        } 
+
         // Set the player action mode and refresh highlights accordingly
         public void SetActionMode(PlayerActionMode mode)
         {
             _currentActionMode = mode;
+            _lastHoveredHex = null; // Force a fresh user hover calculation (this is for displaying enemy health in UI)
             Debug.Log($"[CombatManager] Action mode set to: {_currentActionMode}");
-            RefreshPlayerHighlights();
+            RefreshPlayerHighlights(_currentHoverIntent);
         }
 
         // Build and push all active highlights to the renderer.
         // Player move highlights first, then AI intents layered on top via priority of the action intents.
-        private void RefreshPlayerHighlights()
+        private void RefreshPlayerHighlights(ActionIntent hoverIntent = null)
         {
             gridRenderer.ClearHighlights();
             var currentUnit = _flowController.GetCurrentUnit();
@@ -171,11 +210,17 @@ namespace Game.Combat
 
             // Layer 2: AI intents (Always draw these)
             _intentRenderer.Clear();
-            _intentRenderer.RenderAll(_state.GetIntents());
+            var allIntentsToRender = new List<ActionIntent>(_state.GetIntents());
+            if (hoverIntent != null) allIntentsToRender.Add(hoverIntent); // Generate "Phantom" action intent for showing enemy health bar
+
+            _intentRenderer.RenderAll(allIntentsToRender);
             foreach (var kvp in _intentRenderer.GetHighlights())
             {
                 gridRenderer.AddHighlight(kvp.Key, kvp.Value);
             }
+
+            // Layer 3: Damage indicators and Shove arrow indicator
+            UpdateUnitWorldUIs(hoverIntent);
         } 
 
         #endregion
@@ -190,15 +235,17 @@ namespace Game.Combat
             RefreshPlayerHighlights();
         }
         
-
         private void BeginEnemyTurn()
         {
+            _currentHoverIntent = null;
+            _intentRenderer.Clear();
             gridRenderer.ClearHighlights();
-            _flowController.StartEnemyTurn();
+            UpdateUnitWorldUIs();
 
+            _flowController.StartEnemyTurn();
             var currentUnit = _flowController.GetCurrentUnit();
             ExecuteEnemyTurn(currentUnit);
-        }
+        } 
 
         private void EndTurn()
         {
@@ -289,21 +336,62 @@ namespace Game.Combat
             }
         }
 
+        // Handles a player hovering over something with his mouse causing information to be displayed
+        // Currently this is only for displaying health bar but we can add future hover info
+        private void HandlePlayerHoverPreview()
+        {
+            var currentHex = gridRenderer.GetHoveredHex();
+            
+            // Only rebuild if the mouse moved to a new hex
+            if (_lastHoveredHex == currentHex) return;
+            _lastHoveredHex = currentHex;
+
+            _currentHoverIntent = null;
+            var currentUnit = _flowController.GetCurrentUnit();
+
+            // If mouse is not on UI, and it's our turn, and we haven't acted
+            if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject() && 
+                currentUnit != null && currentUnit.IsPlayerControlled && !_flowController.HasPlayerActed())
+            {
+                var cell = _grid.GetCell(currentHex);
+                
+                // Create a "Phantom" Intent for the UI to read, this is necessary due to how I implemented the health bar generating from an action intent
+                if (cell != null && _currentActionMode == PlayerActionMode.Attack && cell.Occupant != null && cell.Occupant.Role == UnitRole.Enemy)
+                {
+                    int distance = _grid.GetDistance(currentUnit.Coordinates, currentHex);
+                    ICombatAction mockAction = null;
+                    
+                    if (distance == 1) mockAction = _actionResolver.CreateMeleeAttack(currentUnit, cell.Occupant);
+                    else if (distance <= currentUnit.Stats.attackRange) mockAction = _actionResolver.CreateRangedAttack(currentUnit, cell.Occupant);
+
+                    if (mockAction != null && _actionResolver.Validate(mockAction))
+                    {
+                        _currentHoverIntent = _actionResolver.Preview(mockAction);
+                    }
+                }
+            }
+
+            // Refresh highlights passing in the new phantom intent
+            RefreshPlayerHighlights(_currentHoverIntent);
+        }
+
         private void TryPlayerMove(Unit unit, HexCoordinates destination)
         {
             var moveAction = _actionResolver.CreateMoveAction(unit, destination);
-
             if (_actionResolver.Execute(moveAction))
             {
-                var visual = _state.GetVisual(unit);
-                visual?.RefreshPosition();
-
                 _flowController.SetPlayerActed();
+                
+                // Clear UI and Highlights immediately as player action is done
+                _currentHoverIntent = null;
+                _intentRenderer.Clear();
                 gridRenderer.ClearHighlights();
-
+                UpdateUnitWorldUIs();
+                
+                RefreshAllUnitVisuals();
                 Invoke(nameof(EndTurn), 0.3f);
             }
-        }
+        } 
 
         private void TryPlayerAttack(Unit attacker, Unit target)
         {
@@ -327,19 +415,24 @@ namespace Game.Combat
 
             if (_actionResolver.Execute(attackAction))
             {
-                Debug.Log($"[CombatManager] {attacker.DisplayName} attacked {target.DisplayName} for {attacker.Stats.attackPower} damage");
-
-                if (!target.IsAlive)
-                {
-                    HandleUnitDeath(target);
-                }
+                Debug.Log($"[CombatManager] {attacker.DisplayName} attacked {target.DisplayName}");
+                SweepForDeaths();
 
                 _flowController.SetPlayerActed();
+                
+                // Clear UI and Highlights immediately
+                _currentHoverIntent = null;
+                _intentRenderer.Clear();
                 gridRenderer.ClearHighlights();
+                UpdateUnitWorldUIs();
 
+                // updating enemy position (shove)
+                RefreshAllUnitVisuals();
                 Invoke(nameof(EndTurn), 0.3f);
             }
         }
+
+        
 
         #endregion
 
@@ -353,48 +446,40 @@ namespace Game.Combat
                 return;
             }
 
-            var action = _enemyAI.DecideAction(enemyUnit, _state.AllUnits);
-
-            if (action == null)
+            // Find the exact intent the AI locked in during the planning phase
+            ActionIntent lockedIntent = null;
+            foreach (var intent in _state.GetIntents())
             {
-                Invoke(nameof(EndTurn), 0.5f);
-                return;
+                if (intent.Actor == enemyUnit)
+                {
+                    lockedIntent = intent;
+                    break;
+                }
             }
 
-            if (_actionResolver.Execute(action))
+            // Execute the locked intent IF it is still valid
+            if (lockedIntent != null && _actionResolver.Validate(lockedIntent.Action))
             {
-                Unit targetUnit = null;
-                bool isAttack = false;
-
-                if (action is MeleeAttackAction melee)
+                if (_actionResolver.Execute(lockedIntent.Action))
                 {
-                    targetUnit = melee.Target;
-                    isAttack = true;
-                }
-                else if (action is RangedAttackAction ranged)
-                {
-                    targetUnit = ranged.Target;
-                    isAttack = true;
-                }
-
-                if (isAttack && targetUnit != null)
-                {
-                    Debug.Log($"[CombatManager] {enemyUnit.DisplayName} attacked {targetUnit.DisplayName}");
-
-                    if (!targetUnit.IsAlive)
+                    bool isAttack = lockedIntent.Action is MeleeAttackAction || lockedIntent.Action is RangedAttackAction;
+                    if (isAttack)
                     {
-                        HandleUnitDeath(targetUnit);
+                        Debug.Log($"[CombatManager] {enemyUnit.DisplayName} executed telegraphed attack!");
+                        SweepForDeaths(); 
                     }
                 }
-                else
-                {
-                    var visual = _state.GetVisual(enemyUnit);
-                    visual?.RefreshPosition();
-                }
+            }
+            else
+            {
+                Debug.Log($"[CombatManager] {enemyUnit.DisplayName}'s action missed (target moved or invalid)!");
             }
 
+            // After an action refresh the unit positions if necessary (consider shoves)
+            RefreshAllUnitVisuals(); 
             Invoke(nameof(EndTurn), 0.5f);
         }
+        
 
         #endregion
 
@@ -413,6 +498,29 @@ namespace Game.Combat
             {
                 Destroy(visual.gameObject);
                 _state.RemoveUnitVisual(unit);
+            }
+        }
+
+        // Ensure position tracking is up to date
+        private void RefreshAllUnitVisuals()
+        {
+            foreach (var unit in _state.AllUnits)
+            {
+                var visual = _state.GetVisual(unit);
+                visual?.RefreshPosition();
+            }
+        }
+
+        private void SweepForDeaths()
+        {
+            // Copy unit list to safely remove items while iterating
+            var unitsToCheck = new List<Unit>(_state.AllUnits);
+            foreach (var u in unitsToCheck)
+            {
+                if (!u.IsAlive)
+                {
+                    HandleUnitDeath(u);
+                }
             }
         }
 
