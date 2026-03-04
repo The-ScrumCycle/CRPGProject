@@ -1,0 +1,520 @@
+{
+  "startNode": "1000",
+  "nodes": [
+
+    {
+      "id": "1000",
+      "type": "conditional",
+      "eventName": "introOver",
+      "trueNode": "42",
+      "falseNode": "1"
+    },
+
+    {
+      "id": "1",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"Aye, we're here.\"",
+      "next": "2"
+    },
+
+    {
+      "id": "2",
+      "type": "line",
+      "speaker": "npc",
+      "text": "The captain calmly remembers the reason he aggred to follow you to the end of the world. \"If it's not much to ask, pay up.\" ",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "type": "option",
+      "options": [ "4", "5", "6", "7" ]
+    },
+    {
+      "id": "4",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Whaaat ? After all this, not even a hug ?\"",
+      "minIntelligence": 0,
+      "next": "8"
+    },
+    {
+      "id": "5",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Sure, when the job is done\"",
+      "minIntelligence": 0,
+      "next": "9"
+    },
+    {
+      "id": "6",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Sure, when the job is done (lie)\"",
+      "minIntelligence": 0,
+      "next": "9"
+    },
+    {
+      "id": "7",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"When the creatured is slain, we can talk\"",
+      "minIntelligence": 0,
+      "next": "9"
+    },
+    {
+      "id": "8",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"No\", he frowns",
+      "next": "10"
+    },
+    {
+      "id": "9",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"You may be killed for all I know, but fine, I promised to take you here and I am a man of my word.\"",
+      "next": "10"
+    },
+    {
+      "id": "10",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "After months wondering, the captain decides it's time to ask the so important question. \"So, Jade ... allow me to ask you a question, why come all this way.\" ",
+      "next": "90"
+    },
+    {
+      "id": "90",
+      "type": "option",
+      "options": [ "11", "12", "13" ]
+    },
+
+    {
+      "id": "11",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Well, you know about them, I'm sure you heard the crew talking. My parents were killed by the creature 20 years ago ... It's my duty to avenge them.\"",
+      "minIntelligence": 0,
+      "next": "14"
+    },
+    {
+      "id": "12",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\"Why I came to the end of the world to fight a creature that no one has killed before ? Money, what else could it be.\"",
+      "next": "14"
+    },
+    {
+      "id": "13",
+      "type": "line",
+      "action": "",
+      "speaker": "player",
+      "text": "\"Truth is that I was bored, but I always liked the idea of becoming the greatest pirate the world has ever seen.\"",
+      "next": "15"
+    },
+
+    {
+      "id": "14",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" You don't strike as the sentimental type, who could have thought your intentions were so noble. You know you will probably die right ?\"",
+      "next": "16"
+    },
+    {
+      "id": "15",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" You can't be serious, \" he screams laughing like a maniac. \" Well, I knew I liked you for a reson. You know you will die right ? \"",
+      "next": "16"
+    },
+    {
+      "id": "16",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" Before I let you go, \" he stops, for a second there, you can even detect a sign of worry in his voice \" just tell me a thing. are you even strong ? \"",
+      "next": "17"
+    },
+    {
+      "id": "17",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "(You may select up to 15 points in Strength, Charisma and Intelligence in our SCI stats, for a max of 10 by stat. Be careful this is an important choice.) ",
+      "next": "18"
+    },
+    {
+      "id": "18",
+      "type": "option",
+      "options": [ "19", "20", "21" ]
+    },
+    {
+      "id": "19",
+      "type": "line",
+      "action": "set_strength_2",
+      "speaker": "player",
+      "text": "\" I'm better with words than fighting.\" (2 as base stat) ",
+      "next": "22"
+    },
+    {
+      "id": "20",
+      "type": "line",
+      "action": "set_strength_5",
+      "speaker": "player",
+      "text": "\" I may not be the best fighter in the world, But I have a chance. \" (5 as base stat) ",
+      "next": "22"
+    },
+    {
+      "id": "21",
+      "type": "line",
+      "action": "set_strength_8",
+      "speaker": "player",
+      "text": "\" I killed a lot of people and monsters in the path that lead me here, this time will not be different. \" (8 as base stat) ",
+      "next": "23"
+    },
+    {
+      "id": "22",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Well kid, I hope your boss pays me for my troubles after your death,\" he laughs for quite a while ... \" At least you're more intelligent than you look right ?'",
+      "next": "24"
+    },
+    {
+      "id": "23",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Well kid, I respect you, I hope for the best,\" he said calmly, he wishes for the best, but he doubts being a good fighter will be enough \" Are you as smart as you are good at using swords ? ",
+      "next": "24"
+    },
+    {
+      "id": "24",
+      "type": "option",
+      "options": [ "25", "26", "27" ]
+    },
+    {
+      "id": "25",
+      "type": "line",
+      "action": "set_intelligence_2",
+      "speaker": "player",
+      "text": "\" Well, I'm not much of a reader, I prefer to learn by doing. \" (2 as base stat) ",
+      "next": "28"
+    },
+    {
+      "id": "26",
+      "type": "line",
+      "action": "set_intelligence_5",
+      "speaker": "player",
+      "text": "\" I know my way around a map and basic alchemy ... Well at least enough to survive. \" (5 as base stat) ",
+      "next": "28"
+    },
+    {
+      "id": "27",
+      "type": "line",
+      "action": "set_intelligence_8",
+      "speaker": "player",
+      "text": "\" I studied years for this back at the continent, my mind is my greatest weapon. \" (8 as base stat) ",
+      "maxCurrentStats": 7,
+      "next": "29"
+    },
+    {
+      "id": "28",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" All muscle, no brain \" he sighs, rubbing his temples. \" What about people? Can you at least talk your way out of a bad situation? \"",
+      "next": "30"
+    },
+    {
+      "id": "29",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" A scholar, huh? Well, that big brain might just keep your head attached to your shoulders, \" he nods approvingly. \" But what about people? Can you talk your way out of a bad situation? \"",
+      "next": "30"
+    },
+    {
+      "id": "30",
+      "type": "option",
+      "options": [ "31", "32", "33" ]
+    },
+    {
+      "id": "31",
+      "type": "line",
+      "action": "set_charisma_2",
+      "speaker": "player",
+      "text": "\" Look, I was not the most popular girl in school \" (2 as base stat) ",
+      "next": "34"
+    },
+    {
+      "id": "32",
+      "type": "line",
+      "action": "set_charisma_5",
+      "speaker": "player",
+      "text": "\" I can negotiate a fair price at the market, but I'm no diplomat. \" (5 as base stat) ",
+      "maxCurrentStats": 10,
+      "next": "34"
+    },
+    {
+      "id": "33",
+      "type": "line",
+      "action": "set_charisma_8",
+      "speaker": "player",
+      "text": "\" I could sell a drowning man a glass of water. \" (8 as base stat) ",
+      "maxCurrentStats": 7,
+      "next": "35"
+    },
+    {
+      "id": "34",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" Well, you better hope your sword or your spells do the talking then.\" He shakes his head, turning back to his ship. \"Good luck Jade.\" ",
+      "next": "36"
+    },
+    {
+      "id": "35",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Ha! A silver tongue. Unfortunately for us, the monsters don't like to talk much '\" He smirks, turning back to his ship. \"Good luck Jade.\"",
+      "next": "36"
+    },
+    {
+      "id": "36",
+      "type": "option",
+      "options": [ "37", "38", "39", "500" ]
+    },
+    {
+      "id": "500",
+      "type": "line",
+      "speaker": "player",
+      "action": "respec",
+      "text": "\"Actually, I lied about something.\"",
+      "minIntelligence": 0,
+      "next": "501"
+    },
+    {
+      "id": "501",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Ha! Better be honest this time kid. Are you even strong?",
+      "next": "17"
+    },
+
+    {
+      "id": "37",
+      "type": "line",
+      "speaker": "player",
+      "action": "introOver",
+      "text": "\"Thanks, I will need it\"",
+      "minIntelligence": 0,
+      "next": null
+    },
+    {
+      "id": "38",
+      "type": "line",
+      "speaker": "player",
+      "action": "introOver",
+      "text": "\"Thanks, but no thanks, I don't believe in luck \"",
+      "minIntelligence": 0,
+      "next": null
+    },
+    {
+      "id": "39",
+      "type": "line",
+      "speaker": "player",
+      "action": "introOver",
+      "text": "\"Wait, could you tell me more about what happened here?\"",
+      "minIntelligence": 0,
+      "next": "40"
+    },
+    {
+      "id": "40",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" What always happens, we had a good thing,\" he stops. He is serious for a change, It's clear he does not like to talk about it. \" It was really something, but then someone or something came and destroyed it all. It's what always happens with us, people, we are not made to have a good and peaceful life. God always finds a way of fucking us in the ass when we least expect it.\"  ",
+      "next": "41"
+    },
+    {
+      "id": "41",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" If by some miracle you aren't killed. Please kill them all. Every last of those animals.\" Even with all his calm demeanor, It's clear he is a victim of the creatures just like everyone else who ever lived on the Verge. The captain turns his back to you and waits for you to go somewhere else. '",
+      "next": null
+    },
+    {
+      "id": "42",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Hey kid, how is the big adventure going? Need something or ready to give up?\" he asks sarcastically",
+      "next": "43"
+    },
+    {
+      "id": "43",
+      "type": "option",
+      "options": [ "45", "47", "44" ]
+    },
+    {
+      "id": "44",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\" Nah, nothing new.\"",
+      "minIntelligence": 0,
+      "next": null
+    },
+    {
+      "id": "45",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Any idea what I should do first?\"",
+      "minIntelligence": 0,
+      "next": "61"
+    },
+    {
+      "id": "47",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"I have questions about this place... about Verge\"",
+      "minIntelligence": 0,
+      "next": "48"
+    },
+    {
+      "id": "48",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Sure kid, it's only right. What is bothering your little head ?\"",
+      "next": "49"
+    },
+    {
+      "id": "49",
+      "type": "option",
+      "options": [ "50", "51", "52", "53", "59" ]
+    },
+    {
+      "id": "50",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Could you tell me more about what happened here?\"",
+      "minIntelligence": 0,
+      "next": "40"
+    },
+    {
+      "id": "51",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Is it true this place was once one island?\"",
+      "minIntelligence": 0,
+      "next": "54"
+    },
+    {
+      "id": "52",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"[Dumb] Ok sorry, but before that, I need to ask. Your name is Jack right... like the famous captain? I like that guy so much.\"",
+      "maxIntelligence": 3,
+      "next": "57"
+    },
+    {
+      "id": "53",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"[Charisma 7] Come on Cap... you can tell me. What's the real story?\"",
+      "minCharisma": 7,
+      "next": "58"
+    },
+    {
+      "id": "59",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"[Intelligence 7] Look, I can smell bullshit from a mile away. What's the real story?\"",
+      "minIntelligence": 7,
+      "next": "60"
+    },
+    {
+      "id": "54",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Aye, I lived here for forty years. My parents lived here, and theirs before them.\" The captain pauses, his gaze drifting toward the ruined horizon. \"Then those... things arrived. Slaughtered our people without a second thought.\"",
+      "next": "55"
+    },
+    {
+      "id": "55",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"But they didn't stop at taking our lives and stealing our resources. They tore the very earth apart, shattering the Verge, humanity's final frontier, into this pathetic archipelago.\"",
+      "next": "56"
+    },
+    {
+      "id": "56",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "He sighs heavily, shaking off the bitter memories. \"Anyway... this chunk of rock used to be the heart of the old mainland. That bastard has to be hiding here somewhere. Go give it hell, Jade.\"",
+      "next": null
+    },
+    {
+      "id": "57",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\" Jade... you don't have anything better to do ? Go kill that monster.\"",
+      "next": null
+    },
+    {
+      "id": "58",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Nice try, kid. But that charm of yours doesn't work on an old salt like me... alright, maybe a little.\" He clears his throat, getting serious. \"Here is a real tip. The creatures were obsessed with the crystal deposits deep in the rock. If you see those crystals, be on your guard.\"",
+      "next": null
+    },
+    {
+      "id": "60",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Sorry kid, That's all I know... well,\" \" He clears his throat, getting serious. \"I guess you should know this. For some reason, the creatures were obsessed with the crystal deposits deep in the rock. If you see those crystals, be on your guard.\"",
+      "next": null
+    },
+    {
+      "id": "61",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Fucking hell... I didn't expect to see anyone alive on this rock.\" He squints, pointing down the path. \"Maybe start with the guy living in that mansion to the right. Assuming he hasn't lost his mind yet.\"",
+      "next": null
+    }
+
+
+
+
+  ]
+}
