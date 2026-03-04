@@ -45,8 +45,9 @@ namespace Game.Combat.Actions
                 
                 // Place the arrow exactly between the two hexes, slightly hovering
                 Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f);
+                float floatHeight = 0.0f; // TODO : float the arrow above the prefabs and hex level, currently this breaks the math...
 
-                GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab, midPoint + Vector3.up * 0.2f, Quaternion.identity);
+                GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab, midPoint + Vector3.up * floatHeight, Quaternion.identity);
                 
                 // Rotate to point toward destination
                 Vector3 dir = endPos - startPos;

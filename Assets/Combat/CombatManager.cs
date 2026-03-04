@@ -178,10 +178,14 @@ namespace Game.Combat
         // Set the player action mode and refresh highlights accordingly
         public void SetActionMode(PlayerActionMode mode)
         {
+            if (_currentActionMode == mode) return; // Ignore if pressing the same key
+
             _currentActionMode = mode;
-            _lastHoveredHex = null; // Force a fresh user hover calculation (this is for displaying enemy health in UI)
+            _lastHoveredHex = null; // Force a fresh hover calculation (edge case bug fix)
+            _currentHoverIntent = null; // WIPE the old intent from the previous action from UI
+
             Debug.Log($"[CombatManager] Action mode set to: {_currentActionMode}");
-            RefreshPlayerHighlights(_currentHoverIntent);
+            RefreshPlayerHighlights(); // Pass no intent, clears the screen until mouse updates
         }
 
         // Build and push all active highlights to the renderer.
@@ -458,7 +462,21 @@ namespace Game.Combat
             }
 
             // 2. Execute the locked intent IF it is still valid, e.g don't move into a hexagon that contains a unit now (through shoving or player move)
-            if (lockedIntent != null && _actionResolver.Validate(lockedIntent.Action))
+            bool targetStillInHex = true;
+            if (lockedIntent != null && lockedIntent.TargetUnit != null)
+            {
+                if (lockedIntent != null && lockedIntent.TargetUnit != null && lockedIntent.TargetCells.Count > 0)
+                {
+                    // We check against TargetCells[0] because single-target attacks yield exactly one hex, in the future if we add AOE we need to totally refactor
+                    if (lockedIntent.TargetUnit.Coordinates != lockedIntent.TargetCells[0])
+                    {
+                        targetStillInHex = false; // Player dodged attack
+                    }
+                }
+            }
+
+            // Execute the locked intent IF it is valid AND the player didn't doge the attack e.g move away
+            if (lockedIntent != null && targetStillInHex && _actionResolver.Validate(lockedIntent.Action))
             {
                 if (_actionResolver.Execute(lockedIntent.Action))
                 {
