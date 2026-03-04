@@ -14,6 +14,13 @@ namespace Game.Combat.UI
         [SerializeField] private TextMeshProUGUI healthText;
         private Canvas _canvas;
 
+        private void Awake()
+        {
+            _canvas = GetComponent<Canvas>();
+            // Force hidden on spawn so they don't clutter the screen before turn 1
+            if (_canvas != null) _canvas.enabled = false; 
+        }
+
         public void UpdateState(int current, int max, int incomingDamage, bool isHovered, bool isPlayer)
         {
             float currentRatio = (float)current / max;
@@ -23,10 +30,19 @@ namespace Game.Combat.UI
             if (damagePreviewFill != null) damagePreviewFill.fillAmount = currentRatio;
             if (healthText != null) healthText.text = $"{Mathf.Max(0, current - incomingDamage)}/{max}";
 
-            // For showing health bars we follow the rules -
-            // Rule 1: Always show if taking damage
-            // Rule 2: Show if hovered AND it is an enemy
-            bool shouldShow = (incomingDamage > 0) || (isHovered && !isPlayer);
+            // Apply strict visibility rules -
+            bool shouldShow = false;
+            
+            if (isPlayer)
+            {
+                // Rule 1: Player health bar ONLY shows if they are about to take damage
+                shouldShow = incomingDamage > 0;
+            }
+            else
+            {
+                // Rule 2: Enemy health bar shows if player hovers them, OR if they are taking damage
+                shouldShow = isHovered || incomingDamage > 0;
+            }
             
             if (_canvas != null) _canvas.enabled = shouldShow;
         } 

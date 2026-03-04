@@ -446,7 +446,7 @@ namespace Game.Combat
                 return;
             }
 
-            // Find the exact intent the AI locked in during the planning phase
+            // 1. Find the EXACT intent the AI locked in during the planning phase
             ActionIntent lockedIntent = null;
             foreach (var intent in _state.GetIntents())
             {
@@ -457,7 +457,7 @@ namespace Game.Combat
                 }
             }
 
-            // Execute the locked intent IF it is still valid
+            // 2. Execute the locked intent IF it is still valid, e.g don't move into a hexagon that contains a unit now (through shoving or player move)
             if (lockedIntent != null && _actionResolver.Validate(lockedIntent.Action))
             {
                 if (_actionResolver.Execute(lockedIntent.Action))
@@ -472,14 +472,18 @@ namespace Game.Combat
             }
             else
             {
-                Debug.Log($"[CombatManager] {enemyUnit.DisplayName}'s action missed (target moved or invalid)!");
+                // AI action failed e.g player outmanuvered the AI
+                Debug.Log($"[CombatManager] {enemyUnit.DisplayName}'s action failed (target moved or invalid)!");
             }
 
-            // After an action refresh the unit positions if necessary (consider shoves)
-            RefreshAllUnitVisuals(); 
+            // 3. Force visual refresh so any shoved units physically slide to their new hex
+            foreach (var unit in _state.AllUnits)
+            {
+                _state.GetVisual(unit)?.RefreshPosition();
+            }
+
             Invoke(nameof(EndTurn), 0.5f);
-        }
-        
+        } 
 
         #endregion
 

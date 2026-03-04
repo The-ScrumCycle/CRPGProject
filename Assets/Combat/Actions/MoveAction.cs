@@ -34,14 +34,6 @@ namespace Game.Combat.Actions
                 return false;
             }
 
-            // Check if destination is in range
-            int distance = grid.GetDistance(Actor.Coordinates, Destination);
-            if (distance > Actor.Stats.movementRange)
-            {
-                Debug.Log("out of range");
-                return false;
-            }
-
             // Check if destination is walkable and unoccupied
             var destCell = grid.GetCell(Destination);
             if (destCell == null || !destCell.CanEnter())
@@ -49,10 +41,10 @@ namespace Game.Combat.Actions
                 return false;
             }
 
-            // Find valid path
+            // If BFS finds a path within the movement range it is valid.
             Path = grid.FindPath(Actor.Coordinates, Destination, Actor.Stats.movementRange);
             return Path.Count > 0;
-        }
+        } 
 
         public void Execute(HexGrid grid)
         {
