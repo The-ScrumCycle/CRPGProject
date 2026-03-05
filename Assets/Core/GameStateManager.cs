@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Game.Core.Transitions;
 using Game.Combat;
+using UnityEngine.AI;
 
 namespace Game.Core
 {
@@ -151,6 +152,23 @@ namespace Game.Core
                 _mainCamera.transform.position = combatTransitionData.cameraPosition;
                 _mainCamera.transform.rotation = combatTransitionData.cameraRotation;
             }
+
+            // restore companion locations
+            GameObject[] followers = GameObject.FindGameObjectsWithTag("Follower");
+
+            foreach (GameObject follower in followers)
+            {
+                NavMeshAgent followerAgent = follower.GetComponent<NavMeshAgent>();
+                if(followerAgent != null)
+                {
+                    followerAgent.enabled = false;
+                    Vector3 newPosition = combatTransitionData.playerPosition + Vector3.forward * 2f;
+                    followerAgent.Warp(newPosition);
+                    followerAgent.enabled = true;
+
+                }
+            }
+
 
             // Apply xp gain
             if (LastCombatResult != null && LastCombatResult.wasVictory)
