@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Visibility")]
     [SerializeField] private bool isVisible = true;
+    private bool isInDialogue = false;
 
 
     [Header("Components")]
@@ -145,5 +146,16 @@ public class PlayerController : MonoBehaviour
             return;
         cam = Camera.main;
     }
+
+    public bool GetInDialogue()
+    {
+        return isInDialogue;
+    }
+
+    public void SetInDialogue(bool inDialogue)
+    {
+        isInDialogue = inDialogue;
+    }
+
 
 }

@@ -152,6 +152,12 @@ namespace Game.Core
                 _mainCamera.transform.rotation = combatTransitionData.cameraRotation;
             }
 
+            // Apply xp gain
+            if (LastCombatResult != null && LastCombatResult.wasVictory)
+            {
+                PartyManager.Instance.GainExperience(combatTransitionData.XPGiven);
+            }
+
             combatTransitionData.ClearCache();
     }
 }

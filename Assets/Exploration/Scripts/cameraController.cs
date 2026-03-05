@@ -32,10 +32,10 @@ public class CameraController : MonoBehaviour
     {
         // The camera goes to it's default position
         transform.rotation = Quaternion.Euler(60f, 180f, 0f);
+        target = GameObject.FindGameObjectWithTag("Player").transform;
         if (target != null)
             SetLockCamera();
 
-        target = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
 

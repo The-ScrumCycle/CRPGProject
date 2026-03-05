@@ -19,6 +19,8 @@ namespace Game.Core.Transitions
         [Header("Enemy Data")]
         public string enemyTag;
         public string enemyName;
+        public int ennemyLevel;
+        public int XPGiven;
 
         private GameObject _player;
         private GameObject _mainCamera;
@@ -66,8 +68,11 @@ namespace Game.Core.Transitions
 
             if (enemy != null)
             {
-                enemyTag = enemy.tag;
-                enemyName = enemy.name;
+                MonsterController monster = enemy.GetComponent<MonsterController>();
+                enemyTag    = enemy.tag;
+                enemyName   = enemy.name;
+                ennemyLevel = monster.GetEnemyLevel();
+                XPGiven     = monster.GetXPGiven();
             }
         }
 

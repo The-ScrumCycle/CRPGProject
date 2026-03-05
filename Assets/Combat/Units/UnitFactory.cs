@@ -2,6 +2,7 @@ using UnityEngine;
 using Game.Core.Party;
 using Game.Core.Transitions;
 
+
 namespace Game.Combat.Units
 {
     /// <summary>
@@ -12,30 +13,42 @@ namespace Game.Combat.Units
     {
         [Header("Player Configuration")]
         [SerializeField] private GameObject playerPrefab;
-        [SerializeField] private UnitStatsConfig playerStats;
+        [SerializeField] private UnitStatsConfig HeroStats;
+        [SerializeField] private UnitStatsConfig JohnStats;
+
 
         [Header("Enemy Configuration")]
+        [SerializeField] private UnitStatsConfig HydraStats;
+        [SerializeField] private UnitStatsConfig CloseRangeSkletonStats;
         [SerializeField] private GameObject fallbackEnemyPrefab;
         [SerializeField] private UnitStatsConfig defaultEnemyStats;
-
-        [Header("References")]
-        [SerializeField] private TagToPrefab tagToPrefab;
 
         private int _unitIdCounter = 0;
 
         // Create a player unit.
         public (Unit unit, UnitVisual visual) CreatePlayerUnit()
         {
-            var stats = playerStats != null
-                ? playerStats.ToUnitStats()
+
+            UnitStats stats;
+
+            // if party manager does not exist, return default stats
+            if (PartyManager.Instance != null)
+            {
+                stats = HeroStats != null
+                ? HeroStats.GetStatsForLevel(PartyManager.Instance.GetPartyLevel())
                 : new UnitStats(100, 20, 3, 1);
+            }
+            else
+            {
+                stats = new UnitStats(100, 20, 3, 1);
+            }
 
             var unit = new Unit(
-                id: $"player_{_unitIdCounter++}",
-                displayName: "Captain",
-                role: UnitRole.Player,
-                stats: stats
-            );
+                    id: $"player_{_unitIdCounter++}",
+                    displayName: "Captain",
+                    role: UnitRole.Player,
+                    stats: stats
+                );
 
             GameObject prefabInstance = Instantiate(playerPrefab);
             var visual = prefabInstance.AddComponent<UnitVisual>();
@@ -50,9 +63,10 @@ namespace Game.Combat.Units
 
             // Get appropriate prefab
             GameObject prefab = null;
-            if (tagToPrefab != null)
+            if (TagToPrefab.Instance != null)
             {
-                prefab = tagToPrefab.GetPrefabForTag(enemyTag);
+                Debug.Log(enemyTag);
+                prefab = TagToPrefab.Instance.GetPrefabForTag(enemyTag);
             }
             if (prefab == null)
             {
@@ -63,9 +77,21 @@ namespace Game.Combat.Units
             // Determine AI behavior based on tag or configuration
             AIBehavior behavior = DetermineAIBehavior(enemyTag);
 
-            var stats = defaultEnemyStats != null
-                ? defaultEnemyStats.ToUnitStats()
-                : new UnitStats(50, 15, 2, 1);
+            UnitStatsConfig ennemyStats = GetEnemyStatsConfig(enemyTag);
+            UnitStats stats;
+            // if transitionData does not exist, return default stats
+            if (transitionData != null)
+            {
+
+                Debug.Log("ennemy level is " + transitionData.ennemyLevel);
+                stats = ennemyStats != null
+               ? ennemyStats.GetStatsForLevel(transitionData.ennemyLevel)
+               : new UnitStats(50, 15, 2, 1);
+            }
+            else
+            {
+                stats = new UnitStats(50, 15, 3, 1);
+            }
 
             var unit = new Unit(
                 id: $"enemy_{_unitIdCounter++}",
@@ -81,10 +107,29 @@ namespace Game.Combat.Units
             return (unit, visual);
         }
 
+        // get correct UnitStatsConfig for ennemy 
+        private UnitStatsConfig GetEnemyStatsConfig(string enemyTag)
+        {
+            switch (enemyTag)
+            {
+                case "Hydra":
+                    return HydraStats;
+                case "CloseRangeSkeleton":
+                    return CloseRangeSkletonStats;
+                case "troll":
+                    return defaultEnemyStats;
+                default:
+                    Debug.LogWarning($"[UnitFactory] No stats config found for tag '{enemyTag}', using default stats");
+                    return defaultEnemyStats; 
+            }
+        }
+
+
+
         private AIBehavior DetermineAIBehavior(string enemyTag)
         {
             // Simple logic that we can expand based on tag or configuration
-            switch (enemyTag.ToLower())
+            switch (enemyTag)
             {
                 case "ranged":
                 case "cannon":
@@ -96,18 +141,5 @@ namespace Game.Combat.Units
         }
     }
 
-    // ScriptableObject for configuring unit stats in the editor.
-    [CreateAssetMenu(fileName = "UnitStats", menuName = "Combat/Unit Stats Config")]
-    public class UnitStatsConfig : ScriptableObject
-    {
-        public int maxHealth = 100;
-        public int attackPower = 20;
-        public int movementRange = 3;
-        public int attackRange = 1;
-
-        public UnitStats ToUnitStats()
-        {
-            return new UnitStats(maxHealth, attackPower, movementRange, attackRange);
-        }
-    }
+  
 }

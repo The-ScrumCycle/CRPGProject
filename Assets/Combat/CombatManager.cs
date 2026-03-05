@@ -328,6 +328,9 @@ namespace Game.Combat
             if (_actionResolver.Execute(attackAction))
             {
                 Debug.Log($"[CombatManager] {attacker.DisplayName} attacked {target.DisplayName} for {attacker.Stats.attackPower} damage");
+                // target name and health
+                Debug.Log($"[CombatManager] {target.DisplayName} HP: {target.Stats.currentHealth}/{target.Stats.maxHealth}");
+
 
                 if (!target.IsAlive)
                 {

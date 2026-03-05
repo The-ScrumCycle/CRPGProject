@@ -10,6 +10,10 @@ TagManager:
   - Medusa
   - SceneManager
   - Enemy
+  - Medusa_Snakes
+  - Character_Skeleton_01
+  - CloseRangeSkeleton
+  - Hydra
   layers:
   - Default
   - TransparentFX

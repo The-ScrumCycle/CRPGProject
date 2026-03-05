@@ -257,6 +257,11 @@ PrefabInstance:
       propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4614872106836746726, guid: 5a282358e443f2f4cbef51c6a8f1b0eb,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4950943776237622132, guid: 5a282358e443f2f4cbef51c6a8f1b0eb,
         type: 3}
       propertyPath: m_Name
@@ -1166,11 +1171,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitFactory
   playerPrefab: {fileID: 988817027152967208, guid: 163f29f84f4f7ba4b9169cf06e6a5ad2,
     type: 3}
-  playerStats: {fileID: 11400000, guid: 697c80d39473d5a47b61513269c1df26, type: 2}
+  HeroStats: {fileID: 11400000, guid: e6482736a89381445b63fbae178c378b, type: 2}
+  JohnStats: {fileID: 11400000, guid: b47ad13836546624f8176fcc3c423388, type: 2}
+  HydraStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}
+  CloseRangeSkletonStats: {fileID: 11400000, guid: 25de41f82a1748a499f7c45b469d4b95,
+    type: 2}
   fallbackEnemyPrefab: {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489,
     type: 3}
-  defaultEnemyStats: {fileID: 11400000, guid: 44de93b8063ef3e429553f822bf8a641, type: 2}
-  tagToPrefab: {fileID: 1462715936}
+  defaultEnemyStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}
 --- !u!4 &1945263019
 Transform:
   m_ObjectHideFlags: 0
@@ -1368,6 +1376,11 @@ PrefabInstance:
     - target: {fileID: 4614872106836746726, guid: 5a282358e443f2f4cbef51c6a8f1b0eb,
         type: 3}
       propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4614872106836746726, guid: 5a282358e443f2f4cbef51c6a8f1b0eb,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4950943776237622132, guid: 5a282358e443f2f4cbef51c6a8f1b0eb,

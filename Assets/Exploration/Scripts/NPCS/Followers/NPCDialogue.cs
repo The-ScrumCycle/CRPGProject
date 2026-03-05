@@ -139,6 +139,7 @@ public class NPCDialogue : MonoBehaviour
             agent.isStopped = true;
         }
 
+        playerController.SetInDialogue(true);
         uiRunner.UpdateFace(Face);
         uiRunner.SetDialogueRunner(runner);
         uiRunner.OptionSelectedAction += OnOptionSelected;
@@ -214,6 +215,7 @@ public class NPCDialogue : MonoBehaviour
         }
 
         playerController.SetControllable(true);
+        playerController.SetInDialogue(false);
         uiRunner.OptionSelectedAction -= OnOptionSelected;
         uiRunner.DialogueEndedAction -= OnDialogueEnded;
 

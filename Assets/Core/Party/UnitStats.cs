@@ -14,6 +14,7 @@ namespace Game.Core.Party
         public int attackPower;
         public int movementRange;
         public int attackRange;
+        public string UnitID;
 
         public UnitStats() { }
 
@@ -24,6 +25,17 @@ namespace Game.Core.Party
             this.attackPower = attackPower;
             this.movementRange = movementRange;
             this.attackRange = attackRange;
+            this.UnitID = ""; 
+        }
+
+        public UnitStats(int maxHealth, int attackPower, int movementRange, int attackRange, string UnitID )
+        {
+            this.maxHealth = maxHealth;
+            this.currentHealth = maxHealth;
+            this.attackPower = attackPower;
+            this.movementRange = movementRange;
+            this.attackRange = attackRange;
+            this.UnitID = UnitID;
         }
 
         public bool IsAlive => currentHealth > 0;
