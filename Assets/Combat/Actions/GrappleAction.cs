@@ -5,16 +5,15 @@ using Game.Combat.Grid;
 namespace Game.Combat.Actions
 {
     /// <summary>
-    /// Action for melee attacking an adjacent unit.
-    /// If valid, attack hits and deals exact damage.
+    /// Action for grappling an adjacent unit
+    /// If valid, grappled unit is unable to move
     /// </summary>
-    public class MeleeAttackAction : ICombatAction
+    public class GrappleAction : ICombatAction
     {
         public Unit Actor { get; }
         public Unit Target { get; }
-        public int Damage => Actor.Stats.attackPower;
 
-        public MeleeAttackAction(Unit actor, Unit target)
+        public GrappleAction(Unit actor, Unit target)
         {
             Actor = actor;
             Target = target;
@@ -42,7 +41,7 @@ namespace Game.Combat.Actions
                 return false;
             }
 
-            // Must be adjacent (distance = 1)
+            // Check distance is within attack range but not adjacent (ranged = distance > 1)
             int distance = grid.GetDistance(Actor.Coordinates, Target.Coordinates);
             return distance == 1;
         }
@@ -50,7 +49,7 @@ namespace Game.Combat.Actions
 	    // Execute attack
         public void Execute(HexGrid grid)
         {
-            Target.TakeDamage(Damage);
+            Target.grappler = Actor;
         }
     }
 }

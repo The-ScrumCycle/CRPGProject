@@ -1,20 +1,20 @@
-using System.Collections.Generic;
 using Game.Combat.Units;
 using Game.Combat.Grid;
+using System.Collections.Generic;
 
 namespace Game.Combat.Actions
 {
     /// <summary>
-    /// Action for melee attacking an adjacent unit.
-    /// If valid, attack hits and deals exact damage.
+    /// Action for healing a unit at range
+    /// If valid, heals exactly by healAmount
     /// </summary>
-    public class MeleeAttackAction : ICombatAction
+    public class RangedHealAction : ICombatAction
     {
         public Unit Actor { get; }
         public Unit Target { get; }
-        public int Damage => Actor.Stats.attackPower;
+        public int healAmount => Actor.Stats.healPower;
 
-        public MeleeAttackAction(Unit actor, Unit target)
+        public RangedHealAction(Unit actor, Unit target)
         {
             Actor = actor;
             Target = target;
@@ -44,13 +44,13 @@ namespace Game.Combat.Actions
 
             // Must be adjacent (distance = 1)
             int distance = grid.GetDistance(Actor.Coordinates, Target.Coordinates);
-            return distance == 1;
+            return distance >= 1 && distance <= Actor.Stats.attackRange;
         }
 
 	    // Execute attack
         public void Execute(HexGrid grid)
         {
-            Target.TakeDamage(Damage);
+            Target.Heal(healAmount);
         }
     }
 }
