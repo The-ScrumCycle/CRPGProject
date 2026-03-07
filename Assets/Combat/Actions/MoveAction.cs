@@ -61,10 +61,10 @@ namespace Game.Combat.Actions
                 return false;
             }
 
-            // Find valid path
+            // If BFS finds a path within the movement range it is valid.
             Path = grid.FindPath(Actor.Coordinates, Destination, Actor.Stats.movementRange);
             return Path.Count > 0;
-        }
+        } 
 
         public void Execute(HexGrid grid)
         {

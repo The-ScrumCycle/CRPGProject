@@ -34,20 +34,13 @@ namespace Game.Combat
             _enemyAI = enemyAI;
         }
 
-        public List<HexCoordinates> StartPlayerTurn()
+        public void StartPlayerTurn()
         {
             _state.CurrentState = CombatState.PlayerTurn;
             _state.PlayerHasActed = false;
 
             var currentUnit = _turnSystem.GetCurrentUnit();
             Debug.Log($"[CombatManager] Player turn started: {currentUnit?.DisplayName}");
-
-            if (currentUnit != null)
-            {
-                return _actionResolver.GetValidMoveDestinations(currentUnit);
-            }
-
-            return new List<HexCoordinates>();
         }
 
         public void StartEnemyTurn()
@@ -70,8 +63,14 @@ namespace Game.Combat
 
         public void AdvanceTurn()
         {
+            int oldRound = _turnSystem.RoundNumber;
             _turnSystem.AdvanceTurn();
-            _enemyAI.GenerateAllIntents(_state);
+
+            // ONLY regenerate intents when a brand new round starts.
+            if (_turnSystem.RoundNumber > oldRound)
+            {
+                _enemyAI.GenerateAllIntents(_state);
+            } 
         }
 
         public Unit GetCurrentUnit()
@@ -114,5 +113,38 @@ namespace Game.Combat
         {
             _state.CurrentState = newState;
         }
+
+        // Get all valid move destinations for a unit
+        public List<HexCoordinates> GetValidMoves(Unit unit)
+        {
+            return _actionResolver.GetValidMoveDestinations(unit);
+        }
+
+        // Get all valid attack target coordinates for a unit (melee + ranged combined)
+        public List<HexCoordinates> GetValidAttackTargets(Unit unit)
+        {
+            var targets = new List<HexCoordinates>();
+            var seen = new HashSet<HexCoordinates>();
+
+            var meleeTargets = _actionResolver.GetValidMeleeTargets(unit);
+            foreach (var target in meleeTargets)
+            {
+                if (seen.Add(target.Coordinates))
+                {
+                    targets.Add(target.Coordinates);
+                }
+            }
+
+            var rangedTargets = _actionResolver.GetValidRangedTargets(unit);
+            foreach (var target in rangedTargets)
+            {
+                if (seen.Add(target.Coordinates))
+                {
+                    targets.Add(target.Coordinates);
+                }
+            }
+
+            return targets;
+        }
     }
-}
+} 

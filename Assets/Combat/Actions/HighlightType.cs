@@ -11,7 +11,7 @@ namespace Game.Combat.Actions
         None = 0,
         PlayerMove = 1,
         PlayerAttack = 2,
-	AI_Move = 3,
-	AI_Attack = 4
+        AI_Move = 3,
+        AI_Attack = 4
     }
 }

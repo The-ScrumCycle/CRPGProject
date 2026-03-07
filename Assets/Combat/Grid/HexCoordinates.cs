@@ -32,6 +32,15 @@ namespace Game.Combat.Grid
                 offsetPos.r);
         }
 
+        // Reverses OffsetToAxial to map correct geometry back to our visual grid
+        public static HexCoordinates AxialToOffset(HexCoordinates axialPos)
+        {
+            int parity = axialPos.r % 2;
+            return new HexCoordinates(
+                axialPos.q + (axialPos.r - parity) / 2,
+                axialPos.r);
+        }
+
         // Takes two positions in axial coordinates and calculates distance between them
         public static float AxialDistance(HexCoordinates A, HexCoordinates B)
         {
@@ -75,6 +84,44 @@ namespace Game.Combat.Grid
             var offsets = GetNeighborOffsets(inPos);
             direction = ((direction % 6) + 6) % 6; // Normalize to 0-5
             return this + offsets[direction];
+        }
+
+        // Helper func that finds the neighbor hex directly opposite of the attacker's trajectory.
+        // Converts to axial coords to safely calculate the dot product, then returns offset for shove direction.
+        public HexCoordinates GetPushDestination(HexCoordinates attackerPos)
+        {
+            HexCoordinates axAttacker = OffsetToAxial(attackerPos);
+            HexCoordinates axTarget = OffsetToAxial(this);
+
+            // Trajectory vector from attacker to target
+            int dq = axTarget.q - axAttacker.q;
+            int dr = axTarget.r - axAttacker.r;
+            int ds = axTarget.S - axAttacker.S;
+
+            HexCoordinates bestNeighbor = this;
+            int maxDot = -int.MaxValue;
+
+            // Check all valid offset neighbors
+            foreach (var offset in GetNeighborOffsets(this))
+            {
+                var neighbor = this + offset;
+                HexCoordinates axNeighbor = OffsetToAxial(neighbor);
+
+                // Trajectory vector from target to neighbor
+                int ndq = axNeighbor.q - axTarget.q;
+                int ndr = axNeighbor.r - axTarget.r;
+                int nds = axNeighbor.S - axTarget.S;
+
+                // Cube coordinate dot product
+                int dot = (dq * ndq) + (dr * ndr) + (ds * nds);
+
+                if (dot > maxDot)
+                {
+                    maxDot = dot;
+                    bestNeighbor = neighbor;
+                }
+            }
+            return bestNeighbor;
         }
 
         public static HexCoordinates operator +(HexCoordinates a, HexCoordinates b)
