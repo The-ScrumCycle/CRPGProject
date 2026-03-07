@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace Game.Core.Transitions
 {
+    public enum EnvironmentType { Default, Desert, Forest }
+
     /// <summary>
     /// Stores data needed to transition between Exploration and Combat.
     /// Persists across scene loads.
@@ -19,6 +21,9 @@ namespace Game.Core.Transitions
         [Header("Enemy Data")]
         public string enemyTag;
         public string enemyName;
+
+        [Header("Environment Data")]
+        public EnvironmentType EnvironmentType;
 
         private GameObject _player;
         private GameObject _mainCamera;
@@ -69,6 +74,8 @@ namespace Game.Core.Transitions
                 enemyTag = enemy.tag;
                 enemyName = enemy.name;
             }
+
+            EnvironmentType = EnvironmentType.Default;
         }
 
         // Clears cached references when returning to exploration.

@@ -14,16 +14,18 @@ namespace Game.Core.Party
         public int attackPower;
         public int movementRange;
         public int attackRange;
+        public int healPower;
 
         public UnitStats() { }
 
-        public UnitStats(int maxHealth, int attackPower, int movementRange, int attackRange)
+        public UnitStats(int maxHealth, int attackPower, int movementRange, int attackRange, int healPower = 0)
         {
             this.maxHealth = maxHealth;
             this.currentHealth = maxHealth;
             this.attackPower = attackPower;
             this.movementRange = movementRange;
             this.attackRange = attackRange;
+            this.healPower = healPower;
         }
 
         public bool IsAlive => currentHealth > 0;

@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Collections.Generic;
 using Game.Combat.Units;
 using Game.Combat.Grid;
@@ -27,16 +28,29 @@ namespace Game.Combat.Actions
 
         public bool IsValid(HexGrid grid)
         {
-            // Can't move if destination is same as current
-            if (Actor.Coordinates == Destination)
+            // Can't move if grappled
+            if (Actor.grappler != null)
             {
-                return false;
+                // Check if grapple is still valid
+                if (grid.GetDistance(Actor.Coordinates, Actor.grappler.Coordinates) > 1 || !Actor.grappler.IsAlive)
+                {
+                    Actor.grappler = null;
+                }
+                else
+                {
+                    return false;
+                }
             }
+
+            // Can't move if destination is same as current
+            if (Actor.Coordinates == Destination) return false;
 
             // Check if destination is in range
             int distance = grid.GetDistance(Actor.Coordinates, Destination);
+            Debug.Log("distance is: " + distance + " movementrange is: " + Actor.Stats.movementRange);
             if (distance > Actor.Stats.movementRange)
             {
+                Debug.Log("out of range");
                 return false;
             }
 
@@ -47,10 +61,10 @@ namespace Game.Combat.Actions
                 return false;
             }
 
-            // Find valid path
+            // If BFS finds a path within the movement range it is valid.
             Path = grid.FindPath(Actor.Coordinates, Destination, Actor.Stats.movementRange);
             return Path.Count > 0;
-        }
+        } 
 
         public void Execute(HexGrid grid)
         {

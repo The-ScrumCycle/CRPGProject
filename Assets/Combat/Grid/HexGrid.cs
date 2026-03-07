@@ -62,7 +62,7 @@ namespace Game.Combat.Grid
         public List<HexCell> GetNeighbors(HexCoordinates coords)
         {
             var neighbors = new List<HexCell>();
-            var offsets = HexCoordinates.GetNeighborOffsets();
+            var offsets = HexCoordinates.GetNeighborOffsets(coords);
 
             foreach (var offset in offsets)
             {
@@ -77,26 +77,28 @@ namespace Game.Combat.Grid
             return neighbors;
         }
 
-        // Get all cells within a specified range.
+        // Get all cells within a specified range (offset math update)
         public List<HexCell> GetCellsInRange(HexCoordinates center, int range)
         {
             var result = new List<HexCell>();
+            HexCoordinates axialCenter = HexCoordinates.OffsetToAxial(center);
 
             for (int dq = -range; dq <= range; dq++)
             {
                 for (int dr = Mathf.Max(-range, -dq - range); dr <= Mathf.Min(range, -dq + range); dr++)
                 {
-                    var coords = new HexCoordinates(center.q + dq, center.r + dr);
-                    var cell = GetCell(coords);
+                    HexCoordinates axialNeighbor = new HexCoordinates(axialCenter.q + dq, axialCenter.r + dr);
+                    HexCoordinates offsetNeighbor = HexCoordinates.AxialToOffset(axialNeighbor);
+                    
+                    var cell = GetCell(offsetNeighbor);
                     if (cell != null)
                     {
                         result.Add(cell);
                     }
                 }
             }
-
             return result;
-        }
+        } 
 
         // Get distance between two coordinates.
         public int GetDistance(HexCoordinates a, HexCoordinates b)
@@ -189,7 +191,7 @@ namespace Game.Combat.Grid
 
                 foreach (var neighbor in GetNeighbors(current))
                 {
-                    if (!neighbor.IsWalkable)
+                    if (!neighbor.CanEnter())
                     {
                         continue;
                     }
