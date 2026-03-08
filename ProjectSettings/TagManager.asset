@@ -15,6 +15,7 @@ TagManager:
   - CloseRangeSkeleton
   - Hydra
   - Follower
+  - NPC
   layers:
   - Default
   - TransparentFX
