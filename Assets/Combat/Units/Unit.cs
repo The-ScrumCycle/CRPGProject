@@ -14,6 +14,7 @@ namespace Game.Combat.Units
         public UnitRole Role { get; }
         public AIBehavior? AIBehavior { get; }
         public UnitStats Stats { get; }
+        public Unit grappler { get; set; }
 
         public HexCoordinates Coordinates { get; private set; }
         public HexCell CurrentCell { get; private set; }
@@ -41,6 +42,11 @@ namespace Game.Combat.Units
         public void TakeDamage(int damage)
         {
             Stats.TakeDamage(damage);
+        }
+
+        public void Heal(int amount)
+        {
+            Stats.Heal(amount);
         }
 
         public override string ToString()

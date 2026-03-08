@@ -47,10 +47,34 @@ namespace Game.Combat.Actions
             return distance == 1;
         }
 
-	// Execute attack
+	    // Execute attack
         public void Execute(HexGrid grid)
         {
-            Target.TakeDamage(Damage);
+            const int BUMP_DAMAGE = 10;
+            int totalDamage = Damage;
+
+            // Get exact push trajectory path
+            HexCoordinates pushDest = Target.Coordinates.GetPushDestination(Actor.Coordinates); 
+            var destCell = grid.GetCell(pushDest);
+
+            if (destCell == null || !destCell.IsWalkable)
+            {
+                // Case 2: Edge/Wall/Unwalkable
+                totalDamage += BUMP_DAMAGE;
+            }
+            else if (destCell.IsOccupied)
+            {
+                // Case 3: Occupied by Unit
+                totalDamage += BUMP_DAMAGE;
+                destCell.Occupant.TakeDamage(BUMP_DAMAGE);
+            }
+            else
+            {
+                // Case 1: Empty/Walkable
+                grid.MoveUnit(Target, pushDest);
+            }
+
+            Target.TakeDamage(totalDamage);
         }
     }
 }

@@ -52,49 +52,55 @@ namespace Game.Combat.Actions
         // Generate a preview (ActionIntent) for an action.
         public ActionIntent Preview(ICombatAction action)
         {
-            if (action == null || action.Actor == null)
-            {
-                return null;
-            }
-
+            if (action == null || action.Actor == null) return null;
             bool isValid = Validate(action);
-
-            if (!isValid)
-            {
-                return null;
-            }
+            if (!isValid) return null;
 
             Unit targetUnit = null;
             int predictedDamage = 0;
             ActionVisualType visualType = ActionVisualType.None;
             List<HexCoordinates> movementPath = null;
+            
+            HexCoordinates? pushDestination = null;
+            bool targetTakesBumpDamage = false;
+            Unit secondaryBumpTarget = null;
+            const int BUMP_DAMAGE = 10;
 
             if (action is MoveAction move)
             {
                 visualType = ActionVisualType.Move;
                 movementPath = new List<HexCoordinates>(move.Path);
             }
-            else if (action is MeleeAttackAction melee)
+            else if (action is MeleeAttackAction melee || action is RangedAttackAction ranged)
             {
-                visualType = ActionVisualType.MeleeAttack;
-                targetUnit = melee.Target;
-                predictedDamage = melee.Damage;
-            }
-            else if (action is RangedAttackAction ranged)
-            {
-                visualType = ActionVisualType.RangedAttack;
-                targetUnit = ranged.Target;
-                predictedDamage = ranged.Damage;
+                visualType = action is MeleeAttackAction ? ActionVisualType.MeleeAttack : ActionVisualType.RangedAttack;
+                targetUnit = action is MeleeAttackAction ? ((MeleeAttackAction)action).Target : ((RangedAttackAction)action).Target;
+                predictedDamage = action is MeleeAttackAction ? ((MeleeAttackAction)action).Damage : ((RangedAttackAction)action).Damage;
+
+                // Push Calculation (Pure preview, no grid mutation)
+                HexCoordinates bestPush = targetUnit.Coordinates.GetPushDestination(action.Actor.Coordinates); 
+
+                pushDestination = bestPush;
+                var destCell = _grid.GetCell(bestPush);
+
+                if (destCell == null || !destCell.IsWalkable)
+                {
+                    predictedDamage += BUMP_DAMAGE;
+                    targetTakesBumpDamage = true;
+                    pushDestination = null; // Stays in place
+                }
+                else if (destCell.IsOccupied)
+                {
+                    predictedDamage += BUMP_DAMAGE;
+                    targetTakesBumpDamage = true;
+                    secondaryBumpTarget = destCell.Occupant;
+                    pushDestination = null; // Stays in place
+                }
             }
 
             return new ActionIntent(
-                action.Actor,
-                action,
-                targetUnit,
-                predictedDamage,
-                visualType,
-                movementPath,
-                isValid
+                action.Actor, action, targetUnit, predictedDamage, visualType, 
+                movementPath, isValid, pushDestination, targetTakesBumpDamage, secondaryBumpTarget
             );
         }
 

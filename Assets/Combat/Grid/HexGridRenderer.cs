@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Game.Combat.Actions;
+using Game.Core.Transitions;
+using System;
 
 namespace Game.Combat.Grid
 {
@@ -29,6 +31,7 @@ namespace Game.Combat.Grid
         [SerializeField][Range(1.0f, 10.0f)] private float pulseSpeed = 4.0f;
         [SerializeField][Range(0.0f, 1.0f)] private float lineThickness = 0.1f;
         [SerializeField] private bool clipEdges = true;
+        [SerializeField] private Texture2D[] environmentTextures;
 
         private Material _hexMaterial;
         private Camera _camera;
@@ -81,6 +84,7 @@ namespace Game.Combat.Grid
                 Gizmos.DrawSphere(HexToWorld(hex.Coordinates), 1.0f/hexScale);
             }
 
+            // Log distance from hovered hex to origin
             Debug.Log(HexCoordinates.Distance(_hoveredHex, WorldToHex(GridOrigin)));
 
             // Draw point at grid origin
@@ -94,6 +98,15 @@ namespace Game.Combat.Grid
             _logicalGrid = logicalGrid;
             CalculateGridMetrics();
             UpdateShaderParams();
+
+            try
+            {
+                _hexMaterial.SetTexture("_BaseMap", environmentTextures[(int)CombatTransitionData.Instance.EnvironmentType]);
+            }
+            catch
+            {
+                Debug.Log("Failed to load environment");
+            }
         }
 
         void Update()

@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Collections.Generic;
 using Game.Combat.Grid;
 
@@ -9,11 +10,17 @@ namespace Game.Combat.Actions
     /// </summary>
     public class CombatIntentRenderer
     {
+        private GameObject _arrowPrefab;
+        private List<GameObject> _activeArrows;
+        private HexGridRenderer _gridRenderer;
         private readonly Dictionary<HexCoordinates, HighlightType> _highlights;
 
-        public CombatIntentRenderer()
+        public CombatIntentRenderer(GameObject arrowPrefab)
         {
             _highlights = new Dictionary<HexCoordinates, HighlightType>();
+            _arrowPrefab = arrowPrefab;
+            _activeArrows = new List<GameObject>();
+            _gridRenderer = UnityEngine.Object.FindObjectOfType<HexGridRenderer>();
         }
 
         // Render a single intent into highlight data.
@@ -29,6 +36,28 @@ namespace Game.Combat.Actions
             {
                 AddWithPriority(cell, type);
             }
+
+            // Render a directional push ("attack arrow") 
+            if (intent.PushDestination.HasValue && _arrowPrefab != null && _gridRenderer != null)
+            {
+                Vector3 startPos = _gridRenderer.HexToWorld(intent.TargetCells[0]);
+                Vector3 endPos = _gridRenderer.HexToWorld(intent.PushDestination.Value);
+                
+                // Place the arrow exactly between the two hexes, slightly hovering
+                Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f);
+                float floatHeight = 0.0f; // TODO : float the arrow above the prefabs and hex level, currently this breaks the math...
+
+                GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab, midPoint + Vector3.up * floatHeight, Quaternion.identity);
+                
+                // Rotate to point toward destination
+                Vector3 dir = endPos - startPos;
+                if (dir != Vector3.zero)
+                {
+                    arrow.transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+                }
+                
+                _activeArrows.Add(arrow);
+            }
         }
 
         // Render all intents from a list into highlight data
@@ -41,10 +70,15 @@ namespace Game.Combat.Actions
             }
         }
 
-        // Clear all stored highlight data.
+        // Clear all stored highlight data and attack arrows
         public void Clear()
         {
             _highlights.Clear();
+            foreach (var arrow in _activeArrows)
+            {
+                if (arrow != null) UnityEngine.Object.Destroy(arrow);
+            }
+            _activeArrows.Clear();
         }
 
         // Get the current highlight dictionary for feeding into HexGridRenderer.

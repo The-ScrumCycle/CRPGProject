@@ -67,7 +67,7 @@ namespace Game.Combat
                     }
                     else
                     {
-                        action = CreateMoveTowardTarget(enemyUnit, targetUnit);
+                        action = CreateMoveToOptimalRange(enemyUnit, targetUnit);
                     }
                     break;
 
@@ -75,6 +75,8 @@ namespace Game.Combat
                     action = CreateMoveTowardTarget(enemyUnit, targetUnit);
                     break;
             }
+
+            Debug.Log($"[AI] {enemyUnit.DisplayName} ({enemyUnit.AIBehavior}) at {enemyUnit.Coordinates} → {action?.GetType().Name ?? "null"} | target: {targetUnit.DisplayName} at {targetUnit.Coordinates} | dist: {distanceToTarget} | attackRange: {enemyUnit.Stats.attackRange}");
 
             return action;
         }
@@ -119,6 +121,36 @@ namespace Game.Combat
                 if (distance < bestDistance)
                 {
                     bestDistance = distance;
+                    bestDestination = cell.Coordinates;
+                }
+            }
+
+            if (bestDestination != mover.Coordinates)
+            {
+                return _actionResolver.CreateMoveAction(mover, bestDestination);
+            }
+
+            return null;
+        }
+
+        public MoveAction CreateMoveToOptimalRange(Unit mover, Unit target)
+        {
+            var reachableCells = _grid.GetReachableCells(mover.Coordinates, mover.Stats.movementRange);
+            HexCoordinates bestDestination = mover.Coordinates;
+            int bestScore = int.MaxValue;
+
+            foreach (var cell in reachableCells)
+            {
+                if (!cell.CanEnter()) continue;
+
+                int distToTarget = _grid.GetDistance(cell.Coordinates, target.Coordinates);
+                int score = Mathf.Abs(distToTarget - mover.Stats.attackRange);
+
+                // On tie, prefer the cell that keeps more distance (stay at max range)
+                if (score < bestScore ||
+                    (score == bestScore && distToTarget > _grid.GetDistance(bestDestination, target.Coordinates)))
+                {
+                    bestScore = score;
                     bestDestination = cell.Coordinates;
                 }
             }

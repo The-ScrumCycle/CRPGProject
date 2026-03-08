@@ -63,8 +63,14 @@ namespace Game.Combat
 
         public void AdvanceTurn()
         {
+            int oldRound = _turnSystem.RoundNumber;
             _turnSystem.AdvanceTurn();
-            _enemyAI.GenerateAllIntents(_state);
+
+            // ONLY regenerate intents when a brand new round starts.
+            if (_turnSystem.RoundNumber > oldRound)
+            {
+                _enemyAI.GenerateAllIntents(_state);
+            } 
         }
 
         public Unit GetCurrentUnit()
