@@ -162,7 +162,8 @@ namespace Game.Core
                 if(followerAgent != null)
                 {
                     followerAgent.enabled = false;
-                    Vector3 newPosition = combatTransitionData.playerPosition + Vector3.forward * 2f;
+                    Vector3 randomDistance = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized * 2f;
+                    Vector3 newPosition = combatTransitionData.playerPosition + randomDistance;
                     followerAgent.Warp(newPosition);
                     followerAgent.enabled = true;
 

@@ -23,13 +23,26 @@ public class NPCDialogue : MonoBehaviour
     [Header("Actions")]
     private string actionLeave = "leave";
   
+    // Main boss actions
+    private string foundMalakor = "foundMalakor";
+
+
+
     // john actions
     private string johnInParty    = "johnInParty";
     private string johnNotInParty = "johnNotInParty";
     private string JohnIntroOver  = "johnIntroOver";
     private string johnWait       = "johnWait";
     private string johnFollow     = "johnFollow";
+    private string johnVillageExplored = "johnVillageExplored";
 
+    // clarissa actions
+    private string clarissaInParty    = "clarissaInParty";
+    private string clarissaNotInParty = "clarissaNotInParty";
+    private string clarissaIntroOver  = "clarissaIntroOver";
+    private string clarissaWait       = "clarissaWait";
+    private string clarissaFollow     = "clarissaFollow";
+    private string ogreBossDestroyed  = "ogreBossDestroyed";
 
     private void Awake()
     {
@@ -171,22 +184,24 @@ public class NPCDialogue : MonoBehaviour
 
             }
 
-            // john actions
+            // John actions
             else if (curAction == johnInParty)
             {
                 this.state.setFlag("johnInParty");
                 PartyManager.Instance.AddFollowerActive(FollowerID.Warrior);
+                gameObject.tag = "Follower";
             }
             else if (curAction == johnNotInParty)
             {
                 this.state.removeFlag("johnInParty");
                 PartyManager.Instance.RemoveFollowerActive(FollowerID.Warrior);
+                gameObject.tag = "Untagged";
             }
 
             else if (curAction == JohnIntroOver)
             {
                 this.state.setFlag("johnIntroOver");
-            } 
+            }
 
             else if (curAction == johnWait)
             {
@@ -200,9 +215,45 @@ public class NPCDialogue : MonoBehaviour
             }
 
 
+            // Clarissa actions
+            else if (curAction == clarissaInParty)
+            {
+                this.state.setFlag("clarissaInParty");
+                PartyManager.Instance.AddFollowerActive(FollowerID.Cleric);
+                gameObject.tag = "Follower";
+            }
+            else if (curAction == clarissaNotInParty)
+            {
+                this.state.removeFlag("clarissaInParty");
+                PartyManager.Instance.RemoveFollowerActive(FollowerID.Cleric);
+                gameObject.tag = "Untagged";
+            }
+            else if (curAction == clarissaIntroOver)
+            {
+                this.state.setFlag("clarissaIntroOver");
+            }
+            else if (curAction == clarissaWait)
+            {
+                this.state.setFlag("clarissaWait");
+                followerController.WaitHere();
+            }
+            else if (curAction == clarissaFollow)
+            {
+                this.state.removeFlag("clarissaWait");
+                followerController.FollowMe();
+            }
+            else if (curAction == ogreBossDestroyed)
+            {
+                this.state.setFlag("ogreBossDestroyed");
+            }
 
+            // Main boss actions
+            else if (curAction == foundMalakor)
+            {
+                this.state.setFlag("foundMalakor");
+
+            }
         }
-
 
     }
 

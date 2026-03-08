@@ -43,7 +43,14 @@ public class FollowerController : MonoBehaviour
     {
         CheckInPartyStatus();
         if (!inParty) return;
-        if (playerCharacter == null) return;
+        if (playerCharacter == null || playerController == null)
+        {
+            playerController = FindAnyObjectByType<PlayerController>();
+            playerCharacter  = playerController.transform;
+
+            if (playerCharacter == null || playerController == null) return;
+        }
+
         float distanceToPlayer = Vector3.Distance(transform.position, playerCharacter.position);
         UpdateAnimator();
 

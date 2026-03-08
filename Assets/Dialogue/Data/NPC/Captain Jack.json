@@ -504,17 +504,54 @@
       "text": "\"Sorry kid, That's all I know... well,\" \" He clears his throat, getting serious. \"I guess you should know this. For some reason, the creatures were obsessed with the crystal deposits deep in the rock. If you see those crystals, be on your guard.\"",
       "next": null
     },
+
     {
       "id": "61",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "63",
+      "falseNode": "62"
+    },
+
+    {
+      "id": "62",
       "type": "line",
       "speaker": "npc",
       "action": "",
       "text": "\"Fucking hell... I didn't expect to see anyone alive on this rock.\" He squints, pointing down the path. \"Maybe start with the guy living in that mansion to the right. Assuming he hasn't lost his mind yet.\"",
       "next": null
+    },
+    {
+      "id": "63",
+      "type": "conditional",
+      "eventName": "foundMalakor",
+      "trueNode": "66",
+      "falseNode": "64"
+    },
+    {
+      "id": "64",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Well Jade, found yourself a friend?\" He looks the old man up and down, offering a rare, respectful nod. \"I'm happy for you kid. He seems like a good man\"",
+      "next": "65"
+    },
+    {
+      "id": "65",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"You're aiming for that castle to the North, right?\" He sighs. \"Luck isn't on your side, kid. The direct path is rubble. You'll have to cut through the village ruins to the East.\"",
+      "next": null
+    },
+    {
+      "id": "66",
+      "type": "line",
+      "speaker": "npc",
+      "action": "",
+      "text": "\"Aye, I had a word with your crew. Looks like we're sailing to the outer islands to smash some cursed crystals, eh?\" He laughs. \"Love it. Count me in.\"",
+      "next": null
     }
-
-
-
 
   ]
 }
