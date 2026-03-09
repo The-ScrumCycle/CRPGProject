@@ -20,7 +20,7 @@ namespace Dialogue.Core
 
             // Subscribe to events
             runner.DialogueStartAction += () => Debug.Log("=== DIALOGUE STARTED ===");
-            runner.LineNodeAction += (text) => Debug.Log($"LINE: {text}");
+            runner.LineNodeAction += (text, action) => Debug.Log($"LINE: {text} [Action: {action}]");
             runner.OptionNodeAction += (options) => {
                 Debug.Log("OPTIONS:");
                 for (int i = 0; i < options.Count; i++)

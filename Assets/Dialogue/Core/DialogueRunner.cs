@@ -14,7 +14,7 @@ namespace Dialogue.Core
         private Node currentNode;
 
         //actions will be used to trigger the UI
-        public event Action<string> LineNodeAction;
+        public event Action<string, string> LineNodeAction;
 
         public event Action<List<DialogueOptions>> OptionNodeAction;
 
@@ -58,7 +58,7 @@ namespace Dialogue.Core
             {
                 if (ln.Speaker == SpeakerType.Npc)
                 {
-                    LineNodeAction?.Invoke(ln.LineText);
+                    LineNodeAction?.Invoke(ln.LineText, ln.Action);
                     return;                
                 }
                 return; //skip over player lineNode (as it should not be processed, only OptionNodes)

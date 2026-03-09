@@ -28,20 +28,20 @@
       "type": "line",
       "speaker": "npc",
       "text": "\"Jade! I was starting to think you'd forgotten about our little date with destiny at the castle. Ready to get back to work?\"",
-      "next": "40"
+      "next": "41"
     },
     {
       "id": "1",
       "type": "line",
       "speaker": "npc",
-      "text": "\"Excuse me! Yes, you with the weapon. Surely you wouldn't leave a defenseless cleric to the mercy of such filth?\"",
+      "text": "\"Excuse me! Yes, you with the weapon. Surely you wouldn't leave a defenseless cleric to the mercy of such filth? Kill this horrible creature!\"",
       "next": null
     },
     {
       "id": "2",
       "type": "line",
       "speaker": "npc",
-      "text": "She watches the monster fall and lets out a sharp, satisfied breath \"Exactly like I dreamed it. You are definitely the Herald.\"",
+      "text": "She watches the monster fall and lets out a sharp, satisfied breath \"Thanks for saving me dear. It was exactly like I dreamed it... You are definitely the Herald.\"",
       "next": "3"
     },
     {
@@ -107,7 +107,7 @@
       "id": "11",
       "type": "line",
       "speaker": "npc",
-      "text": "She rolls her eyes, \" Oh thank you herald, but you should always save clerics you know, cute or otherwise.\"",
+      "text": "She rolls her eyes, \" Oh thank you Herald, but you should always save clerics you know, cute or otherwise.\"",
       "next": "20"
     },
     {
@@ -128,7 +128,7 @@
       "id": "14",
       "type": "line",
       "speaker": "npc",
-      "text": "\" I understand herald, I will be here waiting for when you neeed my guidance. This forest is my home.\"",
+      "text": "\" I understand Herald, I will be here waiting for when you neeed my guidance. This forest is my home.\"",
       "next": null
     },
     {
@@ -155,8 +155,17 @@
     {
       "id": "23",
       "type": "line",
-      "speaker": "john",
+      "speaker": "npc",
+      "action": "johnSpeaking",
       "text": "John grunts, \"Still loud kid. At least you haven't changed, girl. I can explain later, but truth is I never left this place.\"",
+      "next": "600"
+    },
+    {
+      "id": "600",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa laughs, \"You haven't changed a bit in 20 years too.\" she stops for a moment, confused \" mom, Maxwell... everyone thought you died with dad defending the keep. I-... Alright uncle, you can explain yourself at another moment.",
       "next": "25"
     },
     {
@@ -170,7 +179,8 @@
       "id": "25",
       "type": "line",
       "speaker": "npc",
-      "text": "She clears her throat, \"But we don't have time for pleasantries, Jade. Yes, I know your name, I saw it in my dreams. I returned here in the hopes of meeting you. You are the only one who can stand against Malakor, the World-Severer.\"",
+      "action": "clarissaSpeaking",
+      "text": "She clears her throat and looks at you, \"We don't have time for pleasantries, Jade. Yes, I know your name, I saw it in my dreams. I returned here in the hopes of meeting you. You are the only one who can stand against Malakor, the World-Severer.\"",
       "next": "26"
     },
     {
@@ -183,9 +193,8 @@
     {
       "id": "27",
       "type": "option",
-      "options": [ "28", "29", "30", "31", "32" ]
+      "options": [ "28", "29", "30", "31" ]
     },
-
     {
       "id": "28",
       "type": "line",
@@ -201,7 +210,7 @@
       "speaker": "player",
       "maxStrength": 3,
       "action": "clarissaIntroOver",
-      "text": "\"[Weak] Look... I'm scared shitless right now. I don't think I can be that herald fellow.\"",
+      "text": "\"[Weak] Look... I'm scared shitless right now. I don't think I can be that Herald fellow.\"",
       "next": "35"
     },
     {
@@ -234,7 +243,7 @@
       "type": "line",
       "speaker": "player",
       "action": "clarissaIntroOver",
-      "text": "\"John, you've been quiet. You never mentioned you had a niece. Didn't you think it was a good idea to mention she was captured by a big monster?\"",
+      "text": "\"John... I prefer you explain yourself right now. Didn't you think it was a good idea to mention she was captured by a big monster?\"",
       "next": "38"
     },
     {
@@ -263,39 +272,79 @@
       "id": "36",
       "type": "line",
       "speaker": "npc",
-      "text": "\"What greater proof there is of you being here at this precise moment, just like in my dreams. It's normal to be afraid, but please don't run of your destiny.\"",
+      "text": "\"What greater proof there is of you being here at this precise moment, just like in my dreams. It's normal to be afraid, but please don't run from your destiny.\"",
       "next": "40"
     },
     {
       "id": "37",
       "type": "line",
       "speaker": "npc",
-      "text": "She stares at you, blinking slowly. \"Wow. There is absolutely nothing going on behind those eyes, is there? It’s okay! I’ll do the thinking dear herald.\"",
+      "text": "She stares at you, blinking slowly. \"Wow. There is absolutely nothing going on behind those eyes, is there? It’s okay! I’ll do the thinking, dear Herald.\"",
       "next": "40"
     },
     {
       "id": "38",
       "type": "line",
       "speaker": "npc",
-      "text": "John rubs the back of his neck, looking everywhere but at you. \"I didn't know she was here, alright? Last time I saw the girl she was ten and scared of bedtime stories. How was I supposed to know she'd grow up to be... this?\"",
-      "next": "40"
+      "action": "johnSpeaking",
+      "text": "John rubs the back of his neck, looking everywhere but at you. \"I didn't know she was here, alright? Last time I saw the girl she was ten and scared of bedtime stories. How was I supposed to know she'd grow up to be... a fanatic of Eirene?\"",
+      "next": "501"
+    },
+    {
+      "id": "501",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa's smile dies out. \"For your information, I am a High Cleric, not some fanatic or a scared little girl. You, on the other hand... you fought for Plouton, the God of Minerals, alongside my father.\" Her eyes are visibly angry \"Funny, how everyone died with honor that day, aside from you.\"",
+      "next": "502"
+    },
+    {
+      "id": "502",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John does a clearly fake sad smile \"Well, we both know he was the better man... \" he looks at you \"Let's talk about this later, the 'Herald' has more important stuff to do.\"",
+      "next": "41"
     },
     {
       "id": "39",
       "type": "line",
       "speaker": "npc",
-      "text": "\"Counting graves?\" She sighs, shaking her head with a mix of affection and annoyance. \"That sounds exactly like John, my Uncle. He always had a morbid streak. We should go collect him. He's terrible company, but he's family.\"",
-      "next": "40"
+      "text": "\"Counting graves?\" She sighs, shaking her head with a mix of affection and annoyance. \"We should probably go check that man. I wasn't aware there were more people alive in this island.\"",
+      "next": "41"
     },
     {
       "id": "40",
       "type": "line",
       "speaker": "npc",
-      "text": "\"Alright, we have a prophecy to fulfill. The Shattered Keep is to the west, you have a beast to slaughter.\"",
-      "next": "41"
+      "action": "clarissaSpeaking",
+      "text": "\"Anyways... we have a prophecy to fulfill Herald. The Shattered Keep is to the west, you have a beast to slaughter.\"",
+      "next": "700"
     },
     {
+      "id": "700",
+      "type": "option",
+      "options": [ "32", "701" ]
+    },
+    {
+      "id": "701",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"[Don't bring it up]\"",
+      "next": "41"
+    },
+
+    {
       "id": "41",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "\"Regardless, Herald... I witnessed how you dispatched that beast in the forest. I have no doubt Eirene will guide your hand to victory.\"",
+      "next": "702"
+    },
+
+    {
+      "id": "702",
       "type": "option",
       "options": [ "42", "43", "44", "45", "46", "47" ]
     },
@@ -370,7 +419,7 @@
       "id": "50",
       "type": "line",
       "speaker": "npc",
-      "text": "She laughs, \"Wow, a real charmer you are herald! Luckily for you, the prophecy didn't say the Herald had to be polite.\"",
+      "text": "She laughs, \"Wow, a real charmer you are Herald! Luckily for you, the prophecy didn't say the Herald had to be polite.\"",
       "next": null
     },
     {

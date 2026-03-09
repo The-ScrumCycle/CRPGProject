@@ -262,7 +262,7 @@ namespace Dialogue.Core
             dialogueRunner.SelectOptions(optionIndex);
         }
 
-        private void OnDialogueLine(string line)
+        private void OnDialogueLine(string line, string action)
         {
             // display line text and switch ui to continue mode
             if (!IsDialogueActive)
@@ -273,6 +273,11 @@ namespace Dialogue.Core
             if (dialogueBodyText != null)
             {
                 dialogueBodyText.text = line;
+            }
+
+            if(!string.IsNullOrEmpty(action))
+            {
+                OptionSelectedAction?.Invoke(action);
             }
 
             if (continueButton != null)

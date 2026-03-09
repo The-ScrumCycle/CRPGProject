@@ -12,21 +12,27 @@ public class NPCDialogue : MonoBehaviour
 
     [Header("NPC/Follower Settings")]
     public Sprite Face;
+    public Sprite John;
+    public Sprite Clarissa;
     public string characterDialogueID;
     private FollowerController followerController;
+
+    [Header("Auto Dialogue Triggers Settings")]
+    public bool   triggerOnApproach = false;
+    public string triggerFlag = ""; // if set, flag has to be true for dialogue to trigger
+    public string dontTriggerFlag = ""; // if set, flag has to be false for dialogue to trigger
+    public bool   hasTriggered = false;
+
+    [Header("Actions")]
+    private string actionLeave = "leave";
 
 
     private UnityEngine.AI.NavMeshAgent agent;
     private GameState state;
     [SerializeField] private DialogueRunner runner;
-
-    [Header("Actions")]
-    private string actionLeave = "leave";
   
     // Main boss actions
     private string foundMalakor = "foundMalakor";
-
-
 
     // john actions
     private string johnInParty    = "johnInParty";
@@ -35,6 +41,7 @@ public class NPCDialogue : MonoBehaviour
     private string johnWait       = "johnWait";
     private string johnFollow     = "johnFollow";
     private string johnVillageExplored = "johnVillageExplored";
+    private string johnSpeaking = "johnSpeaking";
 
     // clarissa actions
     private string clarissaInParty    = "clarissaInParty";
@@ -43,6 +50,7 @@ public class NPCDialogue : MonoBehaviour
     private string clarissaWait       = "clarissaWait";
     private string clarissaFollow     = "clarissaFollow";
     private string ogreBossDestroyed  = "ogreBossDestroyed";
+    private string clarissaSpeaking   = "clarissaSpeaking";
 
     private void Awake()
     {
@@ -214,6 +222,15 @@ public class NPCDialogue : MonoBehaviour
                 followerController.FollowMe();
             }
 
+            else if (curAction == johnVillageExplored)
+            {
+                this.state.setFlag("johnVillageExplored");
+            }
+            else if (curAction == johnSpeaking)
+            {
+                uiRunner.UpdateFace(John);
+            }
+
 
             // Clarissa actions
             else if (curAction == clarissaInParty)
@@ -247,6 +264,11 @@ public class NPCDialogue : MonoBehaviour
                 this.state.setFlag("ogreBossDestroyed");
             }
 
+            else if (curAction == clarissaSpeaking)
+            {
+                  uiRunner.UpdateFace(Clarissa);
+            }
+
             // Main boss actions
             else if (curAction == foundMalakor)
             {
@@ -270,6 +292,22 @@ public class NPCDialogue : MonoBehaviour
         uiRunner.OptionSelectedAction -= OnOptionSelected;
         uiRunner.DialogueEndedAction -= OnDialogueEnded;
 
+
+    }
+
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!triggerOnApproach || hasTriggered) return;
+
+        if (other.gameObject.CompareTag("Player"))
+        {
+            if ((string.IsNullOrEmpty(triggerFlag) || string.IsNullOrEmpty(dontTriggerFlag)) && (state.hasFlag(triggerFlag) || !state.hasFlag(dontTriggerFlag)))
+            {
+                BeginNPCDialogue();
+                hasTriggered = true;
+            }
+        }
 
     }
 
