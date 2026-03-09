@@ -7,10 +7,14 @@ namespace Game.Combat.Units
     /// </summary>
     public enum AIBehavior
     {
-        // Moves toward player, only melee attacks.
+	// Generic Behaviors that we'll move away from
         Aggressive,
-
-        // Maintains distance, only ranged attacks.
         Defensive
+        
+	// New behaviors for our actual enemies
+	SkeletonRanged,
+	SkeletonMelee,
+	Healer,
+	HydraGrappler
     }
 }

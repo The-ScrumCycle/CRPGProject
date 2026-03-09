@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using UnityEngine;
 using Game.Combat.Grid;
 using Game.Combat.Units;
 using Game.Combat.Actions;
@@ -28,6 +29,16 @@ namespace Game.Combat
                 return null;
             }
 
+	    // Here we use the factory to grab the specific strategy for the unit
+	    // AI.IEnemyBrain brain = AI.BrainFactory.GetBrain(enemyUnit.AIBehavior);
+	    /*
+	    if (brain != null)
+            {
+            	return brain.DecideAction(enemyUnit, allUnits, _grid, _actionResolver);
+            }
+	     */
+
+	    // All the following is placeholer AI that we completley move away from, we just need the above ^^
             Unit targetUnit = FindNearestPlayerUnit(enemyUnit, allUnits);
 
             if (targetUnit == null)
@@ -76,7 +87,7 @@ namespace Game.Combat
                     break;
             }
 
-            Debug.Log($"[AI] {enemyUnit.DisplayName} ({enemyUnit.AIBehavior}) at {enemyUnit.Coordinates} → {action?.GetType().Name ?? "null"} | target: {targetUnit.DisplayName} at {targetUnit.Coordinates} | dist: {distanceToTarget} | attackRange: {enemyUnit.Stats.attackRange}");
+            //Debug.Log($"[AI] {enemyUnit.DisplayName} ({enemyUnit.AIBehavior}) at {enemyUnit.Coordinates} → {action?.GetType().Name ?? "null"} | target: {targetUnit.DisplayName} at {targetUnit.Coordinates} | dist: {distanceToTarget} | attackRange: {enemyUnit.Stats.attackRange}");
 
             return action;
         }
