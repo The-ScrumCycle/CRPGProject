@@ -195,9 +195,17 @@ public class CameraController : MonoBehaviour
 
     }
     
+    // quickly make camera go back to player 
+    public void GoToPlayer()
+    {
+        Vector3 targetPosition = target.position;
+        transform.position = targetPosition;
+        SetLockCamera();
+        zoom = 15f;
+    }
 
     // set camera mode for ship settings ( change settings for ship)
-   public void SetShipCamera()
+    public void SetShipCamera()
     {
         zoom = 40f;
         cameraSpeed = 60f;

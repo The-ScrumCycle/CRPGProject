@@ -1,7 +1,9 @@
 using UnityEngine;
 using Dialogue.Core;
+using Game.Core;
 using Dialogue.Data;
 using State;
+using UnityEngine.AI;
 
 public class NPCDialogue : MonoBehaviour
 {
@@ -9,11 +11,13 @@ public class NPCDialogue : MonoBehaviour
     [SerializeField] GameObject player;
     [SerializeField] PlayerController playerController;
     [SerializeField] private UIRunner uiRunner;
+    [SerializeField] private DialogueRunner runner;
 
     [Header("NPC/Follower Settings")]
     public Sprite Face;
     public Sprite John;
     public Sprite Clarissa;
+    public Sprite Malakor;
     public string characterDialogueID;
     private FollowerController followerController;
 
@@ -29,10 +33,16 @@ public class NPCDialogue : MonoBehaviour
 
     private UnityEngine.AI.NavMeshAgent agent;
     private GameState state;
-    [SerializeField] private DialogueRunner runner;
-  
+    GameStateManager gameStateManager;
+    private NavMeshAgent playerAgent;
+    private CameraController camera;
+
     // Main boss actions
-    private string foundMalakor = "foundMalakor";
+    private string foundMalakor    = "foundMalakor";
+    private string startBossFight  = "startBossFight";
+    private string runAway         = "runAway";
+    private string malakorSpeaking = "malakorSpeaking";
+    private string ranAway         = "ranAway";
 
     // john actions
     private string johnInParty    = "johnInParty";
@@ -70,6 +80,7 @@ public class NPCDialogue : MonoBehaviour
             return;
         }
 
+
         // load npc dialogue graph and create a runner component
         runner = gameObject.AddComponent<DialogueRunner>();
         runner.DialogueGraph = DialogueGraphLoader.LoadGraph(characterDialogueID);
@@ -78,7 +89,11 @@ public class NPCDialogue : MonoBehaviour
     private void Start()
     {
         state = GameState.Instance;
+
         SearchForPlayer();
+        playerAgent = player.GetComponent<NavMeshAgent>();
+        camera = FindObjectOfType<CameraController>();
+        gameStateManager = GameStateManager.Instance;
 
     }
 
@@ -266,14 +281,28 @@ public class NPCDialogue : MonoBehaviour
 
             else if (curAction == clarissaSpeaking)
             {
-                  uiRunner.UpdateFace(Clarissa);
+                uiRunner.UpdateFace(Clarissa);
             }
 
             // Main boss actions
             else if (curAction == foundMalakor)
             {
                 this.state.setFlag("foundMalakor");
+            }
 
+            else if (curAction == startBossFight)
+            {
+                this.state.setFlag("startBossFight");
+                GameStateManager.Instance.TransitionToCombat(gameObject);
+            }
+            else if (curAction == runAway)
+            {
+                this.state.setFlag("runAway");
+            }
+
+            else if (curAction == malakorSpeaking)
+            {
+                uiRunner.UpdateFace(Malakor); 
             }
         }
 
@@ -292,6 +321,29 @@ public class NPCDialogue : MonoBehaviour
         uiRunner.OptionSelectedAction -= OnOptionSelected;
         uiRunner.DialogueEndedAction -= OnDialogueEnded;
 
+        if(state.hasFlag(runAway) && !state.hasFlag(ranAway))
+        {
+            this.state.setFlag("ranAway");
+
+            if (playerAgent == null)
+            {
+                Debug.LogError("playerAgent is null! Teleport failed.");
+                return;
+            }
+
+            Vector3 targetPosition = new Vector3(38, 0, -247); 
+            NavMeshHit hit;
+            
+            if (NavMesh.SamplePosition(targetPosition, out hit, 15.0f, NavMesh.AllAreas))
+            {
+                playerAgent.enabled = false;            
+                player.transform.position = hit.position; 
+                playerAgent.enabled = true;             
+                playerAgent.Warp(hit.position);        
+            }
+
+            camera.GoToPlayer();
+        }
 
     }
 
@@ -302,7 +354,10 @@ public class NPCDialogue : MonoBehaviour
 
         if (other.gameObject.CompareTag("Player"))
         {
-            if ((string.IsNullOrEmpty(triggerFlag) || string.IsNullOrEmpty(dontTriggerFlag)) && (state.hasFlag(triggerFlag) || !state.hasFlag(dontTriggerFlag)))
+            bool canStart = string.IsNullOrEmpty(triggerFlag) || state.hasFlag(triggerFlag);
+            bool shouldNotStop = string.IsNullOrEmpty(dontTriggerFlag) || !state.hasFlag(dontTriggerFlag);
+
+            if (canStart && shouldNotStop)
             {
                 BeginNPCDialogue();
                 hasTriggered = true;
