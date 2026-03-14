@@ -1,71 +1,90 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using Core.Save;
 
-
-// Function that has a list with all ennemies states, so alive or dead. If they are dead. They are Destroyed on load
-public class EnnemiesState : MonoBehaviour
+namespace Game.Combat
 {
-    public static EnnemiesState Instance { get; private set; }
-    [SerializeField] List<GameObject> Ennemies = new List<GameObject>();
-    [SerializeField] List<string> deadEnnemiesNames = new List<string>();
-
-
-    public void AddEnnemy(GameObject ennemy)
+    /// <summary>
+    /// Tracks enemy state across scene transitions.
+    /// Marks enemies as dead so they are destroyed when returning to exploration.
+    /// </summary>
+    public class EnnemiesState : MonoBehaviour, ISaveable
     {
-        if (!Ennemies.Contains(ennemy))
+        public static EnnemiesState Instance { get; private set; }
+
+        [SerializeField] private List<GameObject> ennemies = new List<GameObject>();
+        [SerializeField] private List<string> deadEnnemiesNames = new List<string>();
+
+        public void AddEnnemy(GameObject ennemy)
         {
-            Ennemies.Add(ennemy);
-        }
-    }
-
-    public void SetDeadEnnemy(GameObject ennemy)
-    {
-        if (!deadEnnemiesNames.Contains(ennemy.name))
-        {
-            deadEnnemiesNames.Add(ennemy.name);
-        }
-    }
-
-    public bool IsEnnemyDead(GameObject ennemy)
-    {
-        return deadEnnemiesNames.Contains(ennemy.name);
-    }
-
-    void Awake()
-    {
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    // standard Unity functions that handle scene loading
-    void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // Should only destroy ennemies if won the battle and player is coming back to exploration 
-        if (scene.name != "Exploration")
-            return;
-
-
-        // Destroy all dead ennemies on load
-        foreach (string ennemyName in deadEnnemiesNames)
-        {
-            GameObject foundEnnemy = GameObject.Find(ennemyName);
-            if (foundEnnemy != null)
+            if (!ennemies.Contains(ennemy))
             {
-                Destroy(foundEnnemy);
+                ennemies.Add(ennemy);
             }
         }
+
+        void Start()
+        {
+            SaveManager.Instance.Register(this);
+        }
+
+        public void SetDeadEnnemy(GameObject ennemy)
+        {
+            if (!deadEnnemiesNames.Contains(ennemy.name))
+            {
+                deadEnnemiesNames.Add(ennemy.name);
+            }
+        }
+
+        public bool IsEnnemyDead(GameObject ennemy)
+        {
+            return deadEnnemiesNames.Contains(ennemy.name);
+        }
+
+        void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.name != "Exploration") return;
+
+            foreach (string ennemyName in deadEnnemiesNames)
+            {
+                GameObject foundEnnemy = GameObject.Find(ennemyName);
+                if (foundEnnemy != null)
+                {
+                    Destroy(foundEnnemy);
+                }
+            }
+        }
+
+        public void SetSaveData(SaveData saveData)
+        {
+            saveData.enemy.deadEnnemiesNames = new List<string>(deadEnnemiesNames);
+        }
+
+        public void LoadSaveData(SaveData saveData)
+        {
+            deadEnnemiesNames = new List<string>(saveData.enemy.deadEnnemiesNames);
+        }
     }
-
-
 }

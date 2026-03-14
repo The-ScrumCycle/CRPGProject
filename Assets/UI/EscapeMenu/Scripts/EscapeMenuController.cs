@@ -1,4 +1,5 @@
 using UnityEngine;
+using Core.Save;
 
 public class EscapeMenuController : MonoBehaviour
 {
@@ -86,6 +87,7 @@ public class EscapeMenuController : MonoBehaviour
    //button handlers (escape menu)
     public void SaveGame()
     {
+        SaveManager.Instance.Save();
         Debug.Log("Save requested (placeholder). Setting hasSaved = true.");
         hasSaved = true;
 
@@ -109,7 +111,9 @@ public class EscapeMenuController : MonoBehaviour
 
    // button handlers (confirmation modal)
     public void ConfirmSaveAndCloseGame()
+
     {
+        SaveManager.Instance.Save();
         Debug.Log("Confirm: Save & Close Game (placeholder). Setting hasSaved = true then quitting.");
         hasSaved = true;
         QuitGame();

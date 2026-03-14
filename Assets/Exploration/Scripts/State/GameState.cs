@@ -1,9 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Core.Save;
 
 namespace State
     {
-    public class GameState : MonoBehaviour
+    public class GameState : MonoBehaviour, ISaveable
     {
         public static GameState Instance {get; private set;}
         public HashSet<string> EventFlags {get; set;} = new();
@@ -25,6 +26,11 @@ namespace State
             }
             Instance = this;
             DontDestroyOnLoad(this.gameObject);
+        }
+
+        public void Start()
+        {
+            SaveManager.Instance.Register(this);
         }
 
         public void intelligencePowerUp(int incr)
@@ -80,6 +86,22 @@ namespace State
         {
             return strength >= requiredStrength;
         }
+
+        public void SetSaveData(SaveData saveData)
+        {
+            saveData.stats.intelligence = this.intelligence;
+            saveData.stats.charisma = this.charisma;
+            saveData.stats.strength = this.strength;
+            saveData.stats.EventFlags = new List<string>(this.EventFlags);
+        }
+        public void LoadSaveData(SaveData saveData)
+        {
+            intelligence = saveData.stats.intelligence;
+            charisma = saveData.stats.charisma;
+            strength = saveData.stats.strength;
+            EventFlags = new HashSet<string>(saveData.stats.EventFlags);
+        }
+        
 
     }
 }
