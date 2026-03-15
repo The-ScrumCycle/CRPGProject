@@ -419,7 +419,9 @@ namespace Game.Combat
 
             if (_actionResolver.Execute(attackAction))
             {
-                Debug.Log($"[CombatManager] {attacker.DisplayName} attacked {target.DisplayName}");
+                Debug.Log($"[CombatManager] {attacker.DisplayName} attacked {target.DisplayName} for {attacker.Stats.attackPower} damage");
+                Debug.Log($"[CombatManager] {target.DisplayName} HP: {target.Stats.currentHealth}/{target.Stats.maxHealth}");
+                
                 SweepForDeaths();
 
                 _flowController.SetPlayerActed();

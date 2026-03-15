@@ -15,10 +15,11 @@ namespace Game.Core.Party
         public int movementRange;
         public int attackRange;
         public int healPower;
+        public string UnitID;
 
         public UnitStats() { }
 
-        public UnitStats(int maxHealth, int attackPower, int movementRange, int attackRange, int healPower = 0)
+        public UnitStats(int maxHealth, int attackPower, int movementRange, int attackRange, int healPower = 0, string unitID = "")
         {
             this.maxHealth = maxHealth;
             this.currentHealth = maxHealth;
@@ -26,6 +27,7 @@ namespace Game.Core.Party
             this.movementRange = movementRange;
             this.attackRange = attackRange;
             this.healPower = healPower;
+            this.UnitID = unitID;
         }
 
         public bool IsAlive => currentHealth > 0;
@@ -48,7 +50,9 @@ namespace Game.Core.Party
                 currentHealth = this.currentHealth,
                 attackPower = this.attackPower,
                 movementRange = this.movementRange,
-                attackRange = this.attackRange
+                attackRange = this.attackRange,
+                healPower = this.healPower,
+                UnitID = this.UnitID
             };
         }
     }

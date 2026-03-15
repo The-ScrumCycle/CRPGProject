@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Game.Core.Transitions;
 using Game.Combat;
+using UnityEngine.AI;
 
 namespace Game.Core
 {
@@ -19,7 +20,7 @@ namespace Game.Core
         [SerializeField] private string explorationSceneName = "Exploration";
         [SerializeField] private string combatSceneName = "CombatScene";
 
-        public GameState CurrentState { get; private set; } = GameState.Exploration;
+        public GameStates CurrentState { get; private set; } = GameStates.Exploration;
 
         // Stores the result of the last combat
         public CombatResultData LastCombatResult { get; private set; }
@@ -59,26 +60,26 @@ namespace Game.Core
             _playerController = _player?.GetComponent<PlayerController>();
         }
 
-        private void SetState(GameState newState)
+        private void SetState(GameStates newState)
         {
             if (CurrentState == newState) return;
             CurrentState = newState;
             Debug.Log($"[GameStateManager] State changed to: {CurrentState}");
         }
 
-        public GameState GetCurrentState() => CurrentState;
+        public GameStates GetCurrentState() => CurrentState;
 
         // Transition from Exploration to Combat.
         // Called by MonsterAI when enemy contacts player.
         public void TransitionToCombat(GameObject enemy)
         {
-            if (CurrentState != GameState.Exploration)
+            if (CurrentState != GameStates.Exploration)
             {
                 Debug.LogWarning("[GameStateManager] Cannot transition to combat - not in exploration state");
                 return;
             }
 
-            SetState(GameState.Combat);
+            SetState(GameStates.Combat);
 
             // Save exploration state
             combatTransitionData.SaveTransitionData(enemy);
@@ -100,7 +101,7 @@ namespace Game.Core
         // Called by CombatManager when combat ends.
         public void TransitionToExploration(CombatResultData result)
         {
-            if (CurrentState != GameState.Combat)
+            if (CurrentState != GameStates.Combat)
             {
                 Debug.LogWarning("[GameStateManager] Cannot transition to exploration -> not in combat state");
                 return;
@@ -109,7 +110,7 @@ namespace Game.Core
             LastCombatResult = result;
             _isReturningFromCombat = true; // set combat return flag for state management
 
-            SetState(GameState.Exploration);
+            SetState(GameStates.Exploration);
             SceneManager.LoadScene(explorationSceneName);
         }
 
@@ -150,6 +151,30 @@ namespace Game.Core
             {
                 _mainCamera.transform.position = combatTransitionData.cameraPosition;
                 _mainCamera.transform.rotation = combatTransitionData.cameraRotation;
+            }
+
+            // restore companion locations
+            GameObject[] followers = GameObject.FindGameObjectsWithTag("Follower");
+
+            foreach (GameObject follower in followers)
+            {
+                NavMeshAgent followerAgent = follower.GetComponent<NavMeshAgent>();
+                if(followerAgent != null)
+                {
+                    followerAgent.enabled = false;
+                    Vector3 randomDistance = new Vector3(Random.Range(-1f, 1f), 3, Random.Range(-1f, 1f)).normalized * 2f;
+                    Vector3 newPosition = combatTransitionData.playerPosition + randomDistance;
+                    followerAgent.Warp(newPosition);
+                    followerAgent.enabled = true;
+
+                }
+            }
+
+
+            // Apply xp gain
+            if (LastCombatResult != null && LastCombatResult.wasVictory)
+            {
+                PartyManager.Instance.GainExperience(combatTransitionData.XPGiven);
             }
 
             combatTransitionData.ClearCache();
