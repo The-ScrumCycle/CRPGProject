@@ -1,8 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Core.Save;
 
 
-public class PartyManager : MonoBehaviour
+public class PartyManager : MonoBehaviour, ISaveable
 {
     public static PartyManager Instance { get; private set; }
     private List<FollowerID> activeFollowers = new List<FollowerID>();
@@ -21,6 +22,11 @@ public class PartyManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+    }
+
+    void Start()
+    {
+        SaveManager.Instance.Register(this);
     }
 
 
@@ -61,6 +67,22 @@ public class PartyManager : MonoBehaviour
     {
         partyExperience += amount;
         LevelUp();
+    }
+
+    public void SetSaveData(SaveData saveData)
+    {
+        saveData.party.partyLevel = partyLevel;
+        saveData.party.partyExperience = partyExperience;
+        saveData.party.experienceToNextLevel = experienceToNextLevel;
+        saveData.party.activeFollowers = activeFollowers.ConvertAll(f => (int)f);
+    }
+
+    public void LoadSaveData(SaveData saveData)
+    {
+        partyLevel = saveData.party.partyLevel;
+        partyExperience = saveData.party.partyExperience;
+        experienceToNextLevel = saveData.party.experienceToNextLevel;
+        activeFollowers = saveData.party.activeFollowers.ConvertAll(i => (FollowerID)i);
     }
 
 

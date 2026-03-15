@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using Core.Save;
 
 namespace Game.Combat
 {
@@ -8,7 +9,7 @@ namespace Game.Combat
     /// Tracks enemy state across scene transitions.
     /// Marks enemies as dead so they are destroyed when returning to exploration.
     /// </summary>
-    public class EnnemiesState : MonoBehaviour
+    public class EnnemiesState : MonoBehaviour, ISaveable
     {
         public static EnnemiesState Instance { get; private set; }
 
@@ -21,6 +22,11 @@ namespace Game.Combat
             {
                 ennemies.Add(ennemy);
             }
+        }
+
+        void Start()
+        {
+            SaveManager.Instance.Register(this);
         }
 
         public void SetDeadEnnemy(GameObject ennemy)
@@ -69,6 +75,16 @@ namespace Game.Combat
                     Destroy(foundEnnemy);
                 }
             }
+        }
+
+        public void SetSaveData(SaveData saveData)
+        {
+            saveData.enemy.deadEnnemiesNames = new List<string>(deadEnnemiesNames);
+        }
+
+        public void LoadSaveData(SaveData saveData)
+        {
+            deadEnnemiesNames = new List<string>(saveData.enemy.deadEnnemiesNames);
         }
     }
 }
