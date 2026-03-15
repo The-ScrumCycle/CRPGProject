@@ -48,12 +48,20 @@ public class MonsterController : MonoBehaviour
         agent.stoppingDistance = stoppingDistance;
 
         gameStateManager = FindAnyObjectByType<GameStateManager>();
+
     }
 
     void Start()
     {
         GetPlayer();
-        EnnemiesState.Instance.AddEnnemy(gameObject);
+
+        string id = GetComponent<EnemyID>().getEnemyID();
+
+        // Kill monster if he is already dead
+        if (EnnemiesState.Instance.IsEnnemyDead(id))
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void GetPlayer()

@@ -79,11 +79,6 @@ public class CaptainController : MonoBehaviour
         uiRunner.DialogueEndedAction -= OnDialogueEnded;
     }
 
-    // update is called once per frame
-    void Update()
-    {
-        
-    }
 
     // set up player object and player controller reference
     void SearchForPlayer()
@@ -180,7 +175,7 @@ public class CaptainController : MonoBehaviour
         }
 
         uiRunner.UpdateFace(Face);
-
+        playerController.SetInDialogue(true);
         uiRunner.SetDialogueRunner(runner);
         uiRunner.OptionSelectedAction += OnOptionSelected;
         uiRunner.DialogueEndedAction += OnDialogueEnded;
@@ -289,6 +284,7 @@ public class CaptainController : MonoBehaviour
 
         uiRunner.OptionSelectedAction -= OnOptionSelected;
         uiRunner.DialogueEndedAction -= OnDialogueEnded;
+        playerController.SetInDialogue(false);
 
         // default fallback when dialogue ends without choosing board option
         if (boardedFromDialogue)

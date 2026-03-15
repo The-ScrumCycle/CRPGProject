@@ -72,10 +72,10 @@ namespace Dialogue.Core
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                EndDialogue();
-            }
+           // if (Input.GetKeyDown(KeyCode.Escape))
+           // {
+            //    EndDialogue();
+           // }
         }
 
         public void UpdateFace(Sprite newFace)

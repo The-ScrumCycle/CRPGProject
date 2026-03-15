@@ -11,18 +11,29 @@ public class EscapeMenuController : MonoBehaviour
     [Header("State")]
     [SerializeField] private bool hasSaved = false; // flag for now (later tie to real save system)
 
+
     private bool isMenuOpen;
     private bool isConfirmOpen;
+    private PlayerController playerController;
+
 
     void Start()
     {
         SetMenuOpen(false);
         SetConfirmOpen(false);
+
+        playerController = PlayerController.Instance;
+        if (playerController == null)
+        {
+            Debug.LogError("PlayerController not found");
+        }
     }
 
     void Update()
     {
+        if (playerController.GetInDialogue()) return;
         if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
+       
 
         // close confirm modal if open, otherwise toggle menu
         if (isConfirmOpen)

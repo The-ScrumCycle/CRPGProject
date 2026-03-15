@@ -68,11 +68,13 @@ public class SaveManager : MonoBehaviour
         foreach(ISaveable saveable in saveables)
         {
             saveable.SetSaveData(saveData);
+
         }
         Debug.Log($"[SaveManager] Save complete at slot {slot_index - 1}");
   
         //serialized object into JSON save data
         saveData.saveDateTime = System.DateTime.Now.ToString("dd MMM yyyy  HH:mm");
+        //Application.OpenURL(Application.persistentDataPath);
 
         Texture2D screenshot = ScreenCapture.CaptureScreenshotAsTexture();
         byte[] screenshotBytes = screenshot.EncodeToPNG();

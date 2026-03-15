@@ -12,34 +12,24 @@ namespace Game.Combat
     public class EnnemiesState : MonoBehaviour, ISaveable
     {
         public static EnnemiesState Instance { get; private set; }
-
-        [SerializeField] private List<GameObject> ennemies = new List<GameObject>();
         [SerializeField] private List<string> deadEnnemiesNames = new List<string>();
-
-        public void AddEnnemy(GameObject ennemy)
-        {
-            if (!ennemies.Contains(ennemy))
-            {
-                ennemies.Add(ennemy);
-            }
-        }
 
         void Start()
         {
             SaveManager.Instance.Register(this);
         }
 
-        public void SetDeadEnnemy(GameObject ennemy)
+        public void SetDeadEnnemy(string enemyID)
         {
-            if (!deadEnnemiesNames.Contains(ennemy.name))
+            if (!deadEnnemiesNames.Contains(enemyID))
             {
-                deadEnnemiesNames.Add(ennemy.name);
+                deadEnnemiesNames.Add(enemyID);
             }
         }
 
-        public bool IsEnnemyDead(GameObject ennemy)
+        public bool IsEnnemyDead(string enemyID)
         {
-            return deadEnnemiesNames.Contains(ennemy.name);
+            return deadEnnemiesNames.Contains(enemyID);
         }
 
         void Awake()
@@ -53,30 +43,6 @@ namespace Game.Combat
             DontDestroyOnLoad(gameObject);
         }
 
-        void OnEnable()
-        {
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
-
-        void OnDisable()
-        {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
-
-        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            if (scene.name != "Exploration") return;
-
-            foreach (string ennemyName in deadEnnemiesNames)
-            {
-                GameObject foundEnnemy = GameObject.Find(ennemyName);
-                if (foundEnnemy != null)
-                {
-                    Destroy(foundEnnemy);
-                }
-            }
-        }
-
         public void SetSaveData(SaveData saveData)
         {
             saveData.enemy.deadEnnemiesNames = new List<string>(deadEnnemiesNames);
@@ -85,6 +51,17 @@ namespace Game.Combat
         public void LoadSaveData(SaveData saveData)
         {
             deadEnnemiesNames = new List<string>(saveData.enemy.deadEnnemiesNames);
+
+            // kill all ennemies that are in the list
+            EnemyID[] enemies = FindObjectsOfType<EnemyID>();
+            foreach (EnemyID enemy in enemies)
+            {
+                if (IsEnnemyDead(enemy.getEnemyID()))
+                {
+                    Destroy(enemy.gameObject);
+                }
+            }
         }
     }
+
 }

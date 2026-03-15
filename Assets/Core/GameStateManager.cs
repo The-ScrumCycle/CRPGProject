@@ -91,7 +91,7 @@ namespace Game.Core
             }
 
             // Mark enemy for destruction on return
-            EnnemiesState.Instance?.SetDeadEnnemy(enemy);
+            EnnemiesState.Instance?.SetDeadEnnemy(enemy.GetComponent<EnemyID>().getEnemyID());
 
             // Load combat scene
             SceneManager.LoadScene(combatSceneName);
