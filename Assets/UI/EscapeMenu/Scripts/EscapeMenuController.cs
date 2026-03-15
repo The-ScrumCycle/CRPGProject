@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Core.Save;
 
 public class EscapeMenuController : MonoBehaviour
@@ -21,7 +22,7 @@ public class EscapeMenuController : MonoBehaviour
 
     void Update()
     {
-        if (!Input.GetKeyDown(KeyCode.Escape)) return;
+        if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
 
         // close confirm modal if open, otherwise toggle menu
         if (isConfirmOpen)
