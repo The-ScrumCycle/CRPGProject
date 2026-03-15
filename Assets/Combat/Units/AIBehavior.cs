@@ -9,7 +9,7 @@ namespace Game.Combat.Units
     {
 	// Generic Behaviors that we'll move away from
         Aggressive,
-        Defensive
+        Defensive,
         
 	// New behaviors for our actual enemies
 	SkeletonRanged,
