@@ -45,6 +45,11 @@ public class SaveManager : MonoBehaviour
         return Path.Combine(Application.persistentDataPath, "Saves", $"slot_{slot}");
     }
 
+    public string GetScreenshotPath(int slot)
+    {
+        return Path.Combine(GetSavePath(slot), "game_scene.png");
+    }
+
     public int GetSlotCount()
     //files will be saves locally to the user, under Documents/slot_{index}/data.json and capture.png
     //idea is at load we find out how many slots there are so we don't accidentally overwrite old data.
@@ -93,6 +98,14 @@ public class SaveManager : MonoBehaviour
             Debug.Log($"[SaveManager] Save complete at slot {slot_index - 1}");
         }
 
+    // Returns save metadata for a slot, or null if the slot is empty
+    public SaveData GetSlotData(int slot)
+    {
+        string path = Path.Combine(GetSavePath(slot), "save.json");
+        if (!File.Exists(path)) return null;
+        return JsonUtility.FromJson<SaveData>(File.ReadAllText(path));
+    }
+
     public void Load(int slot)
     {
         string savePath = GetSavePath(slot);
@@ -133,6 +146,10 @@ public class SaveManager : MonoBehaviour
         pendingLoadSlot = -1;
 
         CameraController cam = FindObjectOfType<CameraController>();
-        if (cam != null) cam.GoToPlayer();
+        if (cam != null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) cam.SetTarget(player.transform);
+        }
     }
 }

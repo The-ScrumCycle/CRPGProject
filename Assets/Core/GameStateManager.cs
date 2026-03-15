@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Game.Combat;
 public class GameStateManager : MonoBehaviour
 {
     public CombatTransitionData combatTransitionData;
