@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
 using Game.Combat.Units;
 
 namespace Game.Combat.UI
@@ -9,7 +10,7 @@ namespace Game.Combat.UI
     /// Represents a single player unit's current status (health, turn, etc)
     /// visually to the user.
     /// </summary>
-    public class RosterCardUI : MonoBehaviour
+    public class RosterCardUI : MonoBehaviour, IPointerClickHandler
     {
         [Header("UI Elements")]
         [SerializeField] private TextMeshProUGUI nameText;
@@ -51,6 +52,16 @@ namespace Game.Combat.UI
             {
                 if (backgroundImage != null) backgroundImage.color = defaultBgColor;
                 if (statusText != null) statusText.gameObject.SetActive(false);
+            }
+        }
+
+        // Allow player to cycle roster by clicking on card
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (_trackedUnit != null && _trackedUnit.IsPlayerControlled && _trackedUnit.IsAlive)
+            {
+                // Call the manager to swap to this unit
+                CombatManager.Instance.TrySelectPlayerUnit(_trackedUnit);
             }
         }
 

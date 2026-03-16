@@ -1,6 +1,7 @@
 using UnityEngine;
 using Game.Core.Party;
 using Game.Core.Transitions;
+using Game.Combat.Actions;
 
 
 namespace Game.Combat.Units
@@ -12,9 +13,11 @@ namespace Game.Combat.Units
     public class UnitFactory : MonoBehaviour
     {
         [Header("Player Configuration")]
-        [SerializeField] private GameObject playerPrefab;
-        [SerializeField] private UnitStatsConfig HeroStats;
-        [SerializeField] private UnitStatsConfig JohnStats;
+        [SerializeField] private GameObject Character; //fallback prefab
+        // Player units stats
+        [SerializeField] private UnitStatsConfig CaptainStats;
+        [SerializeField] private UnitStatsConfig WarriorStats;
+        [SerializeField] private UnitStatsConfig ClericStats;
 
 
         [Header("Enemy Configuration")]
@@ -25,47 +28,54 @@ namespace Game.Combat.Units
 
         private int _unitIdCounter = 0;
 
-        // Create a player unit.
-        public (Unit unit, UnitVisual visual) CreatePlayerUnit()
+        // Create player units
+        public (Unit unit, UnitVisual visual) CreatePlayerUnit(string unitId)
         {
+            UnitStatsConfig config = CaptainStats; // Default to Captain
+            
+            // Map the FollowerID string to stats
+            if (unitId == "Warrior") config = WarriorStats; 
+            else if (unitId == "Cleric") config = ClericStats; 
 
             UnitStats stats;
-
-            // if party manager does not exist, return default stats
             if (PartyManager.Instance != null)
             {
-                stats = HeroStats != null
-                ? HeroStats.GetStatsForLevel(PartyManager.Instance.GetPartyLevel())
-                : new UnitStats(100, 20, 3, 1);
+                stats = config != null ? config.GetStatsForLevel(PartyManager.Instance.GetPartyLevel()) : new UnitStats(100, 20, 3, 1);
             }
             else
             {
-                stats = new UnitStats(100, 20, 3, 1);
+                stats = config != null ? config.GetStatsForLevel(1) : new UnitStats(100, 20, 3, 1);
             }
 
             var unit = new Unit(
                     id: $"player_{_unitIdCounter++}",
-                    displayName: "Captain",
+                    displayName: unitId,
                     role: UnitRole.Player,
-                    stats: stats
-                );
+                    stats: stats,
+                    aiBehavior: AIBehavior.Aggressive, // Players don't use this, but we pass it for the constructor signature
+                    availableActions: config != null ? config.availableActions : new System.Collections.Generic.List<CombatActionType> { CombatActionType.MeleeAttack, CombatActionType.RangedAttack }
+                ); 
 
-            GameObject prefabInstance = Instantiate(playerPrefab);
+            // Attempt to grab a specific prefab from your TagToPrefab dictionary, otherwise fallback to the Captain
+            GameObject prefabToSpawn = Character;
+            if (TagToPrefab.Instance != null)
+            {
+                GameObject specificPrefab = TagToPrefab.Instance.GetPrefabForTag(unitId);
+                if (specificPrefab != null) prefabToSpawn = specificPrefab;
+            }
+
+            GameObject prefabInstance = Instantiate(prefabToSpawn);
             var visual = prefabInstance.AddComponent<UnitVisual>();
 
             return (unit, visual);
         }
 
         // Create an enemy unit based on transition data.
-        public (Unit unit, UnitVisual visual) CreateEnemyUnit(CombatTransitionData transitionData)
+        public (Unit unit, UnitVisual visual) CreateEnemyUnit(string enemyTag, int level, string fallbackName)
         {
-            string enemyTag = transitionData?.enemyTag ?? "Enemy";
-
-            // Get appropriate prefab
             GameObject prefab = null;
             if (TagToPrefab.Instance != null)
             {
-                Debug.Log(enemyTag);
                 prefab = TagToPrefab.Instance.GetPrefabForTag(enemyTag);
             }
             if (prefab == null)
@@ -74,32 +84,19 @@ namespace Game.Combat.Units
                 Debug.LogWarning($"[UnitFactory] No prefab found for tag '{enemyTag}', using fallback");
             }
 
-            // Determine AI behavior based on tag or configuration
             AIBehavior behavior = DetermineAIBehavior(enemyTag);
-
             UnitStatsConfig ennemyStats = GetEnemyStatsConfig(enemyTag);
-            UnitStats stats;
-            // if transitionData does not exist, return default stats
-            if (transitionData != null)
-            {
-
-                Debug.Log("ennemy level is " + transitionData.ennemyLevel);
-                stats = ennemyStats != null
-               ? ennemyStats.GetStatsForLevel(transitionData.ennemyLevel)
-               : new UnitStats(50, 15, 2, 1);
-            }
-            else
-            {
-                stats = new UnitStats(50, 15, 3, 1);
-            }
+            
+            UnitStats stats = ennemyStats != null ? ennemyStats.GetStatsForLevel(level) : new UnitStats(50, 15, 2, 1);
 
             var unit = new Unit(
                 id: $"enemy_{_unitIdCounter++}",
-                displayName: transitionData?.enemyName ?? "Enemy",
+                displayName: fallbackName,
                 role: UnitRole.Enemy,
                 stats: stats,
-                aiBehavior: behavior
-            );
+                aiBehavior: behavior,
+                availableActions: ennemyStats != null ? ennemyStats.availableActions : new System.Collections.Generic.List<CombatActionType> { CombatActionType.MeleeAttack }
+            ); 
 
             GameObject prefabInstance = Instantiate(prefab);
             var visual = prefabInstance.AddComponent<UnitVisual>();

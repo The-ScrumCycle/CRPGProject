@@ -2,6 +2,7 @@ using UnityEngine;
 using Game.Combat;
 using Game.Core.Party;
 using Game.Core.Transitions;
+using Game.Combat.Actions;
 
 namespace Game.Combat.Units
 {
@@ -9,6 +10,9 @@ namespace Game.Combat.Units
     [CreateAssetMenu(fileName = "UnitStats", menuName = "Combat/Unit Stats Config")]
     public class UnitStatsConfig : ScriptableObject
     {
+        [Header("Action Loadout")]
+        public System.Collections.Generic.List<CombatActionType> availableActions;
+
         [Header("Combat Stats")]
         public int maxHealth = 100;
         public int attackPower = 20;

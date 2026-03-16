@@ -46,6 +46,11 @@ public class PartyManager : MonoBehaviour, ISaveable
         return activeFollowers.Contains(followerID);
     }
 
+    public List<FollowerID> GetActiveFollowers()
+    {
+        return activeFollowers;
+    }
+
     public int GetPartyLevel()
     {
         return partyLevel;
@@ -84,7 +89,5 @@ public class PartyManager : MonoBehaviour, ISaveable
         experienceToNextLevel = saveData.party.experienceToNextLevel;
         activeFollowers = saveData.party.activeFollowers.ConvertAll(i => (FollowerID)i);
     }
-
-
 
 }

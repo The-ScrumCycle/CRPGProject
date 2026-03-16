@@ -7,11 +7,11 @@ namespace Game.Combat.Grid
     /// Immutable type representing axial hex coordinates (q, r).
     /// Uses cube coordinate system internally for distance calculations (from my research this seems optimal?)
     /// </summary>
-    [Serializable]
+    [System.Serializable] 
     public struct HexCoordinates : IEquatable<HexCoordinates>
     {
-        public readonly int q;
-        public readonly int r;
+        public int q;
+        public int r;
 
         // Cube coordinate S is derived by s = -q - r
         public int S => -q - r;
@@ -164,6 +164,6 @@ namespace Game.Combat.Grid
             return $"Hex({q}, {r})";
         }
 
-        public static readonly HexCoordinates Invalid = new HexCoordinates(int.MinValue, int.MinValue);
+        public static HexCoordinates Invalid = new HexCoordinates(int.MinValue, int.MinValue);
     }
 }

@@ -16,6 +16,11 @@ TagManager:
   - Hydra
   - Follower
   - NPC
+  - Captain
+  - Warrior
+  - Cleric
+  - skeleton_ranged
+  - melee_skeleton
   layers:
   - Default
   - TransparentFX

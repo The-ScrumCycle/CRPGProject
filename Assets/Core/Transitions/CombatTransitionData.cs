@@ -24,6 +24,10 @@ namespace Game.Core.Transitions
         public int ennemyLevel;
         public int XPGiven;
 
+        [Header("Encounter Data")]
+        public System.Collections.Generic.List<string> ActiveCompanions = new System.Collections.Generic.List<string>();
+        public System.Collections.Generic.List<string> EncounterEnemies = new System.Collections.Generic.List<string>();
+
         [Header("Environment Data")]
         public EnvironmentType EnvironmentType;
 
@@ -78,9 +82,27 @@ namespace Game.Core.Transitions
                 enemyName   = enemy.name;
                 ennemyLevel = monster.GetEnemyLevel();
                 XPGiven     = monster.GetXPGiven();
-            }
+            } 
 
             EnvironmentType = EnvironmentType.Default;
+
+            // Manage active party
+            ActiveCompanions.Clear();
+            ActiveCompanions.Add("Captain"); // player maincharacter
+            // Safely poll the PartyManager for actual companions
+            if (PartyManager.Instance != null)
+            {
+                foreach (var follower in PartyManager.Instance.GetActiveFollowers())
+                {
+                    ActiveCompanions.Add(follower.ToString()); // add follower in our party to combat scene
+                }
+            }
+
+            EncounterEnemies.Clear();
+            if (!string.IsNullOrEmpty(enemyTag)) EncounterEnemies.Add(enemyTag); // The monster you physically touched
+
+            // TODO: add dynamic encounter enemy spawning that we can control
+            EncounterEnemies.Add("skeleton_ranged"); // Force-spawn a second enemy so we can test multi-AI
         }
 
         // Clears cached references when returning to exploration.

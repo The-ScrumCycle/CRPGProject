@@ -633,6 +633,8 @@ MonoBehaviour:
   gridWidth: 13
   gridHeight: 13
   unitFactory: {fileID: 1945263018}
+  playerDeploymentHexes: []
+  enemyDeploymentHexes: []
   shoveArrowPrefab: {fileID: 700429023681575523, guid: 3ce9f9edb54c21648bad9acccbba054c,
     type: 3}
   victoryExperience: 100
@@ -770,7 +772,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93239daa87cd2ed4f958848a91eaf081, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TagToPrefab
-  prefabs: []
+  prefabs:
+  - {fileID: 8554951425007040513, guid: b5c396f1d76b04c41bfb4bb1de06d392, type: 3}
+  - {fileID: 154498, guid: 0a392c2d7b526dc48a6d4d630e9a9749, type: 3}
+  - {fileID: 1876116233076952599, guid: bb807afb70c8b6b46ba899e745faf013, type: 3}
+  - {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489, type: 3}
+  - {fileID: 177072, guid: 6ff15eda21767db4988080a9497a5deb, type: 3}
+  - {fileID: 145884, guid: eca0c1ae7c2128944a004b705c72754d, type: 3}
 --- !u!4 &1462715937
 Transform:
   m_ObjectHideFlags: 0
@@ -1174,10 +1182,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 554373de7e832f9459b5af64df7170e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitFactory
-  playerPrefab: {fileID: 988817027152967208, guid: 163f29f84f4f7ba4b9169cf06e6a5ad2,
+  Character: {fileID: 8554951425007040513, guid: b5c396f1d76b04c41bfb4bb1de06d392,
     type: 3}
-  HeroStats: {fileID: 11400000, guid: e6482736a89381445b63fbae178c378b, type: 2}
-  JohnStats: {fileID: 11400000, guid: b47ad13836546624f8176fcc3c423388, type: 2}
+  CaptainStats: {fileID: 0}
+  WarriorStats: {fileID: 0}
+  ClericStats: {fileID: 0}
   HydraStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}
   CloseRangeSkletonStats: {fileID: 11400000, guid: 25de41f82a1748a499f7c45b469d4b95,
     type: 2}

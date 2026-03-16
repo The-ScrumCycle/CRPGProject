@@ -2,6 +2,7 @@ using Game.Core.Party;
 using Game.Combat.Grid;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Combat.Actions;
 
 namespace Game.Combat.Units
 {
@@ -14,29 +15,31 @@ namespace Game.Combat.Units
         public string Id { get; }
         public string DisplayName { get; }
         public UnitRole Role { get; }
-        public AIBehavior? AIBehavior { get; }
-        public UnitStats Stats { get; }
+        public UnitStats Stats { get; private set; }
+        public HexCell CurrentCell { get; set; }
+        public AIBehavior AIBehavior { get; }
+
         public Unit grappler { get; set; }
+        public bool IsAlive => Stats.currentHealth > 0;
+        public bool IsPlayerControlled => Role == UnitRole.Player;
+        public HexCoordinates Coordinates => CurrentCell != null ? CurrentCell.Coordinates : HexCoordinates.Invalid;
+        public bool IsGrappled => grappler != null; 
+        public List<CombatActionType> AvailableActions { get; } // actions a unit has avail
 
-        public HexCoordinates Coordinates { get; private set; }
-        public HexCell CurrentCell { get; private set; }
-
-        public bool IsAlive => Stats.IsAlive;
-        public bool IsPlayerControlled => Role == UnitRole.Player || Role == UnitRole.Companion;
-
-        public Unit(string id, string displayName, UnitRole role, UnitStats stats, AIBehavior? aiBehavior = null)
+        public Unit(string id, string displayName, UnitRole role, UnitStats stats, AIBehavior aiBehavior = AIBehavior.Aggressive, List<CombatActionType> availableActions = null)
         {
             Id = id;
             DisplayName = displayName;
             Role = role;
             Stats = stats;
             AIBehavior = aiBehavior;
+            // Assign a unit's valid actions or fallback to empty of none provided
+            AvailableActions = availableActions ?? new List<CombatActionType>();
         }
 
         // Update the unit's position. Called by HexGrid.
         internal void SetPosition(HexCoordinates coords, HexCell cell)
         {
-            Coordinates = coords;
             CurrentCell = cell;
         }
 
