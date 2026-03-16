@@ -15,7 +15,12 @@ namespace Game.Combat
         public Dictionary<Unit, UnitVisual> UnitVisuals { get; } = new Dictionary<Unit, UnitVisual>();
         public List<ActionIntent> EnemyIntents { get; } = new List<ActionIntent>();
         public CombatState CurrentState { get; set; } = CombatState.Initializing;
-        public bool PlayerHasActed { get; set; } = false;
+        public HashSet<Unit> ActedUnits { get; } = new HashSet<Unit>();
+
+        public void ClearActedUnits()
+        {
+            ActedUnits.Clear();
+        }
 
         public void RegisterUnit(Unit unit, UnitVisual visual)
         {

@@ -131,5 +131,15 @@ namespace Game.Combat.Turn
             }
             return false;
         }
+
+        // set the player's current unit through grid clicking/UI swaping
+        public void SetCurrentUnit(Unit unit)
+        {
+            int index = _turnOrder.IndexOf(unit);
+            if (index >= 0)
+            {
+                _currentIndex = index;
+            }
+        }
     }
 }

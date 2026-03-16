@@ -37,10 +37,12 @@ namespace Game.Combat
         public void StartPlayerTurn()
         {
             _state.CurrentState = CombatState.PlayerTurn;
-            _state.PlayerHasActed = false;
+            _state.ClearActedUnits(); // new pool of units for new turn
 
-            var currentUnit = _turnSystem.GetCurrentUnit();
-            Debug.Log($"[CombatManager] Player turn started: {currentUnit?.DisplayName}");
+            var firstUnit = GetNextAvailablePlayerUnit();
+            if (firstUnit != null) SelectPlayerUnit(firstUnit);
+            
+            Debug.Log($"[CombatManager] Player phase started.");
         }
 
         public void StartEnemyTurn()
@@ -66,11 +68,11 @@ namespace Game.Combat
             int oldRound = _turnSystem.RoundNumber;
             _turnSystem.AdvanceTurn();
 
-            // ONLY regenerate intents when a brand new round starts.
             if (_turnSystem.RoundNumber > oldRound)
             {
+                _state.ClearActedUnits(); // Clear enemies/players on new round
                 _enemyAI.GenerateAllIntents(_state);
-            } 
+            }
         }
 
         public Unit GetCurrentUnit()
@@ -82,6 +84,34 @@ namespace Game.Combat
         {
             var currentUnit = GetCurrentUnit();
             return currentUnit != null && currentUnit.IsPlayerControlled;
+        }
+
+        public void MarkUnitActed(Unit unit) { _state.ActedUnits.Add(unit); }
+        public bool HasUnitActed(Unit unit) { return _state.ActedUnits.Contains(unit); }
+
+        public bool HaveAllPlayerUnitsActed()
+        {
+            foreach (var unit in _state.AllUnits)
+            {
+                if (unit.IsPlayerControlled && unit.IsAlive && !HasUnitActed(unit))
+                    return false;
+            }
+            return true;
+        }
+
+        public Unit GetNextAvailablePlayerUnit()
+        {
+            foreach (var unit in _state.AllUnits)
+            {
+                if (unit.IsPlayerControlled && unit.IsAlive && !HasUnitActed(unit))
+                    return unit;
+            }
+            return null;
+        }
+
+        public void SelectPlayerUnit(Unit unit)
+        {
+            _turnSystem.SetCurrentUnit(unit);
         }
 
         public void InitializeTurnOrder(IEnumerable<Unit> units)
@@ -97,16 +127,6 @@ namespace Game.Combat
         public void GenerateInitialIntents()
         {
             _enemyAI.GenerateAllIntents(_state);
-        }
-
-        public void SetPlayerActed()
-        {
-            _state.PlayerHasActed = true;
-        }
-
-        public bool HasPlayerActed()
-        {
-            return _state.PlayerHasActed;
         }
 
         public void SetCombatState(CombatState newState)

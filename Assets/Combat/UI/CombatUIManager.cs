@@ -17,25 +17,28 @@ namespace Game.Combat.UI
         {
             if (CombatManager.Instance == null) return;
 
-            // Poll state from the CombatManager
-            var playerUnits = new System.Collections.Generic.List<Unit>();
-                foreach(var u in CombatManager.Instance.GetAllUnits()) {
-                if (u.IsPlayerControlled) playerUnits.Add(u);
-            }
+            var allUnits = CombatManager.Instance.GetAllUnits();
             var currentUnit = CombatManager.Instance.GetCurrentUnit();
-            bool hasActed = CombatManager.Instance.HasPlayerActed;
             bool isPlayerTurn = CombatManager.Instance.IsPlayerTurn;
             var currentMode = CombatManager.Instance.CurrentActionMode;
 
+            // Poll state from the CombatManager
+            var playerUnits = new System.Collections.Generic.List<Unit>();
+            foreach (var u in allUnits)
+            {
+                if (u.IsPlayerControlled) playerUnits.Add(u);
+            }
+            
             // Push state down to view layer
             if (unitRosterUI != null)
             {
-                unitRosterUI.RefreshRoster(playerUnits, currentUnit, hasActed);
+                unitRosterUI.RefreshRoster(playerUnits, currentUnit);
             }
 
             if (actionBarUI != null)
             {
-                actionBarUI.RefreshActionBar(currentMode, isPlayerTurn, hasActed);
+                bool activeUnitHasActed = currentUnit != null && CombatManager.Instance.HasUnitActed(currentUnit);
+                actionBarUI.RefreshActionBar(currentMode, isPlayerTurn, activeUnitHasActed);
             }
         }
     }

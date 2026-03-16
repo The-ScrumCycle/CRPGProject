@@ -284,10 +284,9 @@ namespace Game.Combat
 	    // NOTE: considering refactoring this to a seperate PlayerController
         private void HandlePlayerInput()
         {
-            if (_flowController.HasPlayerActed()) return;
-
             var currentUnit = _flowController.GetCurrentUnit();
-            if (currentUnit == null || !currentUnit.IsPlayerControlled) return;
+            // If the currently selected unit has already acted or is dead, do not process input
+            if (currentUnit == null || !currentUnit.IsPlayerControlled || _flowController.HasUnitActed(currentUnit)) return;
 
             // Mode switching
             if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -305,15 +304,22 @@ namespace Game.Combat
             {
                 // Check if player mouse is over a UI canvas, if so it's not a grid click so ignore.
                 if (UnityEngine.EventSystems.EventSystem.current != null && 
-                    UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-                {
-                    return; 
-                }
+                    UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return; 
 
                 var clickedHex = gridRenderer.GetHoveredHex();
                 var clickedCell = _grid.GetCell(clickedHex);
-
                 if (clickedCell == null) return;
+
+                // Swap unit when player clicks on a unit on grid
+                if (clickedCell.Occupant != null && clickedCell.Occupant.IsPlayerControlled && clickedCell.Occupant.IsAlive)
+                {
+                    if (!_flowController.HasUnitActed(clickedCell.Occupant))
+                    {
+                        _flowController.SelectPlayerUnit(clickedCell.Occupant);
+                        SetActionMode(PlayerActionMode.Move);
+                        return; // Successfully swapped, abort action execution
+                    }
+                }
 
                 if (_currentActionMode == PlayerActionMode.Move)
                 {
@@ -335,7 +341,8 @@ namespace Game.Combat
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 Debug.Log("[CombatManager] Player ended turn early");
-                _flowController.SetPlayerActed();
+                // Mark all alive players as acted to force turn end
+                foreach(var u in _state.AllUnits) if (u.IsPlayerControlled) _flowController.MarkUnitActed(u);
                 EndTurn();
             }
         }
@@ -353,13 +360,13 @@ namespace Game.Combat
             _currentHoverIntent = null;
             var currentUnit = _flowController.GetCurrentUnit();
 
-            // If mouse is not on UI, and it's our turn, and we haven't acted
+            // If mouse is not on UI, it's our turn, we have a unit, AND that specific unit hasn't acted
             if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject() && 
-                currentUnit != null && currentUnit.IsPlayerControlled && !_flowController.HasPlayerActed())
+                currentUnit != null && currentUnit.IsPlayerControlled && !_flowController.HasUnitActed(currentUnit))
             {
                 var cell = _grid.GetCell(currentHex);
                 
-                // Create a "Phantom" Intent for the UI to read, this is necessary due to how I implemented the health bar generating from an action intent
+                // Create a "Phantom" Intent for the UI to read
                 if (cell != null && _currentActionMode == PlayerActionMode.Attack && cell.Occupant != null && cell.Occupant.Role == UnitRole.Enemy)
                 {
                     int distance = _grid.GetDistance(currentUnit.Coordinates, currentHex);
@@ -377,23 +384,36 @@ namespace Game.Combat
 
             // Refresh highlights passing in the new phantom intent
             RefreshPlayerHighlights(_currentHoverIntent);
-        }
+        } 
 
         private void TryPlayerMove(Unit unit, HexCoordinates destination)
         {
             var moveAction = _actionResolver.CreateMoveAction(unit, destination);
             if (_actionResolver.Execute(moveAction))
             {
-                _flowController.SetPlayerActed();
+                var currentUnit = _flowController.GetCurrentUnit();
+                _flowController.MarkUnitActed(currentUnit);
                 
                 // Clear UI and Highlights immediately as player action is done
                 _currentHoverIntent = null;
                 _intentRenderer.Clear();
                 gridRenderer.ClearHighlights();
                 UpdateUnitWorldUIs();
-                
                 RefreshAllUnitVisuals();
-                Invoke(nameof(EndTurn), 0.3f);
+                
+                // End turn if player played all unit turns OR go to next unit
+                if (_flowController.HaveAllPlayerUnitsActed())
+                {
+                    Invoke(nameof(EndTurn), 0.3f);
+                }
+                else
+                {
+                    var nextUnit = _flowController.GetNextAvailablePlayerUnit();
+                    if (nextUnit != null) _flowController.SelectPlayerUnit(nextUnit);
+                    
+                    // Delay the UI refresh slightly so visual slide finishes before drawing new grids
+                    Invoke(nameof(ResetModeToMove), 0.3f); 
+                }
             }
         } 
 
@@ -424,7 +444,8 @@ namespace Game.Combat
                 
                 SweepForDeaths();
 
-                _flowController.SetPlayerActed();
+                var currentUnit = _flowController.GetCurrentUnit();
+                _flowController.MarkUnitActed(currentUnit);
                 
                 // Clear UI and Highlights immediately
                 _currentHoverIntent = null;
@@ -434,12 +455,27 @@ namespace Game.Combat
 
                 // updating enemy position (shove)
                 RefreshAllUnitVisuals();
-                Invoke(nameof(EndTurn), 0.3f);
+
+                // End turn if player played all unit turns OR go to next unit
+                if (_flowController.HaveAllPlayerUnitsActed())
+                {
+                    Invoke(nameof(EndTurn), 0.3f);
+                }
+                else
+                {
+                    var nextUnit = _flowController.GetNextAvailablePlayerUnit();
+                    if (nextUnit != null) _flowController.SelectPlayerUnit(nextUnit);
+                    
+                    // Delay the UI refresh slightly so visual slide finishes before drawing new grids
+                    Invoke(nameof(ResetModeToMove), 0.3f); 
+                }
             }
         }
 
-        
-
+        private void ResetModeToMove()
+        {
+            SetActionMode(PlayerActionMode.Move);
+        }
         #endregion
 
         #region Enemy AI
@@ -593,10 +629,9 @@ namespace Game.Combat
         }
 
         // Check if the player has acted this turn
-        public bool HasPlayerActed => _flowController != null && _flowController.HasPlayerActed();
+        public bool HasUnitActed(Unit unit) => _flowController != null && _flowController.HasUnitActed(unit);
 
         public bool IsPlayerTurn => _state != null && _state.CurrentState == CombatState.PlayerTurn;
-
         #endregion
     }
 }

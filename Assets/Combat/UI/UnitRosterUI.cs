@@ -14,36 +14,33 @@ namespace Game.Combat.UI
 
         private List<RosterCardUI> _cards = new List<RosterCardUI>();
 
-        public void RefreshRoster(IReadOnlyList<Unit> allUnits, Unit currentActiveUnit, bool playerHasActed)
+        public void RefreshRoster(IReadOnlyList<Unit> playerUnits, Unit currentActiveUnit)
         {
-            // Ensure we have enough cards instantiated
-            while (_cards.Count < allUnits.Count)
+            while (_cards.Count < playerUnits.Count)
             {
                 var newCard = Instantiate(rosterCardPrefab, rosterContainer);
                 _cards.Add(newCard);
             }
 
-            // Update visible cards and hide excess ones
             for (int i = 0; i < _cards.Count; i++)
             {
-                if (i < allUnits.Count)
+                if (i < playerUnits.Count)
                 {
-                    var unit = allUnits[i];
+                    var unit = playerUnits[i];
                     _cards[i].gameObject.SetActive(true);
 
-                    if (_cards[i].GetTrackedUnit() != unit)
-                    {
-                        _cards[i].Setup(unit);
-                    }
+                    if (_cards[i].GetTrackedUnit() != unit) _cards[i].Setup(unit);
 
                     bool isCurrentTurn = (unit == currentActiveUnit);
-                    _cards[i].Refresh(isCurrentTurn, playerHasActed);
+                    bool hasActed = CombatManager.Instance.HasUnitActed(unit);
+                    
+                    _cards[i].Refresh(isCurrentTurn, hasActed);
                 }
                 else
                 {
                     _cards[i].gameObject.SetActive(false);
                 }
             }
-        }
+        } 
     }
 }
