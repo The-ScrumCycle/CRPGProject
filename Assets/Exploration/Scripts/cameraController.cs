@@ -125,6 +125,12 @@ public class CameraController : MonoBehaviour
             transform.RotateAround(target.position, Vector3.up, rotateSpeed * Time.deltaTime);
             cameraRotation = transform.rotation;
         }
+
+        else if (Input.GetKey("e"))
+        {
+            transform.RotateAround(target.position, -Vector3.up, rotateSpeed * Time.deltaTime);
+            cameraRotation = transform.rotation;
+        }
     }
 
 
