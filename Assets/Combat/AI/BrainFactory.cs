@@ -11,13 +11,13 @@ namespace Game.Combat.AI
         {
             switch (behavior)
             {
-                // Alex: As you create new classes (e.g., SkeletonMeleeBrain, HealerBrain), 
-                // wire them up here and add the enums to AIBehavior.cs so we keep following the "Factory Key" pattern that Unity devs tend to use for this type of thing
-                case AIBehavior.HydraGrappler: return new HydraGrapplerBrain(); 
-		        // case AIBehavior.SkeletonRanged: return new SkeletonRangedBrain();
-                // case AIBehavior.Healer: return new HealerBrain();
-                
-                default: return null; 
+                case AIBehavior.Aggressive:
+                case AIBehavior.SkeletonMelee:    return new SkeletonMeleeBrain();
+                case AIBehavior.Defensive:
+                case AIBehavior.SkeletonRanged:   return new SkeletonRangedBrain();
+                case AIBehavior.Healer:           return new HealerBrain();
+                case AIBehavior.HydraGrappler:    return new HydraGrapplerBrain();
+                default: return null;
             }
         }
     }

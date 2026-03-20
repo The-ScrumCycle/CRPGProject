@@ -134,9 +134,10 @@ namespace Game.Combat
             if (enemyDeploymentHexes == null || enemyDeploymentHexes.Count == 0)
             {
                 Debug.LogWarning("[CombatManager] No Enemy Deployment Hexes assigned in Inspector! Using fallbacks.");
-                enemyDeploymentHexes = new System.Collections.Generic.List<HexCoordinates> 
-                { 
-                    new HexCoordinates(6, 6), new HexCoordinates(6, 5), new HexCoordinates(5, 6) 
+                enemyDeploymentHexes = new System.Collections.Generic.List<HexCoordinates>
+                {
+                    new HexCoordinates(6, 6), new HexCoordinates(6, 5), new HexCoordinates(5, 6),
+                    new HexCoordinates(7, 5), new HexCoordinates(5, 7)
                 };
             }
 
@@ -156,7 +157,7 @@ namespace Game.Combat
             // --- SPAWN ENEMIES ---
             List<string> enemiesToSpawn = transitionData != null && transitionData.EncounterEnemies.Count > 0 
                 ? transitionData.EncounterEnemies 
-                : new List<string> { "Enemy" }; // Fallback
+                : new List<string> { "skeleton_melee", "skeleton_ranged", "Hydra", "healer" }; // Fallback: spawn all 4 enemy types for standalone testing
 
             int enemyLevel = transitionData != null ? transitionData.ennemyLevel : 1;
 
