@@ -35,9 +35,26 @@ namespace Game.Combat.AI
                 }
                 else
                 {
-                    // Move towards player
+                    // Move toward target — pick cell that minimizes distance
                     var validMoves = resolver.GetValidMoveDestinations(enemyUnit);
-                    if (validMoves.Count > 0) return resolver.CreateMoveAction(enemyUnit, validMoves[0]); // Simplified move for demo
+                    if (validMoves.Count > 0)
+                    {
+                        HexCoordinates bestCell = validMoves[0];
+                        int bestMoveDist = grid.GetDistance(validMoves[0], bestTarget.Coordinates);
+
+                        for (int i = 1; i < validMoves.Count; i++)
+                        {
+                            int dist = grid.GetDistance(validMoves[i], bestTarget.Coordinates);
+                            if (dist < bestMoveDist)
+                            {
+                                bestMoveDist = dist;
+                                bestCell = validMoves[i];
+                            }
+                        }
+
+                        if (bestMoveDist < closestDist)
+                            return resolver.CreateMoveAction(enemyUnit, bestCell);
+                    }
                 }
             }
             return null;
