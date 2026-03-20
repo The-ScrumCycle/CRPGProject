@@ -256,6 +256,11 @@ namespace Game.Combat
                     var validMoves = _flowController.GetValidMoves(currentUnit);
                     foreach (var coord in validMoves)
                         gridRenderer.AddHighlight(coord, HighlightType.PlayerMove);
+
+                    // Also show attackable enemies so the player knows they're already in range
+                    var attackableNow = _flowController.GetValidAttackTargets(currentUnit);
+                    foreach (var coord in attackableNow)
+                        gridRenderer.AddHighlight(coord, HighlightType.PlayerAttack);
                 }
                 else if (_currentActionMode == PlayerActionMode.Attack)
                 {
@@ -581,15 +586,12 @@ namespace Game.Combat
             }
             else
             {
-                string reason;
                 if (lockedIntent == null)
-                    reason = "no intent was generated";
+                    Debug.Log($"[AI Skip] {enemyUnit.DisplayName} ({enemyUnit.AIBehavior}) has nothing to do — no action planned");
                 else if (!targetStillInHex)
-                    reason = $"target {lockedIntent.TargetUnit?.DisplayName} moved from expected hex";
+                    Debug.Log($"[AI Dodged] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} on {lockedIntent.TargetUnit?.DisplayName} failed — target moved away from expected hex");
                 else
-                    reason = $"action {lockedIntent.Action?.GetType().Name} failed validation";
-
-                Debug.Log($"[CombatManager] {enemyUnit.DisplayName}'s {lockedIntent?.Action?.GetType().Name ?? "null"} failed — {reason}");
+                    Debug.Log($"[AI Blocked] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} failed validation — destination may be occupied or target out of range");
             }
 
             // 3. Force visual refresh so any shoved units physically slide to their new hex
