@@ -10,6 +10,10 @@ namespace Game.Combat.AI
     {
         public ICombatAction DecideAction(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
         {
+            // Priority 0: Retreat to healer if badly wounded and we're the most damaged
+            if (BrainHelpers.ShouldRetreatToHealer(enemyUnit, allUnits, out Unit healer))
+                return BrainHelpers.MoveToward(enemyUnit, healer, grid, resolver);
+
             Unit target = FindNearestPlayer(enemyUnit, allUnits, grid);
             if (target == null) return null;
 
