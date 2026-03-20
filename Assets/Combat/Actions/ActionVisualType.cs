@@ -11,6 +11,8 @@ namespace Game.Combat.Actions
         None,
         Move,
         MeleeAttack,
-        RangedAttack
+        RangedAttack,
+        Grapple,
+        Heal
     }
 }
