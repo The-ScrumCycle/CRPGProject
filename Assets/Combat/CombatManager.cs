@@ -581,8 +581,15 @@ namespace Game.Combat
             }
             else
             {
-                // AI action failed e.g player outmanuvered the AI
-                Debug.Log($"[CombatManager] {enemyUnit.DisplayName}'s action failed (target moved or invalid)!");
+                string reason;
+                if (lockedIntent == null)
+                    reason = "no intent was generated";
+                else if (!targetStillInHex)
+                    reason = $"target {lockedIntent.TargetUnit?.DisplayName} moved from expected hex";
+                else
+                    reason = $"action {lockedIntent.Action?.GetType().Name} failed validation";
+
+                Debug.Log($"[CombatManager] {enemyUnit.DisplayName}'s {lockedIntent?.Action?.GetType().Name ?? "null"} failed — {reason}");
             }
 
             // 3. Force visual refresh so any shoved units physically slide to their new hex
