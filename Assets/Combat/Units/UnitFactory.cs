@@ -23,6 +23,7 @@ namespace Game.Combat.Units
         [Header("Enemy Configuration")]
         [SerializeField] private UnitStatsConfig HydraStats;
         [SerializeField] private UnitStatsConfig CloseRangeSkletonStats;
+        [SerializeField] private UnitStatsConfig RangedSkeletonStats;
         [SerializeField] private GameObject fallbackEnemyPrefab;
         [SerializeField] private UnitStatsConfig defaultEnemyStats;
 
@@ -111,13 +112,17 @@ namespace Game.Combat.Units
             {
                 case "Hydra":
                     return HydraStats;
+                case "skeleton_melee":
                 case "CloseRangeSkeleton":
                     return CloseRangeSkletonStats;
+                case "skeleton_ranged":
+                    return RangedSkeletonStats;
+                case "healer":
                 case "troll":
                     return defaultEnemyStats;
                 default:
                     Debug.LogWarning($"[UnitFactory] No stats config found for tag '{enemyTag}', using default stats");
-                    return defaultEnemyStats; 
+                    return defaultEnemyStats;
             }
         }
 

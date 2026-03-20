@@ -4994,7 +4994,7 @@ GameObject:
   - component: {fileID: 9555246}
   m_Layer: 0
   m_Name: skeleton_melee
-  m_TagString: melee_skeleton
+  m_TagString: skeleton_melee
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
