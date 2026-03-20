@@ -9,62 +9,31 @@ namespace Game.Combat.AI
     {
         public ICombatAction DecideAction(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
         {
-            // Find the most damaged ally (enemy unit with lowest HP ratio, not self)
-            Unit damagedAlly = FindMostDamagedAlly(enemyUnit, allUnits);
-            if (damagedAlly == null) return null; // Everyone is at full HP — skip turn
+            Unit damagedAlly = BrainHelpers.FindMostDamagedAlly(enemyUnit, allUnits);
 
-            int distance = grid.GetDistance(enemyUnit.Coordinates, damagedAlly.Coordinates);
+            if (damagedAlly != null)
+            {
+                int distance = grid.GetDistance(enemyUnit.Coordinates, damagedAlly.Coordinates);
 
-            // Priority 1: Heal if within attack range
-            if (distance >= 1 && distance <= enemyUnit.Stats.attackRange)
-                return new RangedHealAction(enemyUnit, damagedAlly);
+                // Priority 1: Heal if adjacent/in range
+                if (distance >= 1 && distance <= enemyUnit.Stats.attackRange)
+                    return new RangedHealAction(enemyUnit, damagedAlly);
 
-            // Priority 2: Move toward most damaged ally
-            return MoveToward(enemyUnit, damagedAlly, grid, resolver);
-        }
+                // Priority 2: Retreat away from players (the injured ally will come to us)
+                var retreat = BrainHelpers.MoveAwayFromPlayers(enemyUnit, allUnits, grid, resolver);
+                if (retreat != null) return retreat;
+            }
 
-        private Unit FindMostDamagedAlly(Unit self, IReadOnlyList<Unit> allUnits)
-        {
-            Unit best = null;
-            float bestRatio = 1.0f;
-
+            // Nobody hurt — desperation melee if adjacent
             foreach (var unit in allUnits)
             {
-                if (!unit.IsAlive || unit.IsPlayerControlled || unit == self) continue;
-                float ratio = (float)unit.Stats.currentHealth / unit.Stats.maxHealth;
-                if (ratio < bestRatio)
-                {
-                    bestRatio = ratio;
-                    best = unit;
-                }
+                if (!unit.IsAlive || !unit.IsPlayerControlled) continue;
+                if (grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates) == 1)
+                    return resolver.CreateMeleeAttack(enemyUnit, unit);
             }
 
-            // Only return if actually damaged
-            return bestRatio < 1.0f ? best : null;
-        }
-
-        private MoveAction MoveToward(Unit mover, Unit target, HexGrid grid, ActionResolver resolver)
-        {
-            var validMoves = resolver.GetValidMoveDestinations(mover);
-            if (validMoves.Count == 0) return null;
-
-            HexCoordinates bestCell = validMoves[0];
-            int bestDist = grid.GetDistance(validMoves[0], target.Coordinates);
-
-            for (int i = 1; i < validMoves.Count; i++)
-            {
-                int dist = grid.GetDistance(validMoves[i], target.Coordinates);
-                if (dist < bestDist)
-                {
-                    bestDist = dist;
-                    bestCell = validMoves[i];
-                }
-            }
-
-            if (bestDist >= grid.GetDistance(mover.Coordinates, target.Coordinates))
-                return null;
-
-            return resolver.CreateMoveAction(mover, bestCell);
+            // Nobody hurt, nobody adjacent — idle
+            return null;
         }
     }
 }
