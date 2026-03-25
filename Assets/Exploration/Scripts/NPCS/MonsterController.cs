@@ -12,7 +12,7 @@ public class MonsterController : MonoBehaviour
     public float stoppingDistance = 1f;
 
     [Header("Visibility")]
-    public float FOV = 125.0f;
+    public float FOV = 125.0f; //angle of vision
     public LayerMask obstaclesMask;
 
     [Header("Search & Return")]
