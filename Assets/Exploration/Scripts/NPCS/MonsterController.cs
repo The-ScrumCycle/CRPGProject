@@ -12,7 +12,7 @@ public class MonsterController : MonoBehaviour
     public float stoppingDistance = 1f;
 
     [Header("Visibility")]
-    public float FOV = 125.0f;
+    public float FOV = 125.0f; //angle of vision
     public LayerMask obstaclesMask;
 
     [Header("Search & Return")]
@@ -22,7 +22,9 @@ public class MonsterController : MonoBehaviour
     [Header("Targets")]
     public Transform playerCharacter;
 
-    private Vector3 basePosition;
+
+    //Initial states of monster
+    private Vector3 basePosition; // monster spawn point
     private float patrolTimer = 0f;
     private float searchTimer = 0f;
     private bool isSearching = false;
@@ -30,7 +32,8 @@ public class MonsterController : MonoBehaviour
 
     [Header("Ennemy Level and XP")]
     [SerializeField]  int enemyLevel = 1;
-    [SerializeField]  int xpGiven    = 50;
+    [SerializeField]  int xpGiven    = 50; //xp dropped by monster
+
 
     private NavMeshAgent agent;
     private PlayerController playerController;
@@ -39,6 +42,7 @@ public class MonsterController : MonoBehaviour
 
     void Awake()
     {
+        //initializes components
         agent = GetComponent<NavMeshAgent>();
         agent.speed = monsterSpeed;
         basePosition = transform.position;
@@ -53,7 +57,7 @@ public class MonsterController : MonoBehaviour
 
     void Start()
     {
-        GetPlayer();
+        GetPlayer(); // locate player on scene
 
         string id = GetComponent<EnemyID>().getEnemyID();
 
@@ -64,16 +68,19 @@ public class MonsterController : MonoBehaviour
         }
     }
 
+    //finding the player
     private void GetPlayer()
     {
         playerController = FindAnyObjectByType<PlayerController>();
         if (playerController == null)
         {
+            //just a safety thing
             playerCharacter = GameObject.FindGameObjectWithTag("Player").transform;
         }
 
         if (playerCharacter == null && playerController != null)
         {
+            //if both empty, player position = position of object with the script attached to it
             playerCharacter = playerController.transform;
         }
     }
@@ -85,21 +92,25 @@ public class MonsterController : MonoBehaviour
         if (playerController.GetInDialogue()) return;
 
         UpdateAnimator();
+        //if monster can see player
         bool canSee = CheckVisibility();
 
         if (canSee)
         {
+            //start chasing if cansee
             isChasing = true;
             isSearching = false;
+            //live update placement of player
             agent.SetDestination(playerCharacter.position);
 
+            //Basically if the ennemy touches the player
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f)
             {
                 Debug.Log("Enemy attacked you!");
                 GameStateManager.Instance.TransitionToCombat(gameObject);
             }
 
-            // If monster goes too far from base, it gives up
+            // If monster goes too far from base it gives up
             if (Vector3.Distance(transform.position, basePosition) > maxDistanceFromBase)
             {
                 StopChase();
@@ -118,9 +129,11 @@ public class MonsterController : MonoBehaviour
     // Monster patrols around its base position within a defined radius, waiting for a random time before moving to the next point.
     void PatrolBehavior()
     {
+        //checks for new patrol point if standing still
         if (!agent.hasPath || agent.remainingDistance < 1f)
         {
             patrolTimer += Time.deltaTime;
+            //randomize patrol 
             if (patrolTimer >= Random.Range(1f, waitTimeMax))
             {
                 Vector3 randomPoint = basePosition + Random.insideUnitSphere * patrolRadius;
@@ -134,7 +147,7 @@ public class MonsterController : MonoBehaviour
         }
     }
 
-    // When the monster loses sight of the player, it enters a search mode where it rotates in place for a certain duration, trying to find the player again. 
+    // When the monster loses sight of the player it enters a search mode where it rotates in place for a certain duration, trying to find the player again. 
     void SearchBehavior()
     {
         if (!isSearching)

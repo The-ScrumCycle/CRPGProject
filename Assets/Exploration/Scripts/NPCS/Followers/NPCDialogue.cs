@@ -22,10 +22,10 @@ public class NPCDialogue : MonoBehaviour
     private FollowerController followerController;
 
     [Header("Auto Dialogue Triggers Settings")]
-    public bool   triggerOnApproach = false;
+    public bool triggerOnApproach = false;
     public string triggerFlag = ""; // if set, flag has to be true for dialogue to trigger
     public string dontTriggerFlag = ""; // if set, flag has to be false for dialogue to trigger
-    public bool   hasTriggered = false;
+    public bool hasTriggered = false;
 
     [Header("Actions")]
     private string actionLeave = "leave";
@@ -38,29 +38,29 @@ public class NPCDialogue : MonoBehaviour
     private CameraController camera;
 
     // Main boss actions
-    private string foundMalakor    = "foundMalakor";
-    private string startBossFight  = "startBossFight";
-    private string runAway         = "runAway";
+    private string foundMalakor = "foundMalakor";
+    private string startBossFight = "startBossFight";
+    private string runAway = "runAway";
     private string malakorSpeaking = "malakorSpeaking";
-    private string ranAway         = "ranAway";
+    private string ranAway = "ranAway";
 
     // john actions
-    private string johnInParty    = "johnInParty";
+    private string johnInParty = "johnInParty";
     private string johnNotInParty = "johnNotInParty";
-    private string JohnIntroOver  = "johnIntroOver";
-    private string johnWait       = "johnWait";
-    private string johnFollow     = "johnFollow";
+    private string JohnIntroOver = "johnIntroOver";
+    private string johnWait = "johnWait";
+    private string johnFollow = "johnFollow";
     private string johnVillageExplored = "johnVillageExplored";
     private string johnSpeaking = "johnSpeaking";
 
     // clarissa actions
-    private string clarissaInParty    = "clarissaInParty";
+    private string clarissaInParty = "clarissaInParty";
     private string clarissaNotInParty = "clarissaNotInParty";
-    private string clarissaIntroOver  = "clarissaIntroOver";
-    private string clarissaWait       = "clarissaWait";
-    private string clarissaFollow     = "clarissaFollow";
-    private string ogreBossDestroyed  = "ogreBossDestroyed";
-    private string clarissaSpeaking   = "clarissaSpeaking";
+    private string clarissaIntroOver = "clarissaIntroOver";
+    private string clarissaWait = "clarissaWait";
+    private string clarissaFollow = "clarissaFollow";
+    private string ogreBossDestroyed = "ogreBossDestroyed";
+    private string clarissaSpeaking = "clarissaSpeaking";
 
     private void Awake()
     {
@@ -119,15 +119,16 @@ public class NPCDialogue : MonoBehaviour
                 Debug.LogError("player not found");
                 return false;
             }
+            playerAgent = player.GetComponent<NavMeshAgent>(); // FIX
         }
 
         if (playerController == null)
         {
             playerController = player.GetComponent<PlayerController>();
             if (playerController == null)
-              {
-                  Debug.LogError("PlayerController component not found on player");
-                  return false;
+            {
+                Debug.LogError("PlayerController component not found on player");
+                return false;
             }
         }
 
@@ -146,7 +147,7 @@ public class NPCDialogue : MonoBehaviour
             return;
         }
 
-        if(SearchForPlayer() && Vector3.Distance(player.transform.position, transform.position) < 8f)
+        if (SearchForPlayer() && Vector3.Distance(player.transform.position, transform.position) < 8f)
         {
             // start captain dialogue flow
             BeginNPCDialogue();
@@ -302,7 +303,7 @@ public class NPCDialogue : MonoBehaviour
 
             else if (curAction == malakorSpeaking)
             {
-                uiRunner.UpdateFace(Malakor); 
+                uiRunner.UpdateFace(Malakor);
             }
         }
 
@@ -321,28 +322,25 @@ public class NPCDialogue : MonoBehaviour
         uiRunner.OptionSelectedAction -= OnOptionSelected;
         uiRunner.DialogueEndedAction -= OnDialogueEnded;
 
-        if(state.hasFlag(runAway) && !state.hasFlag(ranAway))
+        if (state.hasFlag(runAway)) // FIX
         {
-            this.state.setFlag("ranAway");
+            this.state.removeFlag(runAway); // FIX
+            this.state.setFlag(ranAway);
 
-            if (playerAgent == null)
+            if (playerAgent == null) playerAgent = player.GetComponent<NavMeshAgent>(); // FIX
+
+            if (playerAgent != null) // FIX
             {
-                Debug.LogError("playerAgent is null! Teleport failed.");
-                return;
+                Vector3 targetPosition = new Vector3(38, 0, -247);
+                NavMeshHit hit;
+
+                if (NavMesh.SamplePosition(targetPosition, out hit, 15.0f, NavMesh.AllAreas))
+                {
+                    playerAgent.Warp(hit.position); // FIX
+                }
             }
 
-            Vector3 targetPosition = new Vector3(38, 0, -247); 
-            NavMeshHit hit;
-            
-            if (NavMesh.SamplePosition(targetPosition, out hit, 15.0f, NavMesh.AllAreas))
-            {
-                playerAgent.enabled = false;            
-                player.transform.position = hit.position; 
-                playerAgent.enabled = true;             
-                playerAgent.Warp(hit.position);        
-            }
-
-            camera.GoToPlayer();
+            if (camera != null) camera.GoToPlayer();
         }
 
     }
