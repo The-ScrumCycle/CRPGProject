@@ -29,6 +29,7 @@ namespace Game.Core
         private PlayerController _playerController;
         private GameObject _player;
         private GameObject _mainCamera;
+        private MusicController musicController;
 
         void Awake()
         {
@@ -51,6 +52,8 @@ namespace Game.Core
         void Start()
         {
             CacheExplorationReferences();
+
+            musicController = MusicController.Instance;
         }
 
         private void CacheExplorationReferences()
@@ -93,6 +96,9 @@ namespace Game.Core
             // Mark enemy for destruction on return
             EnnemiesState.Instance?.SetDeadEnnemy(enemy.GetComponent<EnemyID>().getEnemyID());
 
+            // change music to combat
+            musicController.SetMusic(musicController.GetCombatMusic());
+
             // Load combat scene
             SceneManager.LoadScene(combatSceneName);
         }
@@ -109,6 +115,9 @@ namespace Game.Core
 
             LastCombatResult = result;
             _isReturningFromCombat = true; // set combat return flag for state management
+
+            // change music back to exploration
+            musicController.SetMusic(musicController.GetExplorationMusic());
 
             SetState(GameStates.Exploration);
             SceneManager.LoadScene(explorationSceneName);

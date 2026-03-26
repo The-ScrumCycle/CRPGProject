@@ -13,6 +13,7 @@ public class DockController : MonoBehaviour
     public PlayerController playerController;
     public ShipController shipController;
     public CameraController cameraController;
+    [SerializeField] private MusicController musicController;
 
     // get controllers and game objects
     private void Start()
@@ -41,6 +42,8 @@ public class DockController : MonoBehaviour
         {
             captain = GameObject.FindGameObjectWithTag("Captain");
         }
+
+        musicController = MusicController.Instance;
     }
 
 
@@ -92,5 +95,8 @@ public class DockController : MonoBehaviour
         playerController.SetControllable(true);
         cameraController.SetTarget(player.transform);
         cameraController.SetPlayerCamera();
+
+        // play exploration music
+        musicController.SetMusic(musicController.GetExplorationMusic());
     }
 }

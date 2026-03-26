@@ -18,6 +18,8 @@ public class CaptainController : MonoBehaviour
     [SerializeField] private UIRunner uiRunner;
     [SerializeField] private DialogueRunner runner;
 
+    [SerializeField] private MusicController musicController;
+
     // tracks whether this dialogue ended because player chose to board
     private bool boardedFromDialogue;
 
@@ -63,6 +65,8 @@ public class CaptainController : MonoBehaviour
     {
         state = GameState.Instance;
         SearchForPlayer();
+
+        musicController = MusicController.Instance;
 
     }
 
@@ -145,6 +149,9 @@ public class CaptainController : MonoBehaviour
         // player and captain should not be visible while on the boat. 
         Player.SetActive(false);
         gameObject.SetActive(false);
+
+        // play sailing music
+        musicController.SetMusic(musicController.GetSailingMusic());
 
     }
 
