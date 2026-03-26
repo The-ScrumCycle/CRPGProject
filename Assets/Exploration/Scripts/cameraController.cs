@@ -20,6 +20,8 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float maxZoom = 20f;
     [SerializeField] private float zoomSpeed = 0.4f;
     [SerializeField] private float rotateSpeed = 20f;
+    [SerializeField] private float lockOffset = 10f;
+    [SerializeField] private float angle = 60f;
     private float rotationNum = 0;
     private Vector3 distanceUP = new Vector3(0, 5f, 10f);
     private Quaternion cameraRotation = Quaternion.Euler(60f, 180f, 0f);
@@ -33,45 +35,44 @@ public class CameraController : MonoBehaviour
     private float savedPlayerMaxZoom = 20f;
     private float savedPlayerZoomSpeed = 0.4f;
     private float savedPlayerRotateSpeed = 20f;
+    private float savedPlayerLockOffset = 10f;
+    private float savedPlayerAngle = 60f;
 
 
 
     void Start()
     {
         // The camera goes to it's default position
-        transform.rotation = Quaternion.Euler(60f, 180f, 0f);
         target = GameObject.FindGameObjectWithTag("Player").transform;
         if (target != null)
             SetLockCamera();
+            transform.rotation = Quaternion.Euler(60f, 180f, 0f);
 
     }
 
 
     void Update()
     {
-        // if we don't have a target, return 
         if (target == null) return;
-
-        // if input is blocked, return
         if (inputBlocked) return;
 
-        // set camera mode
         zoomController();
+
         if (Input.GetKeyDown("q"))
         {
             freeCamera = !freeCamera;
+            if (freeCamera)
+            {
+                transform.rotation = cameraRotation;
+            }
         }
+
         if (!freeCamera)
         {
             SetLockCamera();
         }
         else
         {
-            if (Input.GetKeyDown("q"))
-            {
-                transform.rotation = cameraRotation;
-            }
-
             setFreeCamera();
         }
     }
@@ -140,6 +141,7 @@ public class CameraController : MonoBehaviour
             transform.RotateAround(target.position, -Vector3.up, rotateSpeed * Time.deltaTime);
             cameraRotation = transform.rotation;
         }
+
     }
 
 
@@ -162,13 +164,13 @@ public class CameraController : MonoBehaviour
         // back
         if (rotationNum == 0)
         {
-            distanceUP = new Vector3(0, zoom, 10f);
+            distanceUP = new Vector3(0, zoom, lockOffset);
         }
 
         // in front
         if (rotationNum == 1)
         {
-            distanceUP = new Vector3(0, zoom, -10f);
+            distanceUP = new Vector3(0, zoom, -lockOffset);
         }
 
         // in Left
@@ -186,7 +188,13 @@ public class CameraController : MonoBehaviour
 
         // Camera position
         transform.position = targetPosition + distanceUP;
-        transform.LookAt(target.position);
+
+        // ai code here 
+        float yRot = 180f;
+        if (rotationNum == 1) yRot = 0f;
+        if (rotationNum == 2) yRot = 90f;
+        if (rotationNum == 3) yRot = 270f;
+        transform.rotation = Quaternion.Euler(angle, yRot, 0f);
 
     }
 
@@ -229,7 +237,9 @@ public class CameraController : MonoBehaviour
         savedPlayerMaxZoom = maxZoom;
         savedPlayerZoomSpeed = zoomSpeed;
         savedPlayerRotateSpeed = rotateSpeed;
-           
+        savedPlayerLockOffset = lockOffset;
+        savedPlayerAngle = angle;
+
         // change to general ship settings
         zoom = 35f;
         cameraSpeed = 60f;
@@ -237,6 +247,11 @@ public class CameraController : MonoBehaviour
         maxZoom = 150f;
         zoomSpeed = 3f;
         rotateSpeed = 90f;
+        lockOffset = 35f;
+        angle = 25f;
+
+        cameraRotation = Quaternion.Euler(angle, 180f, 0f);
+        SetLockCamera();
     }
 
     public void SetPlayerCamera()
@@ -248,6 +263,11 @@ public class CameraController : MonoBehaviour
         maxZoom = savedPlayerMaxZoom;
         zoomSpeed = savedPlayerZoomSpeed;
         rotateSpeed = savedPlayerRotateSpeed;
+        lockOffset = savedPlayerLockOffset;
+        angle = savedPlayerAngle;
+
+        cameraRotation = Quaternion.Euler(angle, 180f, 0f);
+        SetLockCamera();
     }
 
 

@@ -22,6 +22,7 @@ TagManager:
   - skeleton_ranged
   - melee_skeleton
   - Shortcut
+  - Ship
   layers:
   - Default
   - TransparentFX
