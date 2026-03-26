@@ -261,7 +261,7 @@
       "type": "line",
       "speaker": "player",
       "action": "runAway, foundMalakor",
-      "text": "\"You're right. We're outmatched. [Run away is recommended for new players]\"",
+      "text": "\" We're outmatched. [Run away is recommended for new players]\"",
       "next": null
     }
 
