@@ -21,6 +21,7 @@ TagManager:
   - Cleric
   - skeleton_ranged
   - melee_skeleton
+  - Shortcut
   layers:
   - Default
   - TransparentFX

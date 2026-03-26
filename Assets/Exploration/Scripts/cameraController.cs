@@ -26,6 +26,14 @@ public class CameraController : MonoBehaviour
     // flag to block camera movement when dialogue is open
     private bool inputBlocked = false;
 
+    // Removed duplicate fields and added saved player settings
+    private float savedPlayerZoom = 13f;
+    private float savedPlayerCameraSpeed = 20f;
+    private float savedPlayerMinZoom = 5f;
+    private float savedPlayerMaxZoom = 20f;
+    private float savedPlayerZoomSpeed = 0.4f;
+    private float savedPlayerRotateSpeed = 20f;
+
 
 
     void Start()
@@ -63,6 +71,7 @@ public class CameraController : MonoBehaviour
             {
                 transform.rotation = cameraRotation;
             }
+
             setFreeCamera();
         }
     }
@@ -213,12 +222,34 @@ public class CameraController : MonoBehaviour
     // set camera mode for ship settings ( change settings for ship)
     public void SetShipCamera()
     {
-        zoom = 40f;
+        // save current settings for player camera
+        savedPlayerZoom = zoom;
+        savedPlayerCameraSpeed = cameraSpeed;
+        savedPlayerMinZoom = minZoom;
+        savedPlayerMaxZoom = maxZoom;
+        savedPlayerZoomSpeed = zoomSpeed;
+        savedPlayerRotateSpeed = rotateSpeed;
+           
+        // change to general ship settings
+        zoom = 35f;
         cameraSpeed = 60f;
         minZoom = 30f;
         maxZoom = 150f;
         zoomSpeed = 3f;
         rotateSpeed = 90f;
     }
+
+    public void SetPlayerCamera()
+    {
+        // restore player camera settings
+        zoom = savedPlayerZoom;
+        cameraSpeed = savedPlayerCameraSpeed;
+        minZoom = savedPlayerMinZoom;
+        maxZoom = savedPlayerMaxZoom;
+        zoomSpeed = savedPlayerZoomSpeed;
+        rotateSpeed = savedPlayerRotateSpeed;
+    }
+
+
 
 }

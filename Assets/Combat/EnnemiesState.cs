@@ -51,7 +51,11 @@ namespace Game.Combat
         public void LoadSaveData(SaveData saveData)
         {
             deadEnnemiesNames = new List<string>(saveData.enemy.deadEnnemiesNames);
+            killEnnemies();
+        }
 
+        public void killEnnemies()
+        {
             // kill all ennemies that are in the list
             EnemyID[] enemies = FindObjectsOfType<EnemyID>();
             foreach (EnemyID enemy in enemies)
@@ -62,6 +66,8 @@ namespace Game.Combat
                 }
             }
         }
+
+
     }
 
 }

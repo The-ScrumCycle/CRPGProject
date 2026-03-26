@@ -369,7 +369,7 @@
     {
       "id": "43",
       "type": "option",
-      "options": [ "45", "47", "44" ]
+      "options": [ "600", "45", "47", "44" ]
     },
     {
       "id": "44",
@@ -551,7 +551,41 @@
       "action": "",
       "text": "\"Aye, I had a word with your crew. Looks like we're sailing to the outer islands to smash some cursed crystals, eh?\" He laughs. \"Love it. Count me in.\"",
       "next": null
+    },
+
+    {
+      "id": "600",
+      "type": "conditional",
+      "eventName": "foundMalakor",
+      "trueNode": "601",
+      "falseNode": "603"
+    },
+    {
+      "id": "601",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"Captain, it's time to set sail.\"",
+      "next": "602"
+    },
+    {
+      "id": "602",
+      "type": "line",
+      "speaker": "npc",
+      "action": "board",
+      "text": "\"About time, Jade! I was starting to get bored out of my mind waiting around on this cursed rock. Let's get moving.\"",
+      "next": null
+    },
+    {
+      "id": "603",
+      "type": "line",
+      "speaker": "player",
+      "action": "foundMalakor",
+      "text": "\"I saw Malakor {Debug}\"",
+      "next": null
     }
+
+
 
   ]
 }

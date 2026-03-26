@@ -4,6 +4,9 @@ using Game.Core;
 using Dialogue.Data;
 using State;
 using UnityEngine.AI;
+using Unity.AI.Navigation;
+using Game.Combat;
+
 
 public class NPCDialogue : MonoBehaviour
 {
@@ -299,6 +302,20 @@ public class NPCDialogue : MonoBehaviour
             else if (curAction == runAway)
             {
                 this.state.setFlag("runAway");
+                GameObject[] monsters = GameObject.FindGameObjectsWithTag("Shortcut");
+                foreach (GameObject monster in monsters)
+                {
+                    EnemyID enemyID = monster.GetComponent<EnemyID>();
+                    if (enemyID != null)
+                    {
+                        EnnemiesState.Instance.SetDeadEnnemy(enemyID.getEnemyID());
+                        EnnemiesState.Instance.killEnnemies();
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"GameObject {monster.name} tagged as 'Shortcut' does not have an enemyID component.");
+                    }
+                }
             }
 
             else if (curAction == malakorSpeaking)
@@ -322,21 +339,21 @@ public class NPCDialogue : MonoBehaviour
         uiRunner.OptionSelectedAction -= OnOptionSelected;
         uiRunner.DialogueEndedAction -= OnDialogueEnded;
 
-        if (state.hasFlag(runAway)) // FIX
+        if (state.hasFlag(runAway)) 
         {
-            this.state.removeFlag(runAway); // FIX
+            this.state.removeFlag(runAway); 
             this.state.setFlag(ranAway);
 
-            if (playerAgent == null) playerAgent = player.GetComponent<NavMeshAgent>(); // FIX
+            if (playerAgent == null) playerAgent = player.GetComponent<NavMeshAgent>(); 
 
-            if (playerAgent != null) // FIX
+            if (playerAgent != null) 
             {
                 Vector3 targetPosition = new Vector3(38, 0, -247);
                 NavMeshHit hit;
 
                 if (NavMesh.SamplePosition(targetPosition, out hit, 15.0f, NavMesh.AllAreas))
                 {
-                    playerAgent.Warp(hit.position); // FIX
+                    playerAgent.Warp(hit.position); 
                 }
             }
 
