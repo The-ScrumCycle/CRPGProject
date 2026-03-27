@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using Game.Core.Transitions;
 using Game.Combat;
 using UnityEngine.AI;
+using System.Collections.Generic;
 
 namespace Game.Core
 {
@@ -163,7 +164,7 @@ namespace Game.Core
             }
 
             // restore companion locations
-            GameObject[] followers = GameObject.FindGameObjectsWithTag("Follower");
+            List<GameObject> followers = PartyManager.Instance.GetActiveFollowersObjects();
 
             foreach (GameObject follower in followers)
             {

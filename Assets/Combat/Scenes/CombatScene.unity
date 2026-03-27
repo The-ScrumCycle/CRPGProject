@@ -779,6 +779,8 @@ MonoBehaviour:
   - {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489, type: 3}
   - {fileID: 177072, guid: 6ff15eda21767db4988080a9497a5deb, type: 3}
   - {fileID: 145884, guid: eca0c1ae7c2128944a004b705c72754d, type: 3}
+  - {fileID: 145884, guid: eca0c1ae7c2128944a004b705c72754d, type: 3}
+  - {fileID: 1666678542618180, guid: f5585b48989050840b64026b6c3a8a00, type: 3}
 --- !u!4 &1462715937
 Transform:
   m_ObjectHideFlags: 0
@@ -1184,12 +1186,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitFactory
   Character: {fileID: 8554951425007040513, guid: b5c396f1d76b04c41bfb4bb1de06d392,
     type: 3}
-  CaptainStats: {fileID: 0}
-  WarriorStats: {fileID: 0}
-  ClericStats: {fileID: 0}
+  CaptainStats: {fileID: 11400000, guid: e6482736a89381445b63fbae178c378b, type: 2}
+  WarriorStats: {fileID: 11400000, guid: b47ad13836546624f8176fcc3c423388, type: 2}
+  ClericStats: {fileID: 11400000, guid: 019e2533990c086438e7760a8d524c8d, type: 2}
   HydraStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}
   CloseRangeSkletonStats: {fileID: 11400000, guid: 25de41f82a1748a499f7c45b469d4b95,
     type: 2}
+  MalakorStats: {fileID: 11400000, guid: 1c045a2c1af31a74188d84ac13c0aa72, type: 2}
   fallbackEnemyPrefab: {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489,
     type: 3}
   defaultEnemyStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}

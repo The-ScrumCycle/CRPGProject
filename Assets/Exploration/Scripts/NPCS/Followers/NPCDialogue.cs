@@ -23,6 +23,7 @@ public class NPCDialogue : MonoBehaviour
     public Sprite Malakor;
     public string characterDialogueID;
     private FollowerController followerController;
+    private MusicController musicController;
 
     [Header("Auto Dialogue Triggers Settings")]
     public bool triggerOnApproach = false;
@@ -46,6 +47,7 @@ public class NPCDialogue : MonoBehaviour
     private string runAway = "runAway";
     private string malakorSpeaking = "malakorSpeaking";
     private string ranAway = "ranAway";
+    private string defeatedMalakor = "defeatedMalakor";
 
     // john actions
     private string johnInParty = "johnInParty";
@@ -98,6 +100,7 @@ public class NPCDialogue : MonoBehaviour
         camera = FindObjectOfType<CameraController>();
         gameStateManager = GameStateManager.Instance;
 
+        musicController = MusicController.Instance;
     }
 
     private void OnDestroy()
@@ -216,13 +219,11 @@ public class NPCDialogue : MonoBehaviour
             {
                 this.state.setFlag("johnInParty");
                 PartyManager.Instance.AddFollowerActive(FollowerID.Warrior);
-                gameObject.tag = "Follower";
             }
             else if (curAction == johnNotInParty)
             {
                 this.state.removeFlag("johnInParty");
                 PartyManager.Instance.RemoveFollowerActive(FollowerID.Warrior);
-                gameObject.tag = "Untagged";
             }
 
             else if (curAction == JohnIntroOver)
@@ -256,13 +257,11 @@ public class NPCDialogue : MonoBehaviour
             {
                 this.state.setFlag("clarissaInParty");
                 PartyManager.Instance.AddFollowerActive(FollowerID.Cleric);
-                gameObject.tag = "Follower";
             }
             else if (curAction == clarissaNotInParty)
             {
                 this.state.removeFlag("clarissaInParty");
                 PartyManager.Instance.RemoveFollowerActive(FollowerID.Cleric);
-                gameObject.tag = "Untagged";
             }
             else if (curAction == clarissaIntroOver)
             {
@@ -321,6 +320,12 @@ public class NPCDialogue : MonoBehaviour
             else if (curAction == malakorSpeaking)
             {
                 uiRunner.UpdateFace(Malakor);
+            }
+
+            else if (curAction == defeatedMalakor)
+            {
+                this.state.setFlag("defeatedMalakor");
+                musicController.SetMusic(musicController.GetEndingMusic());
             }
         }
 

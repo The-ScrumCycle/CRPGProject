@@ -23,6 +23,7 @@ namespace Game.Combat.Units
         [Header("Enemy Configuration")]
         [SerializeField] private UnitStatsConfig HydraStats;
         [SerializeField] private UnitStatsConfig CloseRangeSkletonStats;
+        [SerializeField] private UnitStatsConfig MalakorStats;
         [SerializeField] private GameObject fallbackEnemyPrefab;
         [SerializeField] private UnitStatsConfig defaultEnemyStats;
 
@@ -115,6 +116,8 @@ namespace Game.Combat.Units
                     return CloseRangeSkletonStats;
                 case "troll":
                     return defaultEnemyStats;
+                case "Malakor":
+                    return MalakorStats;
                 default:
                     Debug.LogWarning($"[UnitFactory] No stats config found for tag '{enemyTag}', using default stats");
                     return defaultEnemyStats; 

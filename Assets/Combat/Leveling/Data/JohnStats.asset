@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5f351d1e35a53a46bdcae505dc98856, type: 3}
   m_Name: JohnStats
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitStatsConfig
-  maxHealth: 100
-  attackPower: 20
+  availableActions: 
+  maxHealth: 150
+  attackPower: 10
   movementRange: 3
   attackRange: 1

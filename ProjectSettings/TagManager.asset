@@ -23,6 +23,7 @@ TagManager:
   - melee_skeleton
   - Shortcut
   - Ship
+  - Malakor
   layers:
   - Default
   - TransparentFX

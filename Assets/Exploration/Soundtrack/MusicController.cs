@@ -15,6 +15,7 @@ public class MusicController : MonoBehaviour
     [SerializeField] private AudioClip explorationMusic;
     [SerializeField] private AudioClip battleMusic;
     [SerializeField] private AudioClip sailingMusic;
+    [SerializeField] private AudioClip ending;
 
 
 
@@ -75,4 +76,8 @@ public class MusicController : MonoBehaviour
         return sailingMusic;
     }
 
+    public AudioClip GetEndingMusic()
+    {
+        return ending;
+    }
 }
