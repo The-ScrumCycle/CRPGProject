@@ -31,8 +31,8 @@ public class MonsterController : MonoBehaviour
     private bool isChasing = false;
 
     [Header("Ennemy Level and XP")]
-    [SerializeField]  int enemyLevel = 1;
-    [SerializeField]  int xpGiven    = 50; //xp dropped by monster
+    [SerializeField]  int enemyLevel = 12;
+    [SerializeField]  int xpGiven    = ; 400//xp dropped by monster
 
 
     private NavMeshAgent agent;
