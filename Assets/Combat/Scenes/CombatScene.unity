@@ -1192,6 +1192,7 @@ MonoBehaviour:
     type: 2}
   RangedSkeletonStats: {fileID: 11400000, guid: 17c678253da3048fea41cbfe95ef2946,
     type: 2}
+  HealerStats: {fileID: 11400000, guid: 60c56e72fa2064ebda47d77f835f4024, type: 2}
   fallbackEnemyPrefab: {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489,
     type: 3}
   defaultEnemyStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}

@@ -1,6 +1,7 @@
 using Game.Combat.Units;
 using Game.Combat.Grid;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Game.Combat.Actions
 {
@@ -50,7 +51,10 @@ namespace Game.Combat.Actions
 	    // Execute attack
         public void Execute(HexGrid grid)
         {
+            int before = Target.Stats.currentHealth;
             Target.Heal(healAmount);
+            int after = Target.Stats.currentHealth;
+            Debug.Log($"[Heal Execute] {Actor.DisplayName} healed {Target.DisplayName} for {healAmount}. HP: {before} -> {after}");
         }
     }
 }

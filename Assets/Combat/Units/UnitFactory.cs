@@ -24,6 +24,7 @@ namespace Game.Combat.Units
         [SerializeField] private UnitStatsConfig HydraStats;
         [SerializeField] private UnitStatsConfig CloseRangeSkletonStats;
         [SerializeField] private UnitStatsConfig RangedSkeletonStats;
+        [SerializeField] private UnitStatsConfig HealerStats;
         [SerializeField] private GameObject fallbackEnemyPrefab;
         [SerializeField] private UnitStatsConfig defaultEnemyStats;
 
@@ -99,6 +100,11 @@ namespace Game.Combat.Units
                 availableActions: ennemyStats != null ? ennemyStats.availableActions : new System.Collections.Generic.List<CombatActionType> { CombatActionType.MeleeAttack }
             ); 
 
+            if (behavior == AIBehavior.Healer)
+            {
+                Debug.Log($"[Healer Spawn] tag={enemyTag}, statsConfig={(ennemyStats != null ? ennemyStats.name : "null")}, healPower={stats.healPower}, attackRange={stats.attackRange}, maxHealth={stats.maxHealth}");
+            }
+
             GameObject prefabInstance = Instantiate(prefab);
             var visual = prefabInstance.AddComponent<UnitVisual>();
 
@@ -118,6 +124,7 @@ namespace Game.Combat.Units
                 case "skeleton_ranged":
                     return RangedSkeletonStats;
                 case "healer":
+                    return HealerStats != null ? HealerStats : defaultEnemyStats;
                 case "troll":
                     return defaultEnemyStats;
                 default:
