@@ -9,6 +9,10 @@ namespace Game.Combat.Actions
         MeleeAttack,
         RangedAttack,
         RangedHeal,
-        Grapple
+        Grapple,
+	    SweepAttack,
+	    SplashAttack,
+	    HeavyMeleeAttack, // Warrior ability
+	    PullAlly // Cleric ability
     }
 }

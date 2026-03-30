@@ -97,7 +97,6 @@ namespace Game.Combat.Actions
                     pushDestination = null; // Stays in place
                 }
             }
-
             else if (action is GrappleAction grapple)
             {
                 visualType = ActionVisualType.Grapple;
@@ -108,14 +107,47 @@ namespace Game.Combat.Actions
             {
                 visualType = ActionVisualType.Heal;
                 targetUnit = heal.Target;
-                predictedDamage = -heal.healAmount;
+                predictedDamage = -heal.healAmount; // Negative damage acts as healing for the UI
+            }
+            // --- Enemy AOE damage attacks ---
+            else if (action is SweepAttackAction sweep)
+            {
+                visualType = ActionVisualType.MeleeAttack;
+                predictedDamage = action.Actor.Stats.attackPower;
+                
+                // Grab the first valid target to satisfy the base ActionIntent constructor
+                foreach (var cellCoord in sweep.GetTargetCells())
+                {
+                    var cell = _grid.GetCell(cellCoord);
+                    if (cell?.Occupant != null && cell.Occupant != action.Actor)
+                    {
+                        targetUnit = cell.Occupant;
+                        break;
+                    }
+                }
+            }
+            else if (action is SplashAttackAction splash)
+            {
+                visualType = ActionVisualType.RangedAttack;
+                predictedDamage = action.Actor.Stats.attackPower;
+
+                // Grab the first valid target to satisfy the base ActionIntent constructor
+                foreach (var cellCoord in splash.GetTargetCells())
+                {
+                    var cell = _grid.GetCell(cellCoord);
+                    if (cell?.Occupant != null && cell.Occupant != action.Actor)
+                    {
+                        targetUnit = cell.Occupant;
+                        break;
+                    }
+                }
             }
 
             return new ActionIntent(
                 action.Actor, action, targetUnit, predictedDamage, visualType,
                 movementPath, isValid, pushDestination, targetTakesBumpDamage, secondaryBumpTarget
             );
-        }
+        } 
 
         // Get all valid move destinations for a unit.
         public List<HexCoordinates> GetValidMoveDestinations(Unit unit)
@@ -217,6 +249,33 @@ namespace Game.Combat.Actions
         public RangedHealAction CreateRangedHeal(Unit actor, Unit target)
         {
             return new RangedHealAction(actor, target);
+        }
+
+        // Builds a 7-hex area ranged splash attack
+        public ICombatAction CreateSplashAttack(Unit actor, HexCell targetCell)
+        {
+            var aoe = new List<HexCoordinates> { targetCell.Coordinates };
+            foreach (var neighbor in _grid.GetNeighbors(targetCell.Coordinates))
+            {
+                aoe.Add(neighbor.Coordinates);
+            }
+            return new SplashAttackAction(actor, targetCell.Coordinates, aoe);
+        }
+
+        // Builds a 3-hex frontal melee attack
+        public ICombatAction CreateSweepAttack(Unit actor, HexCell targetCell)
+        {
+            var sweep = new List<HexCoordinates> { targetCell.Coordinates };
+            
+            // Find the two neighbors of the Actor that are ALSO neighbors of the Target
+            foreach (var neighbor in _grid.GetNeighbors(actor.Coordinates))
+            {
+                if (_grid.GetDistance(neighbor.Coordinates, targetCell.Coordinates) == 1)
+                {
+                    sweep.Add(neighbor.Coordinates);
+                }
+            }
+            return new SweepAttackAction(actor, targetCell.Coordinates, sweep);
         }
     }
 }

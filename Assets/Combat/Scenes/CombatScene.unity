@@ -635,6 +635,14 @@ MonoBehaviour:
   unitFactory: {fileID: 1945263018}
   playerDeploymentHexes: []
   enemyDeploymentHexes: []
+  debugPlayerRoster:
+  - Captain
+  - Warrior
+  - Cleric
+  debugEnemyRoster:
+  - skeleton_ranged
+  - skeleton_melee
+  - Hydra
   shoveArrowPrefab: {fileID: 700429023681575523, guid: 3ce9f9edb54c21648bad9acccbba054c,
     type: 3}
   victoryExperience: 100
@@ -1191,13 +1199,13 @@ MonoBehaviour:
   ClericStats: {fileID: 11400000, guid: 019e2533990c086438e7760a8d524c8d, type: 2}
   HydraStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}
   CloseRangeSkletonStats: {fileID: 11400000, guid: 25de41f82a1748a499f7c45b469d4b95,
-    type: 2}
-  MalakorStats: {fileID: 11400000, guid: 1c045a2c1af31a74188d84ac13c0aa72, type: 2}
-  RangedSkeletonStats: {fileID: 11400000, guid: 17c678253da3048fea41cbfe95ef2946,
-    type: 2}
-  HealerStats: {fileID: 11400000, guid: 60c56e72fa2064ebda47d77f835f4024, type: 2}
-  fallbackEnemyPrefab: {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489,
-  defaultEnemyStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}
+    type: 2}
+  MalakorStats: {fileID: 11400000, guid: 1c045a2c1af31a74188d84ac13c0aa72, type: 2}
+  RangedSkeletonStats: {fileID: 11400000, guid: 17c678253da3048fea41cbfe95ef2946,
+    type: 2}
+  HealerStats: {fileID: 11400000, guid: 60c56e72fa2064ebda47d77f835f4024, type: 2}
+  fallbackEnemyPrefab: {fileID: 177072, guid: 6ff15eda21767db4988080a9497a5deb, type: 3}
+  defaultEnemyStats: {fileID: 0}
 --- !u!4 &1945263019
 Transform:
   m_ObjectHideFlags: 0

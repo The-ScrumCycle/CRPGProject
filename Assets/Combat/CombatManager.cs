@@ -37,6 +37,10 @@ namespace Game.Combat
         [SerializeField] private System.Collections.Generic.List<HexCoordinates> playerDeploymentHexes;
         [SerializeField] private System.Collections.Generic.List<HexCoordinates> enemyDeploymentHexes;
 
+        [Header("Sandbox Testing (Direct Scene Boot)")] // allows us to test combat scenarios inside the combat scene
+        [SerializeField] private System.Collections.Generic.List<string> debugPlayerRoster = new System.Collections.Generic.List<string> { "Captain", "Warrior", "Cleric" };
+        [SerializeField] private System.Collections.Generic.List<string> debugEnemyRoster = new System.Collections.Generic.List<string> { "skeleton_ranged", "skeleton_melee", "Hydra" };
+
         [Header("Prefabs")]
         [SerializeField] private GameObject shoveArrowPrefab;
 
@@ -119,45 +123,37 @@ namespace Game.Combat
 
         private void SpawnUnits()
         {
-            var transitionData = CombatTransitionData.Instance;
-            
-            // fallback if editor has no grids written
+            var transitionData = Game.Core.Transitions.CombatTransitionData.Instance;
+
+            // --- SAFETY FALLBACKS FOR DEPLOYMENT ZONES ---
             if (playerDeploymentHexes == null || playerDeploymentHexes.Count == 0)
             {
-                Debug.LogWarning("[CombatManager] No Player Deployment Hexes assigned in Inspector! Using fallbacks.");
                 playerDeploymentHexes = new System.Collections.Generic.List<HexCoordinates> 
-                { 
-                    new HexCoordinates(1, 1), new HexCoordinates(1, 2), new HexCoordinates(2, 1) 
-                };
+                { new HexCoordinates(1, 1), new HexCoordinates(1, 2), new HexCoordinates(2, 1) };
             }
-
             if (enemyDeploymentHexes == null || enemyDeploymentHexes.Count == 0)
             {
-                Debug.LogWarning("[CombatManager] No Enemy Deployment Hexes assigned in Inspector! Using fallbacks.");
-                enemyDeploymentHexes = new System.Collections.Generic.List<HexCoordinates>
-                {
-                    new HexCoordinates(6, 6), new HexCoordinates(6, 5), new HexCoordinates(5, 6),
-                    new HexCoordinates(7, 5), new HexCoordinates(5, 7)
-                };
+                enemyDeploymentHexes = new System.Collections.Generic.List<HexCoordinates> 
+                { new HexCoordinates(6, 6), new HexCoordinates(6, 5), new HexCoordinates(5, 6), new HexCoordinates(5, 5) };
             }
 
-            // --- SPAWN PLAYERS ---
+            // --- SPAWN PLAYERS (we use sandbox config if no transition data avail) ---
             List<string> playersToSpawn = transitionData != null && transitionData.ActiveCompanions.Count > 0 
                 ? transitionData.ActiveCompanions 
-                : new List<string> { "Captain" }; // NOTE: Fallback for pure combat scene testing
+                : debugPlayerRoster;
 
             for (int i = 0; i < playersToSpawn.Count; i++)
             {
-                if (i >= playerDeploymentHexes.Count) break; // Don't spawn if we run out of hexes
+                if (i >= playerDeploymentHexes.Count) break;
 
                 var (playerUnit, playerVisual) = unitFactory.CreatePlayerUnit(playersToSpawn[i]);
                 RegisterUnit(playerUnit, playerVisual, playerDeploymentHexes[i]);
             }
 
-            // --- SPAWN ENEMIES ---
+            // --- SPAWN ENEMIES (we use sandbox config if no transition data avail) ---
             List<string> enemiesToSpawn = transitionData != null && transitionData.EncounterEnemies.Count > 0 
                 ? transitionData.EncounterEnemies 
-                : new List<string> { "skeleton_melee", "skeleton_ranged", "Hydra", "healer" }; // Fallback: spawn all 4 enemy types for standalone testing
+                : debugEnemyRoster;
 
             int enemyLevel = transitionData != null ? transitionData.ennemyLevel : 1;
 
@@ -166,7 +162,7 @@ namespace Game.Combat
                 if (i >= enemyDeploymentHexes.Count) break;
 
                 string tag = enemiesToSpawn[i];
-                string fallbackName = tag.Replace("_", " ").ToUpper(); // Just makes names like "skeleton_ranged" look nicer
+                string fallbackName = tag.Replace("_", " ").ToUpper();
 
                 var (enemyUnit, enemyVisual) = unitFactory.CreateEnemyUnit(tag, enemyLevel, fallbackName);
                 RegisterUnit(enemyUnit, enemyVisual, enemyDeploymentHexes[i]);
@@ -194,27 +190,50 @@ namespace Game.Combat
         #region Highlight Management
         private void UpdateUnitWorldUIs(ActionIntent hoverIntent = null)
         {
-            var intents = new List<ActionIntent>(_state.GetIntents());
+            var intents = new List<ActionIntent>();
+            // get intents from the combat runtime state
+            if (_state != null) intents.AddRange(_state.GetIntents());
             if (hoverIntent != null) intents.Add(hoverIntent);
 
-            // Get current hovered unit for UI visibility rules
             var hoveredHex = gridRenderer.GetHoveredHex();
             var hoveredCell = _grid.GetCell(hoveredHex);
             Unit hoveredUnit = hoveredCell?.Occupant;
 
             foreach (var unit in _state.AllUnits)
             {
+                if (unit == null || !unit.IsAlive) continue;
+
                 var visual = _state.GetVisual(unit);
-                if (visual == null) continue;
+                if (visual == null) continue; 
 
                 var worldUI = visual.GetComponentInChildren<UI.UnitWorldUI>();
                 if (worldUI == null) continue;
 
                 int incomingDamage = 0;
-                bool isSecondaryTarget = false; // flag so we track secondary bump damage
+                bool isSecondaryTarget = false; 
+
                 foreach (var intent in intents)
                 {
-                    if (intent.TargetUnit == unit) incomingDamage += intent.PredictedDamage;
+                    // --- Damage Preview Layer for AOE Attacks ---
+                    bool isTargetedByAction = false;
+                    
+                    if (intent.Action is SplashAttackAction || intent.Action is SweepAttackAction)
+                    {
+                        // If it's an AoE, check if this unit is standing in the attack zone
+                        isTargetedByAction = intent.TargetCells.Contains(unit.Coordinates);
+                    }
+                    else
+                    {
+                        // Standard single-target check
+                        isTargetedByAction = intent.TargetUnit == unit;
+                    }
+
+                    if (isTargetedByAction)
+                    {
+                        incomingDamage += intent.PredictedDamage;
+                    }
+
+                    // Check for Bump Damage
                     if (intent.SecondaryBumpTarget == unit) 
                     {
                         incomingDamage += 10; // BUMP_DAMAGE
@@ -222,7 +241,6 @@ namespace Game.Combat
                     }
                 }
 
-                // Pass the unified state to the UI, we show the damage both the hovered unit and the secondary bump target will take
                 bool isHovered = (unit == hoveredUnit) || isSecondaryTarget;
                 worldUI.UpdateState(unit.Stats.currentHealth, unit.Stats.maxHealth, incomingDamage, isHovered, unit.IsPlayerControlled);
             }
