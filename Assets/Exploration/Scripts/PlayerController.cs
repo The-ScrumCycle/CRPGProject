@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.AI;
+using Core.Save;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, ISaveable
 {
     [Header("Movement Settings")]
     public float playerSpeed = 5f;
@@ -12,6 +14,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Visibility")]
     [SerializeField] private bool isVisible = true;
+    private bool isInDialogue = false;
 
 
     [Header("Components")]
@@ -19,7 +22,7 @@ public class PlayerController : MonoBehaviour
     public Animator characterAnimator;
     public Camera cam;
     public LayerMask groundMask;
-    public UnityEngine.AI.NavMeshAgent agent;
+    public NavMeshAgent agent;
 
     public static PlayerController Instance { get; private set; }
 
@@ -47,6 +50,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         // water is not walkable 
+        SaveManager.Instance.Register(this);
         int water = UnityEngine.AI.NavMesh.GetAreaFromName("Water");
         agent.areaMask &= ~(1 << water);
     }
@@ -97,6 +101,14 @@ public class PlayerController : MonoBehaviour
         characterAnimator.SetFloat("Speed", speed);
     }
 
+    // stop player movement and animation
+    public void StopMovement()
+    {
+        if (agent == null) return;
+        agent.ResetPath();
+        characterAnimator.SetFloat("Speed", 0f);
+    }
+
     // update player speed
     private void updatePlayerSpeed()
     {
@@ -136,5 +148,28 @@ public class PlayerController : MonoBehaviour
             return;
         cam = Camera.main;
     }
+
+    public bool GetInDialogue()
+    {
+        return isInDialogue;
+    }
+
+    public void SetInDialogue(bool inDialogue)
+    {
+        isInDialogue = inDialogue;
+    }
+
+    public void SetSaveData(SaveData saveData)
+    {
+        saveData.player.position = transform.position;
+        saveData.player.rotation = transform.rotation;
+    }
+
+    public void LoadSaveData(SaveData saveData)
+    {
+        agent.Warp(saveData.player.position);
+        transform.rotation = saveData.player.rotation;
+    }
+
 
 }

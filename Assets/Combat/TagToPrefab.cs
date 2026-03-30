@@ -13,6 +13,7 @@ public class TagToPrefab : MonoBehaviour
     {
         foreach (GameObject prefab in prefabs)
         {
+            Debug.Log(prefab.tag);
             if (prefab.CompareTag(tag))
             {
                 return prefab;
@@ -25,6 +26,12 @@ public class TagToPrefab : MonoBehaviour
 
     void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }

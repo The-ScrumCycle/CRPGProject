@@ -1,5 +1,7 @@
 using Game.Core.Party;
 using Game.Combat.Grid;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Game.Combat.Units
 {
@@ -42,6 +44,7 @@ namespace Game.Combat.Units
         public void TakeDamage(int damage)
         {
             Stats.TakeDamage(damage);
+            Debug.Log($"{DisplayName} took {damage} damage. Remaining HP: {Stats.currentHealth}/{Stats.maxHealth}");
         }
 
         public void Heal(int amount)

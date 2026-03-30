@@ -1,0 +1,274 @@
+{                                                                                                                                                                                                                                                                
+    "startNode": "1000",
+  "nodes": [
+
+    {
+      "id": "1000",
+      "type": "conditional",
+      "eventName": "foundMalakor",
+      "trueNode": "1001",
+      "falseNode": "1"
+    },
+    {
+      "id": "1001",
+      "type": "conditional",
+      "eventName": "defeatedMalakor",
+      "trueNode": null,
+      "falseNode": "1003"
+    },
+    {
+      "id": "1003",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"You dare return human?\"",
+      "next": "400"
+    },
+    {
+      "id": "1",
+      "type": "line",
+      "speaker": "npc",
+      "text": "You finally lay eyes on the creature. She is no beast, but a towering, ancient creature. She looks at you. \"I sensed your presence since the moment you arrived. I was beginning to wonder when you humans would dare to pay me a visit.\"",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"Listen closely, for I do not repeat myself. Turn back to your ships. Return to your fleeting lives. If you remain here... you will die.\"",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "type": "option",
+      "options": [ "9", "10", "4", "5", "6", "7", "8" ]
+    },
+    {
+      "id": "9",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"We don't have to fight, we can talk first.\"",
+      "next": "12"
+    },
+    {
+      "id": "10",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "maxStrength": 3,
+      "text": "\"[Weak] P-please! Have mercy, oh Great Goddess! \"",
+      "next": "12"
+    },
+    {
+      "id": "4",
+      "type": "line",
+      "speaker": "player",
+      "minStrength": 7,
+      "text": "\"[Strength 7] That's it? That's your threat? I expected more.\"",
+      "next": "11"
+    },
+    {
+      "id": "5",
+      "type": "line",
+      "speaker": "player",
+      "minIntelligence": 5,
+      "maxIntelligence": 6,
+      "text": "\"[Intelligence 5] You're older than I expected.\"",
+      "next": "12"
+    },
+    {
+      "id": "6",
+      "type": "line",
+      "speaker": "player",
+      "minIntelligence": 7,
+      "text": "\"[Intelligence 7] You're ancient. Centuries old, at least. You existed long before the Shattering of the Verge.\"",
+      "next": "12"
+    },
+    {
+      "id": "7",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"[Absolute Ineptitude] Wow... I didn't expect you to be hot. This complicates matters.\"",
+      "next": "200"
+    },
+    {
+      "id": "200",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "201",
+      "falseNode": "202"
+    },
+    {
+      "id": "201",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John stares at you, mouth slightly open. \" Kid, generally I ignore your... special moments. But... fuck. Now it's not the time.\"",
+      "next": "202"
+    },
+    {
+      "id": "202",
+      "type": "conditional",
+      "eventName": "clarissaInParty",
+      "trueNode": "203",
+      "falseNode": "11"
+    },
+    {
+      "id": "203",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa covers her face with one hand. \" Oh Herald... you do disappoint me occasionally.\"",
+      "next": "11"
+    },
+    {
+      "id": "8",
+      "type": "line",
+      "speaker": "player",
+      "maxIntelligence": 3,
+      "text": "\"[Dumb] You sensed my presence... do you mean I smell bad? Oh Zeus, I really need a bath.\"",
+      "next": "200"
+    },
+
+    {
+      "id": "11",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "the creature's eyes turn red. \"Silence, insect. I am Malakor, the Living Foundation, do not speak to me as you would a common human.\"",
+      "next": "12"
+    },
+    {
+      "id": "12",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"Your words are wind. I have no interest in talking with inferior beings such as yourself.\"",
+      "next": "13"
+    },
+
+    {
+      "id": "13",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "14",
+      "falseNode": "15"
+    },
+    {
+      "id": "14",
+      "type": "line",
+      "speaker": "npc",
+      "text": "The creature gaze shifts to the old soldier. \"But I do smell something familiar... John was it? I remember your brother screams. You are the one who ran, twenty years ago. The coward who left his kin to rot.\"",
+      "next": "300"
+    },
+    {
+      "id": "300",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "\"Yes that was me. I did not-... I'm glad you remember me. I'm known for giving an impression.\"",
+      "next": "15"
+    },
+    {
+      "id": "15",
+      "type": "conditional",
+      "eventName": "clarissaInParty",
+      "trueNode": "16",
+      "falseNode": "18"
+    },
+    {
+      "id": "16",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "Malakor turns her massive head toward the Cleric. \"you... Heretic. You wear that sigil on your chest and speak of mercy? Do not lie to me.\"",
+      "next": "301"
+    },
+    {
+      "id": "301",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa looks at you, scared, then at Malakor \"Filthy creature! It is not enough that you defile this land... you dare to lie! This is the star of Eirene! It represents peace and—\" Malakor cuts her off.",
+      "next": "17"
+    },
+    {
+      "id": "17",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": " \"I have no interest in what you have to say Heretic. \"",
+      "next": "18"
+    },
+    {
+      "id": "18",
+      "type": "line",
+      "speaker": "npc",
+      "text": "Malakor looks at you \" you, Jade, that's your name? I have seen you in my dreams. That's the reason why, I give you the chance of running away.\"",
+      "next": "400"
+    },
+    {
+      "id": "400",
+      "type": "line",
+      "speaker": "npc",
+      "text": "The monster grows larger and more terrifying. It is on a completely different level from anything you have encountered before. You feel in your bones that you currently have no chance of winning.",
+      "next": "19"
+    },
+    {
+      "id": "19",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "20",
+      "falseNode": "21"
+    },
+    {
+      "id": "20",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John grabs your shoulder \"Kid! Look at it! That ain't a fight that we can win! We can't win this. We need to run, now! I will explain later, but we can't win this.\"",
+      "next": "21"
+    },
+    {
+      "id": "21",
+      "type": "conditional",
+      "eventName": "clarissaInParty",
+      "trueNode": "22",
+      "falseNode": "23"
+    },
+    {
+      "id": "22",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa takes a step back \"I... we have to run right now. Trust on me on this. Herald, we must retreat! The prophecy does not demand our deaths today!\"",
+      "next": "23"
+    },
+    {
+      "id": "23",
+      "type": "option",
+      "options": [ "24", "25" ]
+    },
+    {
+      "id": "24",
+      "type": "line",
+      "speaker": "player",
+      "action": "startBossFight, foundMalakor",
+      "text": "\"I don't care how big she is. I'm not running away. We end this now!\"",
+      "next": null
+    },
+    {
+      "id": "25",
+      "type": "line",
+      "speaker": "player",
+      "action": "runAway, foundMalakor",
+      "text": "\"You're right. We're outmatched. [Run away is recommended for new players]\"",
+      "next": null
+    }
+
+
+
+
+
+
+  ]
+}

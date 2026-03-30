@@ -21,6 +21,8 @@ namespace Game.Core.Transitions
         [Header("Enemy Data")]
         public string enemyTag;
         public string enemyName;
+        public int ennemyLevel;
+        public int XPGiven;
 
         [Header("Environment Data")]
         public EnvironmentType EnvironmentType;
@@ -71,8 +73,11 @@ namespace Game.Core.Transitions
 
             if (enemy != null)
             {
-                enemyTag = enemy.tag;
-                enemyName = enemy.name;
+                MonsterController monster = enemy.GetComponent<MonsterController>();
+                enemyTag    = enemy.tag;
+                enemyName   = enemy.name;
+                ennemyLevel = monster.GetEnemyLevel();
+                XPGiven     = monster.GetXPGiven();
             }
 
             EnvironmentType = EnvironmentType.Default;
