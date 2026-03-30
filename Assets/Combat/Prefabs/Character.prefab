@@ -440,3 +440,4 @@ MonoBehaviour:
   healthFill: {fileID: 570899311958048731}
   damagePreviewFill: {fileID: 3612819080765990292}
   healthText: {fileID: 0}
+  rotateSpeed: 400

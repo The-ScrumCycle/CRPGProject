@@ -10,6 +10,9 @@ TagManager:
   - Medusa
   - SceneManager
   - Enemy
+  - HexGrid
+  - Board
+  - Pedestal
   layers:
   - Default
   - TransparentFX

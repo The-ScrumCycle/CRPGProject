@@ -7,14 +7,14 @@ namespace Game.Combat.Units
     /// </summary>
     public enum AIBehavior
     {
-	// Generic Behaviors that we'll move away from
+	    // Generic Behaviors that we'll move away from
         Aggressive,
-        Defensive
+        Defensive,
         
-	// New behaviors for our actual enemies
-	SkeletonRanged,
-	SkeletonMelee,
-	Healer,
-	HydraGrappler
+        // New behaviors for our actual enemies
+        SkeletonRanged,
+        SkeletonMelee,
+        Healer,
+        HydraGrappler
     }
 }

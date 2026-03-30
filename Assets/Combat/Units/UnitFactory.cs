@@ -83,18 +83,18 @@ namespace Game.Combat.Units
 
         private AIBehavior DetermineAIBehavior(string enemyTag)
         {
-	    // Enemy behavior tags, this has to match the tags we put on prefabs in unity
-	    case "skeleton_ranged":
-                    return AIBehavior.SkeletonRanged;
-            case "skeleton_melee":
-                    return AIBehavior.SkeletonMelee;
-            case "healer":
-                    return AIBehavior.Healer;
-            case "hydra":
-                    return AIBehavior.HydraGrappler;
 
             switch (enemyTag.ToLower())
             {
+                // Enemy behavior tags, this has to match the tags we put on prefabs in unity
+                case "skeleton_ranged":
+                            return AIBehavior.SkeletonRanged;
+                case "skeleton_melee":
+                        return AIBehavior.SkeletonMelee;
+                case "healer":
+                        return AIBehavior.Healer;
+                case "hydra":
+                        return AIBehavior.HydraGrappler;
                 default:
                     return AIBehavior.Aggressive;
             }

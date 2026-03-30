@@ -13,6 +13,7 @@ Shader "Custom/HexGrid"
         _HoverBrightness("Hover Brightness", float) = 1.3
         _PulseSpeed("Pulse Speed", float) = 4.0
         _BaseMap("Base Map", 2D) = "white" {}
+        _BaseMapScale("Base Map Scale", float) = 1.0
         _HexTex ("Hex Texture", 2D) = "white" {}
         _HexScale("Hex Scale", float) = 1.0
         _GridScale("Grid Scale", Vector) = (1, 1, 0, 0)
@@ -75,6 +76,7 @@ Shader "Custom/HexGrid"
                 int _ClipEdges;
                 float2 _ActiveHex;
                 int _HighlightCount;
+                float _BaseMapScale;
             CBUFFER_END
 
             float4 _Highlights[MAX_HIGHLIGHTS];
@@ -129,7 +131,8 @@ Shader "Custom/HexGrid"
                 const float2 s = float2(1, 1.7320508);
                 const float EPSILON = 0.01;
 
-                half4 color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv) * _BaseColor;
+                float2 scaled_uv = float2(frac(IN.uv.x*_BaseMapScale), frac(IN.uv.y*_BaseMapScale));
+                half4 color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, scaled_uv);
 
                 float2 u = float2(IN.uv.x * _GridScale.x, IN.uv.y * _GridScale.y) * _HexScale;
                 float4 h = getHex(u);
@@ -145,7 +148,8 @@ Shader "Custom/HexGrid"
                 float hex_dist = hex(h.xy);
                 if (hex_dist > (1.0 - _LineWeight) * 0.5)
                 {
-                    color = SAMPLE_TEXTURE2D(_HexTex, sampler_HexTex, IN.uv) * _HexColor;
+                    float fade_factor = (0.5 - length(float2(0.5, 0.5) - IN.uv)) + 0.75;
+                    color = SAMPLE_TEXTURE2D(_HexTex, sampler_HexTex, IN.uv) * _HexColor * fade_factor * 2.5;
                     return color;
                 }
 
@@ -205,15 +209,15 @@ Shader "Custom/HexGrid"
                 {
                     if (bestType == 0)
                     {
-                        fillColor = _HoverColor;
+                        fillColor = _HoverColor * _HoverBrightness;
                     }
                     else
                     {
-                        fillColor.rgb = min(fillColor.rgb * _HoverBrightness, float3(1.0, 1.0, 1.0));
+                        fillColor.rgb = lerp(_HoverColor, fillColor.rgb, 0.5) * _HoverBrightness;
                     }
                 }
 
-                color = fillColor;
+                color *= fillColor;
                 return color;
             }
             ENDHLSL

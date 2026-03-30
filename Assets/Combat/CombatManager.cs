@@ -8,6 +8,8 @@ using Game.Combat.Turn;
 using Game.Combat.Units;
 using Game.Combat.Actions;
 using Game.Combat.UI;
+using System;
+using UnityEngine.Rendering;
 
 namespace Game.Combat
 {
@@ -29,6 +31,12 @@ namespace Game.Combat
         [SerializeField] private HexGridRenderer gridRenderer;
         [SerializeField] private int gridWidth = 8;
         [SerializeField] private int gridHeight = 8;
+
+        [Header("Environments")]
+        [SerializeField] private CombatEnvironment[] environments;
+        [SerializeField] private BoardRenderer boardRenderer;
+        [SerializeField] private Material backgroundMat;
+        [SerializeField] private Volume globalVolume;
 
         [Header("Unit Spawning")]
         [SerializeField] private UnitFactory unitFactory;
@@ -56,6 +64,8 @@ namespace Game.Combat
         private HexCoordinates? _lastHoveredHex = null;
         private ActionIntent _currentHoverIntent = null;
 
+        int currentEnv = 0;
+
         #region Unity Lifecycle
 
         void Awake()
@@ -75,6 +85,12 @@ namespace Game.Combat
 
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                currentEnv = 1-currentEnv;
+                SetEnvironment(environments[currentEnv]);
+            }
+
             if (_state.CurrentState == CombatState.PlayerTurn)
             {
                 // The only two current player "input types" we can handle e.g an actual input and a hover
@@ -98,6 +114,8 @@ namespace Game.Combat
                 gridRenderer.Initialize(_grid);
             }
 
+            InitializeEnvironment();
+
             _actionResolver = new ActionResolver(_grid);
             _turnSystem = new TurnSystem();
             _state = new CombatRuntimeState();
@@ -113,6 +131,18 @@ namespace Game.Combat
             BeginPlayerTurn();
 
             Debug.Log($"[CombatManager] Combat initialized with {_state.AllUnits.Count} units");
+        }
+
+        private void InitializeEnvironment()
+        {
+            try
+            {
+                SetEnvironment(environments[currentEnv]);
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Failed to load environment: " + e.Message);
+            }
         }
 
         private void SpawnUnits()
@@ -139,6 +169,28 @@ namespace Game.Combat
             _state.RegisterUnit(unit, visual);
 
             Debug.Log($"[CombatManager] Registered unit: {unit}");
+        }
+
+        #endregion
+
+        #region Environment Management
+
+        private void SetEnvironment(CombatEnvironment env)
+        {
+            if (boardRenderer != null)
+            {
+                boardRenderer.SetBoard(env._boardMat);
+                boardRenderer.SetBorder(env._borderMat);
+            }
+
+            if (gridRenderer != null)
+            {
+                
+            }
+
+            if (backgroundMat != null) RenderSettings.skybox = env._backgroundMat;
+
+            if (globalVolume != null) globalVolume.profile = env._postProcessingProfile;
         }
 
         #endregion
