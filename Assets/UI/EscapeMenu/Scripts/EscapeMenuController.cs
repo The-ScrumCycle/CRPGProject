@@ -11,11 +11,9 @@ public class EscapeMenuController : MonoBehaviour
     [Header("State")]
     [SerializeField] private bool hasSaved = false; // flag for now (later tie to real save system)
 
-
     private bool isMenuOpen;
     private bool isConfirmOpen;
     private PlayerController playerController;
-
 
     void Start()
     {
@@ -31,9 +29,10 @@ public class EscapeMenuController : MonoBehaviour
 
     void Update()
     {
-        if (playerController.GetInDialogue()) return;
-        if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
-       
+        if (CharacterMenuController.IsMenuOpen) return; // prevent escape menu from opening if character menu is open (can only have one open at a time)
+        if (CharacterMenuController.LastEscapeConsumedFrame == Time.frameCount) return; // prevent escape menu from reacting to the same escape press that just closed the character menu
+        if (playerController != null && playerController.GetInDialogue()) return; // prevent escape menu from opening during dialogue
+        if (!Keyboard.current.escapeKey.wasPressedThisFrame) return; // only toggle menu on escape key press
 
         // close confirm modal if open, otherwise toggle menu
         if (isConfirmOpen)
@@ -75,7 +74,7 @@ public class EscapeMenuController : MonoBehaviour
         Time.timeScale = open ? 0f : 1f;
     }
 
-    //confirm modla open/close
+    //confirm modal open/close
     private void OpenConfirmExitModal()
     {
         //ensure escape menu is open when showing confirm modal
@@ -96,7 +95,7 @@ public class EscapeMenuController : MonoBehaviour
             confirmExitModalRoot.SetActive(open);
     }
 
-   //button handlers (escape menu)
+    //button handlers (escape menu)
     public void SaveGame()
     {
         SaveManager.Instance.Save();
@@ -121,9 +120,8 @@ public class EscapeMenuController : MonoBehaviour
         }
     }
 
-   // button handlers (confirmation modal)
+    // button handlers (confirmation modal)
     public void ConfirmSaveAndCloseGame()
-
     {
         SaveManager.Instance.Save();
         Debug.Log("Confirm: Save & Close Game (placeholder). Setting hasSaved = true then quitting.");
