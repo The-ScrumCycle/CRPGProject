@@ -101,8 +101,15 @@ namespace Game.Core.Transitions
             EncounterEnemies.Clear();
             if (!string.IsNullOrEmpty(enemyTag)) EncounterEnemies.Add(enemyTag); // The monster you physically touched
 
-            // TODO: add dynamic encounter enemy spawning that we can control
-            EncounterEnemies.Add("skeleton_ranged"); // Force-spawn a second enemy so we can test multi-AI
+	    // Get enemies from our encounter config which is attached to the enemy prefab that touched the player
+	    if (enemy != null)
+            {
+                var config = enemy.GetComponent<Game.Exploration.EncounterConfig>();
+                if (config != null && config.additionalEnemies != null)
+                {
+                    EncounterEnemies.AddRange(config.additionalEnemies);
+                }
+            }
         }
 
         // Clears cached references when returning to exploration.

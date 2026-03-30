@@ -112,29 +112,24 @@ namespace Game.Combat.Units
             return (unit, visual);
         }
 
-        // get correct UnitStatsConfig for ennemy 
+        // get correct UnitStatsConfig for enemy 
         private UnitStatsConfig GetEnemyStatsConfig(string enemyTag)
         {
-            switch (enemyTag)
+            switch (enemyTag.ToLower())
             {
-                case "Hydra":
+                case "hydra":
                     return HydraStats;
-                case "skeleton_melee":
-                case "CloseRangeSkeleton":
+                case "closerangeskeleton":
+                case "skeleton_melee":     
                     return CloseRangeSkletonStats;
-                case "skeleton_ranged":
-                    return RangedSkeletonStats;
-                case "healer":
-                    return HealerStats != null ? HealerStats : defaultEnemyStats;
+                case "skeleton_ranged":    
+                    return defaultEnemyStats; 
                 case "troll":
-                    return defaultEnemyStats;
-                case "Malakor":
-                    return MalakorStats;
                 default:
                     Debug.LogWarning($"[UnitFactory] No stats config found for tag '{enemyTag}', using default stats");
-                    return defaultEnemyStats;
+                    return defaultEnemyStats; 
             }
-        }
+        } 
 
         private AIBehavior DetermineAIBehavior(string enemyTag)
         {

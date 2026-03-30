@@ -101,13 +101,23 @@ namespace Game.Combat.Grid
 
             try
             {
-                _hexMaterial.SetTexture("_BaseMap", environmentTextures[(int)CombatTransitionData.Instance.EnvironmentType]);
+                // Safely check if we came from the overworld or if we are in combat Sandbox mode
+                int envIndex = 0; // Default to 0
+                if (Game.Core.Transitions.CombatTransitionData.Instance != null)
+                {
+                    envIndex = (int)Game.Core.Transitions.CombatTransitionData.Instance.EnvironmentType;
+                }
+
+                if (environmentTextures != null && environmentTextures.Length > envIndex)
+                {
+                    _hexMaterial.SetTexture("_BaseMap", environmentTextures[envIndex]);
+                }
             }
             catch
             {
-                Debug.Log("Failed to load environment");
+                Debug.LogWarning("[HexGridRenderer] Failed to load environment texture. Check Environment Textures array in inspector.");
             }
-        }
+        } 
 
         void Update()
         {

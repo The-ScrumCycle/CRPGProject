@@ -40,8 +40,8 @@ namespace Game.Combat.UI
             }
             else
             {
-                // Enemy health bars stay visible at all times.
-                shouldShow = true;
+                // Rule 2: Enemy health bar shows if player hovers them, OR if they are taking damage
+                shouldShow = isHovered || incomingDamage > 0;
             }
             
             if (_canvas != null) _canvas.enabled = shouldShow;
