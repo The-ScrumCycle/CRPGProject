@@ -32,7 +32,7 @@ public class MonsterController : MonoBehaviour
 
     [Header("Ennemy Level and XP")]
     [SerializeField]  int enemyLevel = 12;
-    [SerializeField]  int xpGiven    = ; 400//xp dropped by monster
+    [SerializeField] int xpGiven = 400;//xp dropped by monster
 
 
     private NavMeshAgent agent;
