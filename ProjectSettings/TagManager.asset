@@ -24,6 +24,7 @@ TagManager:
   - Shortcut
   - Ship
   - Malakor
+  - Ogre
   layers:
   - Default
   - TransparentFX
