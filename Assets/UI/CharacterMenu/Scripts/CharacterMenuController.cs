@@ -3,20 +3,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic; // used for objective flag/text mappings
+using State;
 
 public class CharacterMenuController : MonoBehaviour
 {
-    [System.Serializable]
-    private class ObjectiveEntry
-    {
-        [SerializeField] private string flagName; // flag name that maps to this objective text
-        [TextArea(2, 4)]
-        [SerializeField] private string objectiveText; // objective text shown when this flag is active
-
-        public string FlagName => flagName; // exposes the serialized flag name for lookup
-        public string ObjectiveText => objectiveText; // exposes the serialized objective text for display
-    }
-
     [Header("Roots")]
     [SerializeField] private GameObject characterMenuRoot; // main character menu root
 
@@ -24,17 +14,25 @@ public class CharacterMenuController : MonoBehaviour
     [SerializeField] private TMP_Text objectiveBodyText; // body text field under the main objective header
     [TextArea(2, 4)]
     [SerializeField] private string defaultObjectiveText; // fallback text shown when no matching objective flag is active
-    [SerializeField] private List<ObjectiveEntry> objectiveEntries = new(); // ordered list of objective flag -> text mappings
 
     [Header("Layout Rebuild")]
     [SerializeField] private RectTransform contentRoot; // main content container with vertical layout group
     [SerializeField] private RectTransform objectiveContainer; // objective section container
     [SerializeField] private RectTransform statsContainer; // stats section container
 
+    [Header("Stats Text")]
+    [SerializeField] private TMP_Text strengthValueText;
+    [SerializeField] private TMP_Text charismaValueText;
+    [SerializeField] private TMP_Text intelligenceValueText;
+    [SerializeField] private TMP_Text LevelValueText;
+
     public static bool IsMenuOpen { get; private set; }
     public static int LastEscapeConsumedFrame { get; private set; } = -1; // tracks the frame where character menu consumed escape so escape menu does not also open
 
     private Coroutine refreshCoroutine;
+
+    private GameState state;
+    private PartyManager partyManager;
 
     private void Start()
     {
@@ -45,6 +43,10 @@ public class CharacterMenuController : MonoBehaviour
 
         IsMenuOpen = false;
         SetObjectiveText(defaultObjectiveText); // initialize objective body text when scene loads
+
+        state = GameState.Instance;
+        partyManager = PartyManager.Instance;
+
     }
 
     private void Update()
@@ -67,13 +69,13 @@ public class CharacterMenuController : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Alpha1)) // press 1 key to test objective text update
         {
-            UpdateObjectiveFromFlag("ExampleFlag");
+            UpdateObjective();
         }
         if (Input.GetKeyDown(KeyCode.Alpha2)) // press 2 key to test fallback to default objective text
         {
             SetObjectiveText(defaultObjectiveText);
         }
-        
+
     }
 
     // character menu open/close
@@ -83,6 +85,10 @@ public class CharacterMenuController : MonoBehaviour
 
         characterMenuRoot.SetActive(true);
         IsMenuOpen = true; // track character menu state so other menus can check it
+
+        UpdateObjective(); // update objective text based on current game state when menu opens
+
+        UpdateStats(); // update stats text based on current game state when menu opens
 
         // stop any old layout refresh coroutine before starting a new one
         if (refreshCoroutine != null)
@@ -129,48 +135,6 @@ public class CharacterMenuController : MonoBehaviour
         objectiveBodyText.text = string.IsNullOrWhiteSpace(objectiveText) ? defaultObjectiveText : objectiveText; // fall back to default text if passed objective is empty
     }
 
-    public void UpdateObjectiveFromFlag(string activeFlag)
-    {
-        if (string.IsNullOrWhiteSpace(activeFlag))
-        {
-            SetObjectiveText(defaultObjectiveText); // fall back if no active flag was provided
-            return;
-        }
-
-        foreach (ObjectiveEntry entry in objectiveEntries)
-        {
-            if (entry.FlagName == activeFlag)
-            {
-                SetObjectiveText(entry.ObjectiveText); // update objective text when a matching flag is found
-                return;
-            }
-        }
-
-        SetObjectiveText(defaultObjectiveText); // fall back if active flag does not match any configured objective
-    }
-
-    public void UpdateObjectiveFromFlags(IEnumerable<string> activeFlags)
-    {
-        if (activeFlags == null)
-        {
-            SetObjectiveText(defaultObjectiveText); // fall back if no active flags collection was provided
-            return;
-        }
-
-        foreach (ObjectiveEntry entry in objectiveEntries)
-        {
-            foreach (string activeFlag in activeFlags)
-            {
-                if (entry.FlagName == activeFlag)
-                {
-                    SetObjectiveText(entry.ObjectiveText); // use the first configured objective whose flag is currently active
-                    return;
-                }
-            }
-        }
-
-        SetObjectiveText(defaultObjectiveText); // fall back if none of the active flags match a configured objective
-    }
 
     private IEnumerator RefreshLayoutOverFrames()
     {
@@ -231,4 +195,45 @@ public class CharacterMenuController : MonoBehaviour
 
         refreshCoroutine = null;
     }
-}
+
+    // Carlos's functions : 
+    private void UpdateObjective()
+    {
+        if (state == null) state = GameState.Instance;
+        if (state == null) { SetObjectiveText(defaultObjectiveText); return; }
+
+        if (state.isFlagsEmpty())
+        {
+            SetObjectiveText("Speak with the Captain.");
+        }
+        else if (state.hasFlag("foundMalakor"))
+        {
+            SetObjectiveText("Malakor is too powerful to face now. Explore the other islands and destroy both Heart Crystals.");
+        }
+        else if (state.hasFlag("johnIntroOver"))
+        {
+            SetObjectiveText("Explore the village and the forest to find a way to reach the castle. Slay Malakor");
+        }
+        else if (state.hasFlag("introOver"))
+        {
+            SetObjectiveText("Speak with the old man in front of the mansion.");
+        }
+        else
+        {
+            SetObjectiveText(defaultObjectiveText);
+        }   
+
+    }
+
+    private void UpdateStats()
+    {
+        if (state == null) state = GameState.Instance;
+        if (state == null) return;
+        strengthValueText.text = state.GetStrength().ToString();
+        charismaValueText.text = state.GetCharisma().ToString();
+        intelligenceValueText.text = state.GetIntelligence().ToString();
+        LevelValueText.text = partyManager.GetPartyLevel().ToString();
+    }
+
+
+    }

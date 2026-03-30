@@ -648,7 +648,16 @@ namespace Game.Combat
                 enemyName: transitionData?.enemyName ?? "Unknown"
             );
 
-            GameStateManager.Instance.TransitionToExploration(result);
+            if(victory)
+            {
+                GameStateManager.Instance.TransitionToExploration(result);
+            }
+
+
+            else
+            {
+                GameStateManager.Instance.TransitionToGameOver();
+            }
         }
 
         #endregion
