@@ -12,9 +12,9 @@ namespace Game.Combat.Units
         Defensive,
         
 	// New behaviors for our actual enemies
-	SkeletonRanged,
-	SkeletonMelee,
-	Healer,
-	HydraGrappler
+        SkeletonRanged,
+        SkeletonMelee,
+        Healer,
+        HydraGrappler
     }
 }

@@ -134,9 +134,10 @@ namespace Game.Combat
             if (enemyDeploymentHexes == null || enemyDeploymentHexes.Count == 0)
             {
                 Debug.LogWarning("[CombatManager] No Enemy Deployment Hexes assigned in Inspector! Using fallbacks.");
-                enemyDeploymentHexes = new System.Collections.Generic.List<HexCoordinates> 
-                { 
-                    new HexCoordinates(6, 6), new HexCoordinates(6, 5), new HexCoordinates(5, 6) 
+                enemyDeploymentHexes = new System.Collections.Generic.List<HexCoordinates>
+                {
+                    new HexCoordinates(6, 6), new HexCoordinates(6, 5), new HexCoordinates(5, 6),
+                    new HexCoordinates(7, 5), new HexCoordinates(5, 7)
                 };
             }
 
@@ -156,7 +157,7 @@ namespace Game.Combat
             // --- SPAWN ENEMIES ---
             List<string> enemiesToSpawn = transitionData != null && transitionData.EncounterEnemies.Count > 0 
                 ? transitionData.EncounterEnemies 
-                : new List<string> { "Enemy" }; // Fallback
+                : new List<string> { "skeleton_melee", "skeleton_ranged", "Hydra", "healer" }; // Fallback: spawn all 4 enemy types for standalone testing
 
             int enemyLevel = transitionData != null ? transitionData.ennemyLevel : 1;
 
@@ -255,6 +256,11 @@ namespace Game.Combat
                     var validMoves = _flowController.GetValidMoves(currentUnit);
                     foreach (var coord in validMoves)
                         gridRenderer.AddHighlight(coord, HighlightType.PlayerMove);
+
+                    // Also show attackable enemies so the player knows they're already in range
+                    var attackableNow = _flowController.GetValidAttackTargets(currentUnit);
+                    foreach (var coord in attackableNow)
+                        gridRenderer.AddHighlight(coord, HighlightType.PlayerAttack);
                 }
                 else if (_currentActionMode == PlayerActionMode.Attack)
                 {
@@ -580,8 +586,12 @@ namespace Game.Combat
             }
             else
             {
-                // AI action failed e.g player outmanuvered the AI
-                Debug.Log($"[CombatManager] {enemyUnit.DisplayName}'s action failed (target moved or invalid)!");
+                if (lockedIntent == null)
+                    Debug.Log($"[AI Skip] {enemyUnit.DisplayName} ({enemyUnit.AIBehavior}) has nothing to do — no action planned");
+                else if (!targetStillInHex)
+                    Debug.Log($"[AI Dodged] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} on {lockedIntent.TargetUnit?.DisplayName} failed — target moved away from expected hex");
+                else
+                    Debug.Log($"[AI Blocked] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} failed validation — destination may be occupied or target out of range");
             }
 
             // 3. Force visual refresh so any shoved units physically slide to their new hex

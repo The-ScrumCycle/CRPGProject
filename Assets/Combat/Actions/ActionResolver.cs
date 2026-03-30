@@ -98,8 +98,21 @@ namespace Game.Combat.Actions
                 }
             }
 
+            else if (action is GrappleAction grapple)
+            {
+                visualType = ActionVisualType.Grapple;
+                targetUnit = grapple.Target;
+                predictedDamage = 0;
+            }
+            else if (action is RangedHealAction heal)
+            {
+                visualType = ActionVisualType.Heal;
+                targetUnit = heal.Target;
+                predictedDamage = -heal.healAmount;
+            }
+
             return new ActionIntent(
-                action.Actor, action, targetUnit, predictedDamage, visualType, 
+                action.Actor, action, targetUnit, predictedDamage, visualType,
                 movementPath, isValid, pushDestination, targetTakesBumpDamage, secondaryBumpTarget
             );
         }
@@ -194,6 +207,16 @@ namespace Game.Combat.Actions
         public RangedAttackAction CreateRangedAttack(Unit actor, Unit target)
         {
             return new RangedAttackAction(actor, target);
+        }
+
+        public GrappleAction CreateGrapple(Unit actor, Unit target)
+        {
+            return new GrappleAction(actor, target);
+        }
+
+        public RangedHealAction CreateRangedHeal(Unit actor, Unit target)
+        {
+            return new RangedHealAction(actor, target);
         }
     }
 }

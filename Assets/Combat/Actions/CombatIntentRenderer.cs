@@ -96,7 +96,10 @@ namespace Game.Combat.Actions
                     return HighlightType.AI_Move;
                 case ActionVisualType.MeleeAttack:
                 case ActionVisualType.RangedAttack:
+                case ActionVisualType.Grapple:
                     return HighlightType.AI_Attack;
+                case ActionVisualType.Heal:
+                    return HighlightType.AI_Move;
                 default:
                     return HighlightType.None;
             }

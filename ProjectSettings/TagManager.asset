@@ -24,6 +24,8 @@ TagManager:
   - Shortcut
   - Ship
   - Malakor
+  - skeleton_melee
+  - healer
   layers:
   - Default
   - TransparentFX
