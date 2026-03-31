@@ -231,11 +231,18 @@ namespace Game.Combat
                     // --- Damage Preview Layer for AOE Attacks ---
                     bool isTargetedByAction = false;
                     
-                    if (intent.Action is SplashAttackAction || intent.Action is SweepAttackAction)
+                    // Check if player is in AoE damage zone or targetted by an attack
+                    if (intent.TargetCells != null && intent.TargetCells.Count > 0)
                     {
-                        // If it's an AoE, check if this unit is standing in the attack zone
-                        isTargetedByAction = intent.TargetCells.Contains(unit.Coordinates);
-                    }
+                        foreach (var cellCoord in intent.TargetCells)
+                        {
+                            if (_grid.GetDistance(cellCoord, unit.Coordinates) == 0)
+                            {
+                                isTargetedByAction = true;
+                                break;
+                            }
+                        }
+                    } 
                     else
                     {
                         // Standard single-target check
@@ -255,7 +262,8 @@ namespace Game.Combat
                     }
                 }
 
-                bool isHovered = (unit == hoveredUnit) || isSecondaryTarget;
+                // show health bar constantly while taking damage
+                bool isHovered = (unit == hoveredUnit) || isSecondaryTarget || (incomingDamage > 0);
                 worldUI.UpdateState(unit.Stats.currentHealth, unit.Stats.maxHealth, incomingDamage, isHovered, unit.IsPlayerControlled);
             }
         } 
@@ -589,41 +597,22 @@ namespace Game.Combat
                 }
             }
 
-            // 2. Execute the locked intent IF it is still valid, e.g don't move into a hexagon that contains a unit now (through shoving or player move)
-            bool targetStillInHex = true;
-            if (lockedIntent != null && lockedIntent.TargetUnit != null)
-            {
-                if (lockedIntent != null && lockedIntent.TargetUnit != null && lockedIntent.TargetCells.Count > 0)
-                {
-                    // We check against TargetCells[0] because single-target attacks yield exactly one hex, in the future if we add AOE we need to totally refactor
-                    if (lockedIntent.TargetUnit.Coordinates != lockedIntent.TargetCells[0])
-                    {
-                        targetStillInHex = false; // Player dodged attack
-                    }
-                }
-            }
-
-            // Execute the locked intent IF it is valid AND the player didn't doge the attack e.g move away
-            if (lockedIntent != null && targetStillInHex && _actionResolver.Validate(lockedIntent.Action))
+            // 2. Execute the locked intent. (The old 'targetStillInHex' abort has been eradicated).
+            // The action will always hit the locked hex if the player dodged, it hits empty space.
+            if (lockedIntent != null && _actionResolver.Validate(lockedIntent.Action))
             {
                 if (_actionResolver.Execute(lockedIntent.Action))
                 {
-                    bool isAttack = lockedIntent.Action is MeleeAttackAction || lockedIntent.Action is RangedAttackAction;
-                    if (isAttack)
-                    {
-                        Debug.Log($"[CombatManager] {enemyUnit.DisplayName} executed telegraphed attack!");
-                        SweepForDeaths(); 
-                    }
+                    Debug.Log($"[CombatManager] {enemyUnit.DisplayName} executed telegraphed action: {lockedIntent.Action.GetType().Name}");
+                    SweepForDeaths(); 
                 }
             }
             else
             {
                 if (lockedIntent == null)
                     Debug.Log($"[AI Skip] {enemyUnit.DisplayName} ({enemyUnit.AIBehavior}) has nothing to do — no action planned");
-                else if (!targetStillInHex)
-                    Debug.Log($"[AI Dodged] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} on {lockedIntent.TargetUnit?.DisplayName} failed — target moved away from expected hex");
                 else
-                    Debug.Log($"[AI Blocked] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} failed validation — destination may be occupied or target out of range");
+                    Debug.Log($"[AI Blocked] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} failed validation — target out of range");
             }
 
             // 3. Force visual refresh so any shoved units physically slide to their new hex

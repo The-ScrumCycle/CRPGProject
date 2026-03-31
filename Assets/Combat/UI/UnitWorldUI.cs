@@ -36,12 +36,12 @@ namespace Game.Combat.UI
             if (isPlayer)
             {
                 // Rule 1: Player health bar ONLY shows if they are about to take damage
-                shouldShow = incomingDamage > 0;
+                shouldShow = (incomingDamage > 0);
             }
             else
             {
                 // Rule 2: Enemy health bar shows if player hovers them, OR if they are taking damage
-                shouldShow = isHovered || incomingDamage > 0;
+                shouldShow = isHovered || (incomingDamage > 0);
             }
             
             if (_canvas != null) _canvas.enabled = shouldShow;

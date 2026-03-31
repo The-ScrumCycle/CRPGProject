@@ -24,7 +24,7 @@ namespace Game.Combat.Actions
         }
 
         // Render a single intent into highlight data.
-        // Only stores the destination tile (NOTE: not full movement path, so we can't add like a tank class that damages through movement)
+        // Our higlights currently are movement cells, AoE and regular attack cells, push direction arrow.
         public void Render(ActionIntent intent)
         {
             if (intent == null || !intent.IsValid) return;
@@ -32,20 +32,40 @@ namespace Game.Combat.Actions
             HighlightType type = MapVisualType(intent.VisualType);
             if (type == HighlightType.None) return;
 
-            foreach (var cell in intent.TargetCells)
+            // 1. HIGHLIGHT MOVEMENT PATH
+            if (intent.MovementPath != null && intent.MovementPath.Count > 0)
             {
-                AddWithPriority(cell, type);
+                foreach (var coords in intent.MovementPath)
+                {
+                    if (coords != intent.Actor.Coordinates) 
+                    {
+                        AddWithPriority(coords, HighlightType.AI_Move);
+                    }
+                }
             }
 
-            // Render a directional push ("attack arrow") 
+            // 2. HIGHLIGHT ALL AOE TARGET CELLS
+            var targetCells = intent.Action.GetTargetCells();
+            if (targetCells != null)
+            {
+                foreach (var cellCoords in targetCells)
+                {
+                    AddWithPriority(cellCoords, type);
+                }
+            }
+
+            // 3. RENDER PUSH ARROW
             if (intent.PushDestination.HasValue && _arrowPrefab != null && _gridRenderer != null)
             {
-                Vector3 startPos = _gridRenderer.HexToWorld(intent.TargetCells[0]);
+                // Start the arrow from the target's hex
+                HexCoordinates startHex = intent.TargetUnit != null ? intent.TargetUnit.Coordinates : intent.Actor.Coordinates;
+
+                Vector3 startPos = _gridRenderer.HexToWorld(startHex);
                 Vector3 endPos = _gridRenderer.HexToWorld(intent.PushDestination.Value);
                 
                 // Place the arrow exactly between the two hexes, slightly hovering
                 Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f);
-                float floatHeight = 0.0f; // TODO : float the arrow above the prefabs and hex level, currently this breaks the math...
+                float floatHeight = 0.0f; // TODO : find a better visual way to float the arrow above the prefabs
 
                 GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab, midPoint + Vector3.up * floatHeight, Quaternion.identity);
                 
@@ -58,7 +78,7 @@ namespace Game.Combat.Actions
                 
                 _activeArrows.Add(arrow);
             }
-        }
+        } 
 
         // Render all intents from a list into highlight data
         // NOTE: Call Clear() first if you want a fresh pass

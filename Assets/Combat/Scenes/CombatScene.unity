@@ -635,14 +635,8 @@ MonoBehaviour:
   unitFactory: {fileID: 1945263018}
   playerDeploymentHexes: []
   enemyDeploymentHexes: []
-  debugPlayerRoster:
-  - Captain
-  - Warrior
-  - Cleric
-  debugEnemyRoster:
-  - skeleton_ranged
-  - skeleton_melee
-  - Hydra
+  debugPlayerRoster: 000000000100000002000000
+  debugEnemyRoster: 040000000400000004000000
   shoveArrowPrefab: {fileID: 700429023681575523, guid: 3ce9f9edb54c21648bad9acccbba054c,
     type: 3}
   victoryExperience: 100

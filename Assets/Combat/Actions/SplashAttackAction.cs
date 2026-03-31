@@ -28,14 +28,21 @@ namespace Game.Combat.Actions
 
         public void Execute(HexGrid grid)
         {
-            foreach (var coords in _aoeCells)
+            // Bypass dictionary hash lookups and evaluate pure distance
+            foreach (var cell in grid.GetAllCells())
             {
-                var cell = grid.GetCell(coords);
                 if (cell != null && cell.Occupant != null && cell.Occupant.IsAlive)
                 {
-                    cell.Occupant.TakeDamage(Actor.Stats.attackPower);
+                    foreach (var blastCoord in _aoeCells)
+                    {
+                        if (grid.GetDistance(blastCoord, cell.Occupant.Coordinates) == 0)
+                        {
+                            cell.Occupant.TakeDamage(Actor.Stats.attackPower);
+                            break; // Prevent double-damage if coordinates overlap
+                        }
+                    }
                 }
             }
-        }
+        } 
     }
 }

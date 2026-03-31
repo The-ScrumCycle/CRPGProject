@@ -36,7 +36,8 @@ namespace Game.Combat.Actions
         {
             Actor = actor;
             Action = action;
-            TargetCells = new List<HexCoordinates>(action.GetTargetCells());
+            var rawCells = action.GetTargetCells();
+            TargetCells = rawCells != null ? new List<HexCoordinates>(rawCells) : new List<HexCoordinates>();
             TargetUnit = targetUnit;
             PredictedDamage = predictedDamage;
             VisualType = visualType;

@@ -27,14 +27,20 @@ namespace Game.Combat.Actions
 
         public void Execute(HexGrid grid)
         {
-            foreach (var coords in _sweepCells)
+            foreach (var cell in grid.GetAllCells())
             {
-                var cell = grid.GetCell(coords);
                 if (cell != null && cell.Occupant != null && cell.Occupant.IsAlive)
                 {
-                    cell.Occupant.TakeDamage(Actor.Stats.attackPower);
+                    foreach (var blastCoord in _sweepCells)
+                    {
+                        if (grid.GetDistance(blastCoord, cell.Occupant.Coordinates) == 0)
+                        {
+                            cell.Occupant.TakeDamage(Actor.Stats.attackPower);
+                            break;
+                        }
+                    }
                 }
             }
-        }
+        } 
     }
 }

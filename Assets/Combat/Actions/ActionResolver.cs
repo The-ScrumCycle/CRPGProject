@@ -254,28 +254,36 @@ namespace Game.Combat.Actions
         // Builds a 7-hex area ranged splash attack
         public ICombatAction CreateSplashAttack(Unit actor, HexCell targetCell)
         {
-            var aoe = new List<HexCoordinates> { targetCell.Coordinates };
-            foreach (var neighbor in _grid.GetNeighbors(targetCell.Coordinates))
+            var aoe = new List<HexCoordinates>();
+            
+            // A splash hits the center (dist 0) and immediate adjacent hexes (dist 1)
+            foreach (var cell in _grid.GetAllCells())
             {
-                aoe.Add(neighbor.Coordinates);
+                if (_grid.GetDistance(targetCell.Coordinates, cell.Coordinates) <= 1)
+                {
+                    aoe.Add(cell.Coordinates);
+                }
             }
+            
             return new SplashAttackAction(actor, targetCell.Coordinates, aoe);
-        }
+        } 
 
         // Builds a 3-hex frontal melee attack
         public ICombatAction CreateSweepAttack(Unit actor, HexCell targetCell)
         {
             var sweep = new List<HexCoordinates> { targetCell.Coordinates };
             
-            // Find the two neighbors of the Actor that are ALSO neighbors of the Target
-            foreach (var neighbor in _grid.GetNeighbors(actor.Coordinates))
+            // Any cell that is exactly distance 1 from BOTH the Actor AND the Target
+            foreach (var cell in _grid.GetAllCells())
             {
-                if (_grid.GetDistance(neighbor.Coordinates, targetCell.Coordinates) == 1)
+                if (_grid.GetDistance(actor.Coordinates, cell.Coordinates) == 1 &&
+                    _grid.GetDistance(targetCell.Coordinates, cell.Coordinates) == 1)
                 {
-                    sweep.Add(neighbor.Coordinates);
+                    sweep.Add(cell.Coordinates);
                 }
             }
+            
             return new SweepAttackAction(actor, targetCell.Coordinates, sweep);
-        }
+        } 
     }
 }
