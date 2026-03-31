@@ -18,7 +18,16 @@ namespace Game.Combat.AI
             {
                 if (!unit.IsAlive || !unit.IsPlayerControlled) continue;
                 if (grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates) == 1)
+                {
+                    if (enemyUnit.AvailableActions.Contains(CombatActionType.SweepAttack))
+                    {
+                        var sweep = resolver.CreateSweepAttack(enemyUnit, grid.GetCell(unit.Coordinates));
+                        if (resolver.Validate(sweep)) return sweep;
+                    }
+                    
+                    // Fallback to standard Melee if Sweep isn't equipped or is invalid
                     return resolver.CreateMeleeAttack(enemyUnit, unit);
+                }
             }
 
             // Priority 2: Chase the lowest-HP player unit

@@ -112,19 +112,24 @@ namespace Game.Combat.Units
             return (unit, visual);
         }
 
-        // get correct UnitStatsConfig for enemy 
+        // Get correct UnitStatsConfig for enemy, ENSURE that this is correct and matches expected DetermineAIBehavior
+        // NOTE : stats determine the range of movement, attack range, health and damage of a unit which are modifiable in Assets/Combat/Leveling/Data/
         private UnitStatsConfig GetEnemyStatsConfig(string enemyTag)
         {
             switch (enemyTag.ToLower())
             {
                 case "hydra":
                     return HydraStats;
-                case "closerangeskeleton":
                 case "skeleton_melee":     
                     return CloseRangeSkletonStats;
                 case "skeleton_ranged":    
-                    return defaultEnemyStats; 
+                    return RangedSkeletonStats;
+                case "healer":
+                    return HealerStats;
                 case "troll":
+                    return CloseRangeSkletonStats; // TODO: Implement the Ogre Enemey
+                case "malakor":
+                    return MalakorStats;
                 default:
                     Debug.LogWarning($"[UnitFactory] No stats config found for tag '{enemyTag}', using default stats");
                     return defaultEnemyStats; 

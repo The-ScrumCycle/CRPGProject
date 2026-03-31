@@ -1,3 +1,4 @@
+// --- Snippet for Assets/Combat/AI/SkeletonRangedBrain.cs ---
 using Game.Combat.Units;
 using Game.Combat.Actions;
 using Game.Combat.Grid;
@@ -19,14 +20,26 @@ namespace Game.Combat.AI
 
             int distanceToTarget = grid.GetDistance(enemyUnit.Coordinates, target.Coordinates);
 
-            // Priority 1: Reposition to ideal range (attackRange distance)
+            // Priority 1: Already at optimal position — ranged attack if in range
+            if (distanceToTarget <= enemyUnit.Stats.attackRange)
+            {
+                if (enemyUnit.AvailableActions.Contains(CombatActionType.SplashAttack))
+                {
+                    var splash = resolver.CreateSplashAttack(enemyUnit, grid.GetCell(target.Coordinates));
+                    if (resolver.Validate(splash)) return splash; 
+                }
+                
+                if (distanceToTarget > 1) // Standard Ranged needs distance
+                {
+                    var ranged = resolver.CreateRangedAttack(enemyUnit, target);
+                    if (resolver.Validate(ranged)) return ranged;
+                }
+            }
+
+            // Priority 2: Reposition to ideal range (attackRange distance)
             var reposition = MoveToOptimalRange(enemyUnit, target, grid, resolver);
             if (reposition != null) return reposition;
-
-            // Priority 2: Already at optimal position — ranged attack if in range
-            if (distanceToTarget <= enemyUnit.Stats.attackRange && distanceToTarget > 1)
-                return resolver.CreateRangedAttack(enemyUnit, target);
-
+            
             // Priority 3: Cornered at distance 1 — desperation melee
             if (distanceToTarget == 1)
                 return resolver.CreateMeleeAttack(enemyUnit, target);
