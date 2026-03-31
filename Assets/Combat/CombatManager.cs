@@ -38,8 +38,8 @@ namespace Game.Combat
         [SerializeField] private System.Collections.Generic.List<HexCoordinates> enemyDeploymentHexes;
 
         [Header("Sandbox Testing (Direct Scene Boot)")] // allows us to test combat scenarios inside the combat scene
-        [SerializeField] private System.Collections.Generic.List<string> debugPlayerRoster = new System.Collections.Generic.List<string> { "Captain", "Warrior", "Cleric" };
-        [SerializeField] private System.Collections.Generic.List<string> debugEnemyRoster = new System.Collections.Generic.List<string> { "skeleton_ranged", "skeleton_melee", "Hydra" };
+        [SerializeField] private System.Collections.Generic.List<SandboxUnitID> debugPlayerRoster = new System.Collections.Generic.List<SandboxUnitID> { SandboxUnitID.Captain, SandboxUnitID.Warrior, SandboxUnitID.Cleric };
+        [SerializeField] private System.Collections.Generic.List<SandboxUnitID> debugEnemyRoster = new System.Collections.Generic.List<SandboxUnitID> { SandboxUnitID.skeleton_ranged, SandboxUnitID.skeleton_melee, SandboxUnitID.Hydra };
 
         [Header("Prefabs")]
         [SerializeField] private GameObject shoveArrowPrefab;
@@ -138,9 +138,16 @@ namespace Game.Combat
             }
 
             // --- SPAWN PLAYERS (we use sandbox config if no transition data avail) ---
-            List<string> playersToSpawn = transitionData != null && transitionData.ActiveCompanions.Count > 0 
-                ? transitionData.ActiveCompanions 
-                : debugPlayerRoster;
+            List<string> playersToSpawn = new List<string>();
+            if (transitionData != null && transitionData.ActiveCompanions.Count > 0)
+            {
+                playersToSpawn = transitionData.ActiveCompanions;
+            }
+            else
+            {
+                // Convert Enum to String for the Sandbox
+                foreach (var id in debugPlayerRoster) playersToSpawn.Add(id.ToString());
+            } 
 
             for (int i = 0; i < playersToSpawn.Count; i++)
             {
@@ -151,9 +158,16 @@ namespace Game.Combat
             }
 
             // --- SPAWN ENEMIES (we use sandbox config if no transition data avail) ---
-            List<string> enemiesToSpawn = transitionData != null && transitionData.EncounterEnemies.Count > 0 
-                ? transitionData.EncounterEnemies 
-                : debugEnemyRoster;
+            List<string> enemiesToSpawn = new List<string>();
+            if (transitionData != null && transitionData.EncounterEnemies.Count > 0)
+            {
+                enemiesToSpawn = transitionData.EncounterEnemies;
+            }
+            else
+            {
+                // Convert Enum to String for the Sandbox!
+                foreach (var id in debugEnemyRoster) enemiesToSpawn.Add(id.ToString());
+            } 
 
             int enemyLevel = transitionData != null ? transitionData.ennemyLevel : 1;
 
