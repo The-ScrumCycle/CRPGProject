@@ -38,7 +38,7 @@ namespace Game.Combat.UI
             if (actionBarUI != null)
             {
                 bool activeUnitHasActed = currentUnit != null && CombatManager.Instance.HasUnitActed(currentUnit);
-                actionBarUI.RefreshActionBar(currentMode, isPlayerTurn, activeUnitHasActed);
+                actionBarUI.RefreshActionBar(currentMode, isPlayerTurn, activeUnitHasActed, currentUnit);
             }
         }
     }
