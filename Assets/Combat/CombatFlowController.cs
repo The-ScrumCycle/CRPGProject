@@ -73,6 +73,22 @@ namespace Game.Combat
                 _state.ClearActedUnits(); // Clear enemies/players on new round
                 _enemyAI.GenerateAllIntents(_state);
             }
+
+            // Fast-forward past any remaining players if the shared player phase is complete
+            while (_turnSystem.GetCurrentUnit() != null &&
+                   _turnSystem.GetCurrentUnit().IsPlayerControlled &&
+                   HaveAllPlayerUnitsActed())
+            {
+                int currentRound = _turnSystem.RoundNumber;
+                _turnSystem.AdvanceTurn();
+                
+                // Catch round end inside the fast-forward
+                if (_turnSystem.RoundNumber > currentRound)
+                {
+                    _state.ClearActedUnits();
+                    _enemyAI.GenerateAllIntents(_state);
+                }
+            }
         }
 
         public Unit GetCurrentUnit()
