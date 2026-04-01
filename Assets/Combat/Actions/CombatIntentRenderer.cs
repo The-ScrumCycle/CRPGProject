@@ -54,30 +54,45 @@ namespace Game.Combat.Actions
                 }
             }
 
-            // 3. RENDER PUSH ARROW
-            if (intent.PushDestination.HasValue && _arrowPrefab != null && _gridRenderer != null)
+            // 3. RENDER PUSH / PULL ARROW
+            if (intent.PushDestination.HasValue || intent.VisualType == ActionVisualType.Pull)
             {
-                // Start the arrow from the target's hex
-                HexCoordinates startHex = intent.TargetUnit != null ? intent.TargetUnit.Coordinates : intent.Actor.Coordinates;
-
-                Vector3 startPos = _gridRenderer.HexToWorld(startHex);
-                Vector3 endPos = _gridRenderer.HexToWorld(intent.PushDestination.Value);
+                HexCoordinates startHex = intent.TargetUnit.Coordinates;
                 
-                // Place the arrow exactly between the two hexes, slightly hovering
-                Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f);
-                float floatHeight = 0.0f; // TODO : find a better visual way to float the arrow above the prefabs
+                // Determine the final destination hex
+                HexCoordinates endHex = intent.SecondaryBumpTarget != null ? 
+                                        intent.SecondaryBumpTarget.Coordinates : 
+                                        (intent.PushDestination.HasValue ? intent.PushDestination.Value : startHex);
 
-                GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab, midPoint + Vector3.up * floatHeight, Quaternion.identity);
-                
-                // Rotate to point toward destination
-                Vector3 dir = endPos - startPos;
-                if (dir != Vector3.zero)
+                if (startHex != endHex) // Only draw if physical displacement actually occurs
                 {
-                    arrow.transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+                    Vector3 startWorldPos = _gridRenderer.HexToWorld(startHex);
+                    Vector3 endWorldPos = _gridRenderer.HexToWorld(endHex);
+
+                    // REVERSE ARROW LOGIC FOR PULL
+                    if (intent.VisualType == ActionVisualType.Pull)
+                    {
+                        startWorldPos = _gridRenderer.HexToWorld(endHex);
+                        endWorldPos = _gridRenderer.HexToWorld(startHex);
+                    } 
+
+                    GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab);
+                    
+                    arrow.transform.position = (startWorldPos + endWorldPos) / 2f;
+                    arrow.transform.position += Vector3.up * 0.5f; 
+
+                    Vector3 direction = (endWorldPos - startWorldPos).normalized;
+                    if (direction != Vector3.zero)
+                    {
+                        arrow.transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
+                    }
+
+                    float distance = Vector3.Distance(startWorldPos, endWorldPos);
+                    arrow.transform.localScale = new Vector3(1f, 1f, distance * 0.5f);
+
+                    _activeArrows.Add(arrow);
                 }
-                
-                _activeArrows.Add(arrow);
-            }
+            }  
         } 
 
         // Render all intents from a list into highlight data

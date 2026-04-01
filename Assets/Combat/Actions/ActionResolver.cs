@@ -97,6 +97,41 @@ namespace Game.Combat.Actions
                     pushDestination = null; // Stays in place
                 }
             }
+            else if (action is HeavyMeleeAttackAction heavy)
+            {
+                visualType = ActionVisualType.MeleeAttack; 
+                targetUnit = _grid.GetCell(heavy.TargetPos)?.Occupant;
+                predictedDamage = action.Actor.Stats.attackPower;
+
+                if (targetUnit != null)
+                {
+                    // Predict the 3-hex shove
+                    pushDestination = ResolveLinearPush(targetUnit, action.Actor.Coordinates, 3, out secondaryBumpTarget);
+                    
+                    if (secondaryBumpTarget != null || !_grid.GetCell(pushDestination.Value).IsWalkable)
+                    {
+                        predictedDamage += BUMP_DAMAGE;
+                        targetTakesBumpDamage = true;
+                    }
+                }
+            }
+            else if (action is PullAction pull)
+            {
+                visualType = ActionVisualType.Pull;
+                targetUnit = _grid.GetCell(pull.TargetPos)?.Occupant;
+
+                if (targetUnit != null)
+                {
+                    // Predict the 3-hex pull
+                    pushDestination = ResolveLinearPull(targetUnit, action.Actor.Coordinates, 3, out secondaryBumpTarget);
+                    
+                    if (secondaryBumpTarget != null || !_grid.GetCell(pushDestination.Value).IsWalkable)
+                    {
+                        predictedDamage += BUMP_DAMAGE;
+                        targetTakesBumpDamage = true;
+                    }
+                }
+            }
             else if (action is GrappleAction grapple)
             {
                 visualType = ActionVisualType.Grapple;
@@ -251,6 +286,49 @@ namespace Game.Combat.Actions
             return new RangedHealAction(actor, target);
         }
 
+        public ICombatAction CreateHeavyMeleeAttack(Unit actor, HexCell targetCell)
+        {
+            return new HeavyMeleeAttackAction(actor, targetCell.Coordinates);
+        }
+
+        public ICombatAction CreatePull(Unit actor, HexCell targetCell)
+        {
+            return new PullAction(actor, targetCell.Coordinates);
+        }
+
+        public ActionIntent GeneratePullIntent(Unit actor, HexCell targetCell)
+        {
+            var targetUnit = targetCell.Occupant;
+            var pullAction = new PullAction(actor, targetCell.Coordinates);
+
+            if (targetUnit != null)
+            {
+                // Run the physics simulation purely to predict the collision for the UI
+                ResolveLinearPull(targetUnit, actor.Coordinates, 3, out Unit predictedBumpTarget);
+
+                int predictedDamage = predictedBumpTarget != null ? 10 : 0; // Calculate bump damage for the preview
+                bool takesBumpDamage = predictedBumpTarget != null;
+
+                return new ActionIntent(
+                    actor, 
+                    pullAction, 
+                    targetUnit, 
+                    predictedDamage, 
+                    ActionVisualType.Pull, 
+                    null, // movementPath
+                    true, // isValid
+                    null, // pushDestination
+                    takesBumpDamage, 
+                    predictedBumpTarget // Pass the read-only property through the constructor
+                );
+            }
+
+            // Fallback for hovering over an empty cell
+            return new ActionIntent(
+                actor, pullAction, null, 0, ActionVisualType.Pull, null, false
+            );
+        } 
+
         // Builds a 7-hex area ranged splash attack
         public ICombatAction CreateSplashAttack(Unit actor, HexCell targetCell)
         {
@@ -285,5 +363,78 @@ namespace Game.Combat.Actions
             
             return new SweepAttackAction(actor, targetCell.Coordinates, sweep);
         } 
+
+        // Calculates a multi-hex shove. Returns the final valid hex and outputs any unit that was collided with so we can consider bump damage.
+        public HexCoordinates ResolveLinearPush(Unit targetUnit, HexCoordinates attackerPos, int pushDistance, out Unit bumpedUnit)
+        {
+            bumpedUnit = null;
+            HexCoordinates currentPos = targetUnit.Coordinates;
+            HexCoordinates prevPos = attackerPos;
+
+            for (int i = 0; i < pushDistance; i++)
+            {
+                HexCoordinates nextPos = currentPos.GetPushDestination(prevPos);
+                HexCell nextCell = _grid.GetCell(nextPos);
+
+                // Collision: Hit a wall or out of bounds
+                if (nextCell == null || !nextCell.CanEnter()) 
+                    break;
+
+                // Collision: Hit another unit
+                if (nextCell.Occupant != null && nextCell.Occupant != targetUnit)
+                {
+                    bumpedUnit = nextCell.Occupant;
+                    break;
+                }
+
+                // Space is clear, advance the trajectory
+                prevPos = currentPos;
+                currentPos = nextPos;
+            }
+
+            return currentPos;
+        }
+
+        // Calculates a multi-hex pull. Moves the target towards the caster, respecting collision rules for the game (e.g bump stops and causes damage)
+        public HexCoordinates ResolveLinearPull(Unit targetUnit, HexCoordinates pullerPos, int pullDistance, out Unit bumpedUnit)
+        {
+            bumpedUnit = null;
+            HexCoordinates currentPos = targetUnit.Coordinates;
+
+            for (int i = 0; i < pullDistance; i++)
+            {
+                // Find the neighbor of currentPos that is mathematically closest to the puller
+                HexCoordinates bestNeighbor = currentPos;
+                int minDistance = HexCoordinates.Distance(currentPos, pullerPos);
+
+                foreach (var offset in HexCoordinates.GetNeighborOffsets(currentPos))
+                {
+                    HexCoordinates neighbor = currentPos + offset;
+                    int dist = HexCoordinates.Distance(neighbor, pullerPos);
+                    if (dist < minDistance)
+                    {
+                        minDistance = dist;
+                        bestNeighbor = neighbor;
+                    }
+                }
+
+                // If we are already adjacent to the puller, stop pulling
+                if (bestNeighbor == currentPos || minDistance == 0) break;
+
+                HexCell nextCell = _grid.GetCell(bestNeighbor);
+
+                // Collision checks
+                if (nextCell == null || !nextCell.CanEnter()) break;
+                if (nextCell.Occupant != null && nextCell.Occupant != targetUnit)
+                {
+                    bumpedUnit = nextCell.Occupant;
+                    break;
+                }
+
+                currentPos = bestNeighbor;
+            }
+
+            return currentPos;
+        }
     }
 }

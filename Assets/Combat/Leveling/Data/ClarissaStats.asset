@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5f351d1e35a53a46bdcae505dc98856, type: 3}
   m_Name: ClarissaStats
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitStatsConfig
-  availableActions: 02000000
+  availableActions: 0200000007000000
   maxHealth: 100
   attackPower: 20
   healPower: 0

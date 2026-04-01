@@ -15,7 +15,8 @@ namespace Game.Combat
     public enum PlayerActionMode
     {
         Move,
-        Attack
+        Attack,
+        SecondaryAction
     }
     /// <summary>
     /// Main orchestrator for the combat system.
@@ -397,6 +398,9 @@ namespace Game.Combat
                 SetActionMode(PlayerActionMode.Attack);
             }
 
+            // Optional 3rd action player units can have
+            if (Input.GetKeyDown(KeyCode.Alpha3)) SetActionMode(PlayerActionMode.SecondaryAction);
+
             // Action execution based on current mode
             if (Input.GetMouseButtonDown(0))
             {
@@ -426,12 +430,9 @@ namespace Game.Combat
                         TryPlayerMove(currentUnit, clickedHex);
                     }
                 }
-                else if (_currentActionMode == PlayerActionMode.Attack)
+                else if (_currentActionMode == PlayerActionMode.Attack || _currentActionMode == PlayerActionMode.SecondaryAction)
                 {
-                    if (clickedCell.Occupant != null && clickedCell.Occupant.Role == UnitRole.Enemy)
-                    {
-                        TryPlayerAttack(currentUnit, clickedCell.Occupant);
-                    }
+                    TryPlayerAbility(currentUnit, clickedCell);
                 }
             }
 
@@ -464,23 +465,24 @@ namespace Game.Combat
             {
                 var cell = _grid.GetCell(currentHex);
                 
-                // Create a "Phantom" Intent for the UI to read
-                if (cell != null && _currentActionMode == PlayerActionMode.Attack && cell.Occupant != null && cell.Occupant.Role == UnitRole.Enemy)
+                // Create a dynamic Intent based on the active loadout slot
+                if (cell != null && (_currentActionMode == PlayerActionMode.Attack || _currentActionMode == PlayerActionMode.SecondaryAction))
                 {
-                    int distance = _grid.GetDistance(currentUnit.Coordinates, currentHex);
-                    ICombatAction mockAction = null;
+                    int actionIndex = _currentActionMode == PlayerActionMode.Attack ? 0 : 1;
                     
-                    if (distance == 1) mockAction = _actionResolver.CreateMeleeAttack(currentUnit, cell.Occupant);
-                    else if (distance <= currentUnit.Stats.attackRange) mockAction = _actionResolver.CreateRangedAttack(currentUnit, cell.Occupant);
-
-                    if (mockAction != null && _actionResolver.Validate(mockAction))
+                    if (actionIndex < currentUnit.AvailableActions.Count)
                     {
-                        _currentHoverIntent = _actionResolver.Preview(mockAction);
+                        CombatActionType abilityType = currentUnit.AvailableActions[actionIndex];
+                        ICombatAction mockAction = CreateActionFromType(abilityType, currentUnit, cell);
+
+                        if (mockAction != null && _actionResolver.Validate(mockAction))
+                        {
+                            _currentHoverIntent = _actionResolver.Preview(mockAction);
+                        }
                     }
                 }
             }
 
-            // Refresh highlights passing in the new phantom intent
             RefreshPlayerHighlights(_currentHoverIntent);
         } 
 
@@ -515,46 +517,37 @@ namespace Game.Combat
             }
         } 
 
-        private void TryPlayerAttack(Unit attacker, Unit target)
+        
+        private void TryPlayerAbility(Unit caster, HexCell targetCell)
         {
-            ICombatAction attackAction;
+            int actionIndex = _currentActionMode == PlayerActionMode.Attack ? 0 : 1;
+            if (actionIndex >= caster.AvailableActions.Count) return;
 
-            int distance = _grid.GetDistance(attacker.Coordinates, target.Coordinates);
+            CombatActionType abilityType = caster.AvailableActions[actionIndex];
+            ICombatAction action = CreateActionFromType(abilityType, caster, targetCell);
 
-            if (distance == 1)
+            // If the factory failed to build it, or the action's specific IsValid checks fail, abort
+            if (action == null || !_actionResolver.Validate(action)) 
             {
-                attackAction = _actionResolver.CreateMeleeAttack(attacker, target);
-            }
-            else if (distance <= attacker.Stats.attackRange)
-            {
-                attackAction = _actionResolver.CreateRangedAttack(attacker, target);
-            }
-            else
-            {
-                Debug.Log("[CombatManager] Target out of range");
+                Debug.Log($"[CombatManager] Invalid target for {abilityType}");
                 return;
             }
 
-            if (_actionResolver.Execute(attackAction))
+            if (_actionResolver.Execute(action))
             {
-                Debug.Log($"[CombatManager] {attacker.DisplayName} attacked {target.DisplayName} for {attacker.Stats.attackPower} damage");
-                Debug.Log($"[CombatManager] {target.DisplayName} HP: {target.Stats.currentHealth}/{target.Stats.maxHealth}");
+                Debug.Log($"[CombatManager] {caster.DisplayName} used {abilityType} on {targetCell.Occupant?.DisplayName ?? "Empty Hex"}");
                 
                 SweepForDeaths();
 
                 var currentUnit = _flowController.GetCurrentUnit();
                 _flowController.MarkUnitActed(currentUnit);
                 
-                // Clear UI and Highlights immediately
                 _currentHoverIntent = null;
                 _intentRenderer.Clear();
                 gridRenderer.ClearHighlights();
                 UpdateUnitWorldUIs();
-
-                // updating enemy position (shove)
                 RefreshAllUnitVisuals();
 
-                // End turn if player played all unit turns OR go to next unit
                 if (_flowController.HaveAllPlayerUnitsActed())
                 {
                     Invoke(nameof(EndTurn), 0.3f);
@@ -564,9 +557,31 @@ namespace Game.Combat
                     var nextUnit = _flowController.GetNextAvailablePlayerUnit();
                     if (nextUnit != null) _flowController.SelectPlayerUnit(nextUnit);
                     
-                    // Delay the UI refresh slightly so visual slide finishes before drawing new grids
                     Invoke(nameof(ResetModeToMove), 0.3f); 
                 }
+            }
+        }
+
+        private ICombatAction CreateActionFromType(CombatActionType type, Unit actor, HexCell targetCell)
+        {
+            // Most actions currently require an occupant to target, except specific AoEs
+            if (targetCell.Occupant == null && type != CombatActionType.SplashAttack && type != CombatActionType.SweepAttack) 
+                return null; 
+
+            switch (type)
+            {
+                case CombatActionType.MeleeAttack:
+                    return _actionResolver.CreateMeleeAttack(actor, targetCell.Occupant);
+                case CombatActionType.RangedAttack:
+                    return _actionResolver.CreateRangedAttack(actor, targetCell.Occupant);
+                case CombatActionType.HeavyMeleeAttack:
+                    return _actionResolver.CreateHeavyMeleeAttack(actor, targetCell);
+                case CombatActionType.PullAlly:
+                    return _actionResolver.CreatePull(actor, targetCell);
+                case CombatActionType.RangedHeal:
+                    return _actionResolver.CreateRangedHeal(actor, targetCell.Occupant);
+                default:
+                    return null;
             }
         }
 

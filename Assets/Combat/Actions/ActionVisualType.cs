@@ -13,6 +13,8 @@ namespace Game.Combat.Actions
         MeleeAttack,
         RangedAttack,
         Grapple,
-        Heal
+        Heal,
+        Push,
+        Pull
     }
 }
