@@ -415,12 +415,13 @@ namespace Game.Combat
                 // Swap unit when player clicks on a unit on grid
                 if (clickedCell.Occupant != null && clickedCell.Occupant.IsPlayerControlled && clickedCell.Occupant.IsAlive)
                 {
-                    if (!_flowController.HasUnitActed(clickedCell.Occupant))
+                    // Only allow swap if player has move action selected, so they don't swap while attempting to perform an action on their units
+                    if (!_flowController.HasUnitActed(clickedCell.Occupant) && _currentActionMode == PlayerActionMode.Move)
                     {
                         _flowController.SelectPlayerUnit(clickedCell.Occupant);
                         SetActionMode(PlayerActionMode.Move);
                         return; // Successfully swapped, abort action execution
-                    }
+                    } 
                 }
 
                 if (_currentActionMode == PlayerActionMode.Move)

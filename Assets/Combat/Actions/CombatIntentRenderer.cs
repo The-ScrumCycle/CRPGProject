@@ -59,23 +59,16 @@ namespace Game.Combat.Actions
             {
                 HexCoordinates startHex = intent.TargetUnit.Coordinates;
                 
-                // Determine the final destination hex
                 HexCoordinates endHex = intent.SecondaryBumpTarget != null ? 
                                         intent.SecondaryBumpTarget.Coordinates : 
                                         (intent.PushDestination.HasValue ? intent.PushDestination.Value : startHex);
 
-                if (startHex != endHex) // Only draw if physical displacement actually occurs
+                if (startHex != endHex) // Only draw if displacement occurs
                 {
                     Vector3 startWorldPos = _gridRenderer.HexToWorld(startHex);
                     Vector3 endWorldPos = _gridRenderer.HexToWorld(endHex);
 
-                    // REVERSE ARROW LOGIC FOR PULL
-                    if (intent.VisualType == ActionVisualType.Pull)
-                    {
-                        startWorldPos = _gridRenderer.HexToWorld(endHex);
-                        endWorldPos = _gridRenderer.HexToWorld(startHex);
-                    } 
-
+                    // The trajectory from start to end natively points towards the caster.
                     GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab);
                     
                     arrow.transform.position = (startWorldPos + endWorldPos) / 2f;
@@ -92,7 +85,7 @@ namespace Game.Combat.Actions
 
                     _activeArrows.Add(arrow);
                 }
-            }  
+            } 
         } 
 
         // Render all intents from a list into highlight data
