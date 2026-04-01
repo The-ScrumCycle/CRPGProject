@@ -1,0 +1,113 @@
+{
+  "startNode": "1",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "line",
+      "speaker": "npc",
+      "text": "*Hissing sounds echo from the shadows* \"Heard them, we did! Footsteps! Nasty, heavy, thieving footsteps! They come for the Precious... they come for the Crystal!\"",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "type": "line",
+      "speaker": "npc",
+      "text": "The creature crawls into the light, clutching a glowing shard to its chest. \"No! It’s ours! Our birthday present! Thief will never touch the shiny... never!\"",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "type": "option",
+      "options": ["4", "5", "6", "7", "8", "9"]
+    },
+    {
+      "id": "4",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"I only need the crystal to save the island. Let it go.\"",
+      "next": "10"
+    },
+    {
+      "id": "5",
+      "type": "line",
+      "speaker": "player",
+      "maxCharisma": 3,
+      "text": "\"[Uncharismatic] Give me the rock, you ugly little freak.\"",
+      "next": "11"
+    },
+    {
+      "id": "6",
+      "type": "line",
+      "speaker": "player",
+      "minCharisma": 5,
+      "text": "\"[Charisma 5] That's a very beautiful crystal. Maybe we can share its light?\"",
+      "next": "12"
+    },
+    {
+      "id": "7",
+      "type": "line",
+      "speaker": "player",
+      "minIntelligence": 5,
+      "text": "\"[Intelligence 5] That crystal is radiating necrotic energy. It’s not your 'precious,' it’s poisoning your mind.\"",
+      "next": "13"
+    },
+    {
+      "id": "8",
+      "type": "line",
+      "speaker": "player",
+      "maxIntelligence": 3,
+      "text": "\"[Dumb] Why you talking to yourself? You got a twin?\"",
+      "next": "14"
+    },
+    {
+      "id": "9",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"Enough talk. I'm taking it.\"",
+      "next": "20"
+    },
+    {
+      "id": "10",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"Save it?! Liar! Filthy liar! You want it for your own pocketses! We knows... we knows what thieves want!\"",
+      "next": "20"
+    },
+    {
+      "id": "11",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"Ugly? UGLY?! We are beautiful in its glow! The Precious makes us strong! Strong enough to rip thief-throats!\"",
+      "next": "20"
+    },
+    {
+      "id": "12",
+      "type": "line",
+      "speaker": "npc",
+      "text": "The creature pauses, eyes widening. \"Share? Share the Shiny?\" It snarls suddenly. \"No! No sharing! It is MINE! Only for us!\"",
+      "next": "20"
+    },
+    {
+      "id": "13",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"Poison? No... it's sweet... it's warm... it whispers secrets to us. It says you are a liar! It says you want to steal our heart!\"",
+      "next": "20"
+    },
+    {
+      "id": "14",
+      "type": "line",
+      "speaker": "npc",
+      "text": "The creature blinks, confused for a second. \"Twin? No... only us. Only the Precious and us. Dumb thief... soft-headed thief! We eat your brain next!\"",
+      "next": "20"
+    },
+    {
+      "id": "20",
+      "type": "line",
+      "speaker": "npc",
+      "action": "startBossFight",
+      "text": "\"Gullum! Gullum! Kill the thief! Keep the Crystal forever and ever! DIE!\"",
+      "next": null
+    }
+  ]
+}

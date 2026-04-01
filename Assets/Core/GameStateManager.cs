@@ -124,8 +124,16 @@ namespace Game.Core
             SceneManager.LoadScene(explorationSceneName);
         }
 
+        public void TransitionToGameOver()
+        { 
+            // change music to game over
+            musicController.SetMusic(musicController.GetCombatMusic());
+            // load game over scene
+            SceneManager.LoadScene("GameOverScene");
+        }
+
         // Legacy overload for backward compatibility with previous version of combat transitioning
-	    // Feel free to remove this and refactor legacy code in Exploration to use new systems 
+        // Feel free to remove this and refactor legacy code in Exploration to use new systems 
         public void TransitionToExploration()
         {
             TransitionToExploration(new CombatResultData(true, 0, combatTransitionData.enemyName));
@@ -179,7 +187,6 @@ namespace Game.Core
 
                 }
             }
-
 
             // Apply xp gain
             if (LastCombatResult != null && LastCombatResult.wasVictory)

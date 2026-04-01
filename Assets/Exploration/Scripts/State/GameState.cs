@@ -71,6 +71,11 @@ namespace State
             return EventFlags.Contains(flag);
         }
 
+        public bool isFlagsEmpty()
+        {
+            return EventFlags.Count == 0;
+        }   
+
         public bool hasIntelligence(int requiredIntelligence)
         //this is used if player has enough intelligence to say a linenode
         {
@@ -102,6 +107,20 @@ namespace State
             EventFlags = new HashSet<string>(saveData.stats.EventFlags);
         }
         
+        public int GetIntelligence()
+        {
+            return intelligence;
+        }
+
+        public int GetCharisma()
+        {
+            return charisma;
+        }
+
+        public int GetStrength()
+        {
+            return strength;
+        }
 
     }
 }

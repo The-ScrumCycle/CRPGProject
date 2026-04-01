@@ -954,8 +954,8 @@ MonoBehaviour:
   - {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489, type: 3}
   - {fileID: 177072, guid: 6ff15eda21767db4988080a9497a5deb, type: 3}
   - {fileID: 145884, guid: eca0c1ae7c2128944a004b705c72754d, type: 3}
-  - {fileID: 145884, guid: eca0c1ae7c2128944a004b705c72754d, type: 3}
   - {fileID: 1666678542618180, guid: f5585b48989050840b64026b6c3a8a00, type: 3}
+  - {fileID: 1293356793197548, guid: 7864fb6d119a9d140a154516262da18c, type: 3}
 --- !u!4 &1462715937
 Transform:
   m_ObjectHideFlags: 0
@@ -1371,8 +1371,10 @@ MonoBehaviour:
   RangedSkeletonStats: {fileID: 11400000, guid: 17c678253da3048fea41cbfe95ef2946,
     type: 2}
   HealerStats: {fileID: 11400000, guid: 60c56e72fa2064ebda47d77f835f4024, type: 2}
-  fallbackEnemyPrefab: {fileID: 177072, guid: 6ff15eda21767db4988080a9497a5deb, type: 3}
-  defaultEnemyStats: {fileID: 0}
+  OgreStats: {fileID: 11400000, guid: 58f9118cf999e664d9f5ca9bc55fa8ae, type: 2}
+  fallbackEnemyPrefab: {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489,
+    type: 3}
+  defaultEnemyStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}
 --- !u!4 &1945263019
 Transform:
   m_ObjectHideFlags: 0

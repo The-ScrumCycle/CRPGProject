@@ -26,6 +26,7 @@ TagManager:
   - Malakor
   - skeleton_melee
   - healer
+  - Ogre
   layers:
   - Default
   - TransparentFX
