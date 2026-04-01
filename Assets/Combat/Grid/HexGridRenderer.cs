@@ -8,16 +8,19 @@ namespace Game.Combat.Grid
 {
     public class HexGridRenderer : MonoBehaviour
     {
-	/// <summary>
+	    /// <summary>
         /// MonoBehaviour responsible for rendering the hex grid, this allows us to add fancy visuals for higlighting
         /// attacks, movements, telegraphed AI plans, and all sorts of visualizations of our hexgrid.
         /// </summary>
+        [Header("Environment Visuals")]
+        [SerializeField] private Texture2D[] environmentTextures; 
+        
         [Header("Grid Configuration")]
         [SerializeField] private int gridWidth = 13;
         [SerializeField] private int gridHeight = 13;
         [SerializeField][Min(1)] private int hexScale = 13;
 
-	// All the movement, attack and highlighting coloring for the visual telegraphing
+	    // All the movement, attack and highlighting coloring for the visual telegraphing
         [Header("Hex Rendering")]
         [SerializeField] private Color baseColor = Color.white;
         [SerializeField] private Color hexColor = Color.black;

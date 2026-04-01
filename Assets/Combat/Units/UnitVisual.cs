@@ -26,21 +26,38 @@ namespace Game.Combat.Units
             _unit = unit;
             _gridRenderer = gridRenderer;
 
-            // Get Position Offset
+            // Get Position Offset Safely
             GameObject offsetObj = gameObject;
-            foreach (Transform child in transform){
-                if (child.tag == "Pedestal")
+            bool foundPedestal = false;
+
+            foreach (Transform child in transform)
+            {
+                if (child.CompareTag("Pedestal"))
                 {
-                    Debug.Log("Pedestal Found");
                     offsetObj = child.gameObject;
+                    foundPedestal = true;
+                    break;
                 }
             }
-            positionOffset = Mathf.Abs(offsetObj.GetComponent<MeshFilter>().mesh.bounds.min.y*transform.localScale.y + offsetObj.transform.position.y);
+
+            // Safely check for the MeshFilter before trying to read its bounds
+            MeshFilter meshFilter = offsetObj.GetComponent<MeshFilter>();
+            
+            if (meshFilter != null && meshFilter.sharedMesh != null)
+            {
+                // Note: Using sharedMesh avoids leaking memory by accidentally instantiating a new mesh
+                positionOffset = Mathf.Abs(meshFilter.sharedMesh.bounds.min.y * transform.localScale.y + offsetObj.transform.position.y);
+            }
+            else
+            {
+                // Graceful fallback for animated characters or units without pedestals
+                positionOffset = 0.0f; 
+            }
 
             // Set initial position
-            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up*positionOffset;
+            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up * positionOffset;
             transform.position = _targetPosition;
-        }
+        } 
 
         void Update()
         {
