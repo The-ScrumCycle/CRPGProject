@@ -16,6 +16,7 @@ namespace Game.Combat.Units
         private HexGridRenderer _gridRenderer;
         private Vector3 _targetPosition;
         private bool _isMoving;
+        private float positionOffset = 0.0f;
 
         public Unit Unit => _unit;
 
@@ -25,8 +26,19 @@ namespace Game.Combat.Units
             _unit = unit;
             _gridRenderer = gridRenderer;
 
+            // Get Position Offset
+            GameObject offsetObj = gameObject;
+            foreach (Transform child in transform){
+                if (child.tag == "Pedestal")
+                {
+                    Debug.Log("Pedestal Found");
+                    offsetObj = child.gameObject;
+                }
+            }
+            positionOffset = Mathf.Abs(offsetObj.GetComponent<MeshFilter>().mesh.bounds.min.y*transform.localScale.y + offsetObj.transform.position.y);
+
             // Set initial position
-            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates);
+            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up*positionOffset;
             transform.position = _targetPosition;
         }
 
@@ -35,7 +47,7 @@ namespace Game.Combat.Units
             if (_unit == null || _gridRenderer == null) return;
 
             // Sync position with logical unit
-            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates);
+            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up*positionOffset;
 
             if (_isMoving)
             {
@@ -64,7 +76,7 @@ namespace Game.Combat.Units
         {
             if (_unit != null && _gridRenderer != null)
             {
-                _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates);
+                _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up*positionOffset;
                 transform.position = _targetPosition;
                 _isMoving = false;
             }

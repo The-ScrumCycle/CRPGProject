@@ -12,6 +12,8 @@ namespace Game.Combat.UI
         [SerializeField] private Image healthFill;
         [SerializeField] private Image damagePreviewFill;
         [SerializeField] private TextMeshProUGUI healthText;
+        [SerializeField] private float rotateSpeed = 400.0f;
+
         private Canvas _canvas;
 
         private void Awake()
@@ -19,6 +21,14 @@ namespace Game.Combat.UI
             _canvas = GetComponent<Canvas>();
             // Force hidden on spawn so they don't clutter the screen before turn 1
             if (_canvas != null) _canvas.enabled = false; 
+        }
+
+        void Update()
+        {
+            transform.localRotation = Quaternion.RotateTowards(
+                transform.localRotation,
+                Quaternion.LookRotation(Camera.main.transform.forward, Vector3.up),
+                rotateSpeed * Time.deltaTime);
         }
 
         public void UpdateState(int current, int max, int incomingDamage, bool isHovered, bool isPlayer)

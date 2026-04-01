@@ -27,11 +27,12 @@ namespace Game.Combat.Grid
         [SerializeField] private Color aiAttackBaseColor = new Color(1.0f, 0.4f, 0.0f, 1.0f);
         [SerializeField] private Color aiAttackBrightColor = new Color(1.0f, 0.7f, 0.2f, 1.0f);
         [SerializeField] private Color hoverColor = new Color(0.0f, 0.8f, 0.8f, 1.0f);
-        [SerializeField][Range(1.0f, 2.0f)] private float hoverBrightnessMultiplier = 1.3f;
+        [SerializeField][Range(1.0f, 10.0f)] private float hoverBrightnessMultiplier = 1.3f;
         [SerializeField][Range(1.0f, 10.0f)] private float pulseSpeed = 4.0f;
         [SerializeField][Range(0.0f, 1.0f)] private float lineThickness = 0.1f;
+        [SerializeField][Range(0.0f, 20.0f)] private float textureScale = 1.0f;
         [SerializeField] private bool clipEdges = true;
-        [SerializeField] private Texture2D[] environmentTextures;
+        [SerializeField] private bool showGridMetrics = true; // Debug, see gizmos
 
         private Material _hexMaterial;
         private Camera _camera;
@@ -64,7 +65,7 @@ namespace Game.Combat.Grid
 
         void OnDrawGizmos()
         {
-            if (!Application.isPlaying) return;
+            if (!Application.isPlaying || !showGridMetrics) return;
 
             Gizmos.color = Color.green;
 
@@ -85,11 +86,18 @@ namespace Game.Combat.Grid
             }
 
             // Log distance from hovered hex to origin
-            Debug.Log(HexCoordinates.Distance(_hoveredHex, WorldToHex(GridOrigin)));
+            //Debug.Log(HexCoordinates.Distance(_hoveredHex, WorldToHex(GridOrigin)));
 
             // Draw point at grid origin
             Gizmos.color = Color.magenta;
             Gizmos.DrawSphere(GridOrigin, 1.0f/hexScale);
+
+            Gizmos.color = Color.blue;
+            Ray mouseRay = _camera.ScreenPointToRay(Input.mousePosition);
+            float distance;
+            new Plane(Vector3.up, 0.0f).Raycast(mouseRay, out distance);
+            Vector3 mouseWorldPos = mouseRay.GetPoint(distance);
+            Gizmos.DrawSphere(mouseWorldPos, 1.0f/hexScale);
         }
 
 	    // Initialize the renderer with a logical grid.
@@ -147,13 +155,10 @@ namespace Game.Combat.Grid
 
         private void UpdateHoveredHex()
         {
-            Vector3 mouseWorldPos = _camera.ScreenToWorldPoint(
-                new Vector3(
-                    Input.mousePosition.x,
-                    Input.mousePosition.y,
-                    _camera.nearClipPlane + _camera.transform.position.y
-                )
-            );
+            Ray mouseRay = _camera.ScreenPointToRay(Input.mousePosition);
+            float distance;
+            new Plane(Vector3.up, 0.0f).Raycast(mouseRay, out distance); // Assumes that hex grid is positioned at origin
+            Vector3 mouseWorldPos = mouseRay.GetPoint(distance);
 
             _hoveredHex = WorldToHex(mouseWorldPos);
         }
@@ -174,6 +179,7 @@ namespace Game.Combat.Grid
             _hexMaterial.SetColor("_HoverColor", hoverColor);
             _hexMaterial.SetFloat("_HoverBrightness", hoverBrightnessMultiplier);
             _hexMaterial.SetFloat("_PulseSpeed", pulseSpeed);
+            _hexMaterial.SetFloat("_BaseMapScale", textureScale);
             _hexMaterial.SetInt("_ClipEdges", clipEdges ? 1 : 0);
             _hexMaterial.SetVector("_ActiveHex", new Vector4(_hoveredHex.q, _hoveredHex.r, 0, 0));
 

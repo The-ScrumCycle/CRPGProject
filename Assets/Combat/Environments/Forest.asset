@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e71a8ff3d5a8f64083006e4d4e7bb70, type: 3}
+  m_Name: Forest
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.CombatEnvironment
+  _boardMat: {fileID: 2100000, guid: ccd20ca5116bfc342b53fc7314a62103, type: 2}
+  _borderMat: {fileID: 2100000, guid: 46850a8a31079c748a93aaa6be25f4ec, type: 2}
+  _hexTex: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
+  _hexColour: {r: 1, g: 0.62352943, b: 0.32156864, a: 0}
+  _backgroundMat: {fileID: 2100000, guid: 761a2d273314bc34e95afcfa7181a347, type: 2}
+  _postProcessingProfile: {fileID: 11400000, guid: 117cfa924c6c1e0488db212ac54c2852,
+    type: 2}

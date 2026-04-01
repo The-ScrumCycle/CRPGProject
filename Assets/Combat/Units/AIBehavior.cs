@@ -7,7 +7,7 @@ namespace Game.Combat.Units
     /// </summary>
     public enum AIBehavior
     {
-	// Generic Behaviors that we'll move away from
+	    // Generic Behaviors that we'll move away from
         Aggressive,
         Defensive,
         

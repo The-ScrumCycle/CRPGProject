@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Core.Save;
 
 namespace State
-    {
+{
     public class GameState : MonoBehaviour, ISaveable
     {
         public static GameState Instance {get; private set;}
