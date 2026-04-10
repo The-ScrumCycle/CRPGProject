@@ -127,7 +127,7 @@ namespace Game.Core
         public void TransitionToGameOver()
         { 
             // change music to game over
-            musicController.SetMusic(musicController.GetCombatMusic());
+            musicController.SetMusic(musicController.GetDeathMusic());
             // load game over scene
             SceneManager.LoadScene("GameOverScene");
         }

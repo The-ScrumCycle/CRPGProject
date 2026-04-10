@@ -16,6 +16,7 @@ public class MusicController : MonoBehaviour
     [SerializeField] private AudioClip battleMusic;
     [SerializeField] private AudioClip sailingMusic;
     [SerializeField] private AudioClip ending;
+    [SerializeField] private AudioClip DeathMusic;
 
 
 
@@ -79,5 +80,10 @@ public class MusicController : MonoBehaviour
     public AudioClip GetEndingMusic()
     {
         return ending;
+    }
+
+    public AudioClip GetDeathMusic()
+    {
+        return DeathMusic;
     }
 }
