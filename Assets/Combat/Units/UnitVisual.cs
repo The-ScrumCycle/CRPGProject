@@ -11,11 +11,14 @@ namespace Game.Combat.Units
     {
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 5f;
+        [SerializeField] private float rotateSpeed = 400f;
 
         private Unit _unit;
         private HexGridRenderer _gridRenderer;
         private Vector3 _targetPosition;
+        private Quaternion _targetRotation;
         private bool _isMoving;
+        private bool _isRotating;
         private float positionOffset = 0.0f;
 
         public Unit Unit => _unit;
@@ -28,14 +31,12 @@ namespace Game.Combat.Units
 
             // Get Position Offset Safely
             GameObject offsetObj = gameObject;
-            bool foundPedestal = false;
 
             foreach (Transform child in transform)
             {
                 if (child.CompareTag("Pedestal"))
                 {
                     offsetObj = child.gameObject;
-                    foundPedestal = true;
                     break;
                 }
             }
@@ -55,8 +56,11 @@ namespace Game.Combat.Units
             }
 
             // Set initial position
-            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up * positionOffset;
+            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up*positionOffset;
+            _targetRotation = Quaternion.Euler(0.0f, Quaternion.LookRotation(Vector3.zero - _targetPosition).eulerAngles.y, 0.0f) 
+            * Quaternion.Euler(0.0f, Random.Range(0.0f, 80.0f), 0.0f);
             transform.position = _targetPosition;
+            transform.rotation = _targetRotation;
         } 
 
         void Update()
@@ -80,12 +84,33 @@ namespace Game.Combat.Units
                     _isMoving = false;
                 }
             }
+
+            if (_isRotating)
+            {
+                transform.rotation = Quaternion.RotateTowards(
+                    transform.rotation,
+                    _targetRotation,
+                    rotateSpeed * Time.deltaTime
+                );
+
+                if (Quaternion.Angle(transform.rotation, _targetRotation) < 0.01f)
+                {
+                    transform.rotation = _targetRotation;
+                    _isRotating = false;
+                }
+            }
         }
 
         // Trigger visual movement to unit's current logical position.
         public void RefreshPosition()
         {
             _isMoving = true;
+        }
+
+        public void LookAtCell(HexCoordinates cell)
+        {
+            _targetRotation = Quaternion.Euler(0.0f, Quaternion.LookRotation(_gridRenderer.HexToWorld(cell) - transform.position).eulerAngles.y, 0.0f);
+            _isRotating = true;
         }
 
         // Move to unit's current logical position.

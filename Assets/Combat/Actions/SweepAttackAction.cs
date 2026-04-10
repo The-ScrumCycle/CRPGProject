@@ -25,7 +25,7 @@ namespace Game.Combat.Actions
             return grid.GetDistance(Actor.Coordinates, _mainTarget) == 1; // Must be adjacent
         }
 
-        public void Execute(HexGrid grid)
+        public void Execute(HexGrid grid, UnitVisual visual)
         {
             foreach (var cell in grid.GetAllCells())
             {

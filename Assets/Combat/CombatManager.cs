@@ -94,7 +94,7 @@ namespace Game.Combat
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-                currentEnv = 1-currentEnv;
+                currentEnv = (currentEnv+1)%environments.Length;
                 SetEnvironment(environments[currentEnv]);
             }
 
@@ -542,7 +542,7 @@ namespace Game.Combat
         private void TryPlayerMove(Unit unit, HexCoordinates destination)
         {
             var moveAction = _actionResolver.CreateMoveAction(unit, destination);
-            if (_actionResolver.Execute(moveAction))
+            if (_actionResolver.Execute(moveAction, _state.GetVisual(unit)))
             {
                 var currentUnit = _flowController.GetCurrentUnit();
                 _flowController.MarkUnitActed(currentUnit);
@@ -586,7 +586,7 @@ namespace Game.Combat
                 return;
             }
 
-            if (_actionResolver.Execute(action))
+            if (_actionResolver.Execute(action, _state.GetVisual(caster)))
             {
                 Debug.Log($"[CombatManager] {caster.DisplayName} used {abilityType} on {targetCell.Occupant?.DisplayName ?? "Empty Hex"}");
                 
@@ -669,7 +669,7 @@ namespace Game.Combat
             // The action will always hit the locked hex if the player dodged, it hits empty space.
             if (lockedIntent != null && _actionResolver.Validate(lockedIntent.Action))
             {
-                if (_actionResolver.Execute(lockedIntent.Action))
+                if (_actionResolver.Execute(lockedIntent.Action, _state.GetVisual(enemyUnit)))
                 {
                     Debug.Log($"[CombatManager] {enemyUnit.DisplayName} executed telegraphed action: {lockedIntent.Action.GetType().Name}");
                     SweepForDeaths(); 
@@ -683,7 +683,10 @@ namespace Game.Combat
                     Debug.Log($"[AI Blocked] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} failed validation — target out of range");
             }
 
-            // 3. Force visual refresh so any shoved units physically slide to their new hex
+            // 3. Handle update of unit visual based on action
+
+
+            // 4. Force visual refresh so any shoved units physically slide to their new hex
             foreach (var unit in _state.AllUnits)
             {
                 _state.GetVisual(unit)?.RefreshPosition();

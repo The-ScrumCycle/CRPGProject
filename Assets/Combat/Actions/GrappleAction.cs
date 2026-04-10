@@ -47,7 +47,7 @@ namespace Game.Combat.Actions
         }
 
 	    // Execute attack
-        public void Execute(HexGrid grid)
+        public void Execute(HexGrid grid, UnitVisual visual)
         {
             Target.grappler = Actor;
         }

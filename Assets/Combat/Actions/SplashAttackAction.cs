@@ -26,7 +26,7 @@ namespace Game.Combat.Actions
             return dist <= Actor.Stats.attackRange && dist > 0;
         }
 
-        public void Execute(HexGrid grid)
+        public void Execute(HexGrid grid, UnitVisual visual)
         {
             // Bypass dictionary hash lookups and evaluate pure distance
             foreach (var cell in grid.GetAllCells())
