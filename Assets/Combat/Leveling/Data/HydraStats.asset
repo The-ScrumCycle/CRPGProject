@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: HydraStats
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitStatsConfig
   availableActions: 03000000
-  maxHealth: 20
-  attackPower: 100
+  maxHealth: 100
+  attackPower: 20
   healPower: 0
   movementRange: 3
   attackRange: 1

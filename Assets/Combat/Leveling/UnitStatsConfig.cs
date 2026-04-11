@@ -15,7 +15,7 @@ namespace Game.Combat.Units
 
         [Header("Combat Stats")]
         public int maxHealth = 100;
-        public int attackPower = 20;
+        public int attackPower = 15;
         public int healPower = 0;
 
         [Header("Movimentation Stats")]
@@ -26,6 +26,7 @@ namespace Game.Combat.Units
         private int upgradeHealth = 15;
         private int upgradePower   = 5;
         private int upgradeMovement = 1;
+        private int upgradeHealPower = 0;
 
         // Get stats at current level
         public UnitStats GetStatsForLevel(int level)
@@ -33,8 +34,9 @@ namespace Game.Combat.Units
             int currentHealth        = maxHealth     + (level - 1) * upgradeHealth;
             int currentAttackPower   = attackPower   + (level - 1) * upgradePower;
             int currentMovementRange = movementRange + (level - 1) * upgradeMovement / 2;
+            int currentHealPower     = healPower     + (level - 1) * upgradeHealPower;
 
-            return new UnitStats(currentHealth, currentAttackPower, currentMovementRange, attackRange, healPower);
+            return new UnitStats(currentHealth, currentAttackPower, currentMovementRange, attackRange, currentHealPower);
 
         }
 

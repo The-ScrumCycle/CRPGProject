@@ -27,7 +27,8 @@ namespace Game.Combat.Units
         [SerializeField] private UnitStatsConfig RangedSkeletonStats;
         [SerializeField] private UnitStatsConfig HealerStats;
         [SerializeField] private GameObject fallbackEnemyPrefab;
-        [SerializeField] private UnitStatsConfig defaultEnemyStats; 
+        [SerializeField] private UnitStatsConfig defaultEnemyStats;
+        [SerializeField] private UnitStatsConfig OgreStats;
 
         private int _unitIdCounter = 0;
 
@@ -68,6 +69,7 @@ namespace Game.Combat.Units
             }
 
             GameObject prefabInstance = Instantiate(prefabToSpawn);
+            prefabInstance.transform.Rotate(0f, 180f, 0f);
             var visual = prefabInstance.AddComponent<UnitVisual>();
 
             return (unit, visual);
@@ -126,7 +128,7 @@ namespace Game.Combat.Units
                     return RangedSkeletonStats;
                 case "healer":
                     return HealerStats;
-                case "troll":
+                case "Ogre":
                     return CloseRangeSkletonStats; // TODO: Implement the Ogre Enemey
                 case "malakor":
                     return MalakorStats;
