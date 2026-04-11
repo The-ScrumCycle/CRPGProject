@@ -187,25 +187,33 @@ namespace Game.Combat.Actions
         // Get all valid move destinations for a unit.
         public List<HexCoordinates> GetValidMoveDestinations(Unit unit)
         {
+            var reachable = _grid.GetReachableCells(unit.Coordinates, unit.Stats.movementRange);
             var validDestinations = new List<HexCoordinates>();
 
-            if (unit == null || !unit.IsAlive)
+            // Look at the intents already locked in for this round. 
+            // Treat their destinations as occupied cells to avoid AIs wanting to move to same hex.
+            var claimedHexes = new HashSet<HexCoordinates>();
+            if (CombatManager.Instance != null)
             {
-                return validDestinations;
+                foreach (var intent in CombatManager.Instance.GetEnemyIntents())
+                {
+                    if (intent.Action is MoveAction move && intent.Actor != unit)
+                    {
+                        claimedHexes.Add(move.Destination);
+                    }
+                }
             }
 
-            var reachableCells = _grid.GetReachableCells(unit.Coordinates, unit.Stats.movementRange);
-
-            foreach (var cell in reachableCells)
+            foreach (var cell in reachable)
             {
-                if (cell.CanEnter())
+                if (!claimedHexes.Contains(cell.Coordinates))
                 {
                     validDestinations.Add(cell.Coordinates);
                 }
             }
 
             return validDestinations;
-        }
+        } 
 
         // Get all valid attack targets for a unit (melee).
         public List<Unit> GetValidMeleeTargets(Unit attacker)
