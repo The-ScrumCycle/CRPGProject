@@ -14,7 +14,7 @@ public class DiamondCreator : MonoBehaviour
 
     public float pickupRadius = 3.0f;
     public string requiredFlag;  // required flag needed for setting 
-    public string collectFlag;     // set in Inspector — GameState flag set when crystal is collected
+    public string collectFlag;     // set in Inspector GameState flag set when crystal is collected
 
 
     void Start()
