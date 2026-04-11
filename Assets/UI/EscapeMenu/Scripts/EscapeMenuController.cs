@@ -7,6 +7,7 @@ public class EscapeMenuController : MonoBehaviour
     [Header("Roots")]
     [SerializeField] private GameObject escapeMenuRoot;        // main escape menu
     [SerializeField] private GameObject confirmExitModalRoot;  // confirmation popup
+    [SerializeField] private GameObject loadGameModalRoot;    // load game menu (reused from game over screen)
 
     [Header("State")]
     [SerializeField] private bool hasSaved = false; // flag for now (later tie to real save system)
@@ -95,6 +96,17 @@ public class EscapeMenuController : MonoBehaviour
             confirmExitModalRoot.SetActive(open);
     }
 
+    public void LoadGame()
+    {
+        if (loadGameModalRoot == null)
+        {
+            Debug.LogWarning("loadGameModalRoot is not assigned in editor");
+            return;
+        }
+
+        loadGameModalRoot.SetActive(true);
+    }
+
     //button handlers (escape menu)
     public void SaveGame()
     {
@@ -120,6 +132,12 @@ public class EscapeMenuController : MonoBehaviour
         }
     }
 
+    public void exitToStartMainMenu()
+    {
+        hasSaved = true;
+        UnityEngine.SceneManagement.SceneManager.LoadScene("StartMenu");
+    }
+
     // button handlers (confirmation modal)
     public void ConfirmSaveAndCloseGame()
     {
@@ -135,6 +153,7 @@ public class EscapeMenuController : MonoBehaviour
         QuitGame();
     }
 
+ 
     private void QuitGame()
     {
         // prevent editor from staying paused

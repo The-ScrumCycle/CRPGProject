@@ -4176,7 +4176,7 @@ Animator:
   m_GameObject: {fileID: 154498}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 409520c9226982345a49c9803624f208, type: 3}
-  m_Controller: {fileID: 9100000, guid: 9b5f3dc79387670409bc8aac8597ddd2, type: 2}
+  m_Controller: {fileID: 9100000, guid: da483adc8fcc49a489b2093b5dc0587d, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -6654,6 +6654,7 @@ MonoBehaviour:
   healthFill: {fileID: 8642732440315164984}
   damagePreviewFill: {fileID: 4956577769664331925}
   healthText: {fileID: 0}
+  rotateSpeed: 400
 --- !u!1 &4424827899805465599
 GameObject:
   m_ObjectHideFlags: 0

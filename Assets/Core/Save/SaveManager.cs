@@ -14,6 +14,9 @@ public class SaveManager : MonoBehaviour
 
     private int pendingLoadSlot;
 
+    private MusicController musicController;
+
+
 
     void Awake()
     {
@@ -28,6 +31,7 @@ public class SaveManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         slot_index = GetSlotCount();
     }
+
 
     public void Register(ISaveable saveable)
     {
@@ -129,6 +133,11 @@ public class SaveManager : MonoBehaviour
     //before being loaded
     public void RequestLoad(int slot)
     {
+        if (SceneManager.GetActiveScene().name == "Exploration")
+        {
+            CleanUpController.Instance.CleanUp();
+        }
+
         saveables = new List<ISaveable>();
         pendingLoadSlot = slot;
         SceneManager.sceneLoaded += OnSceneLoaded;  // subscribe BEFORE loading
@@ -154,4 +163,6 @@ public class SaveManager : MonoBehaviour
             if (player != null) cam.SetTarget(player.transform);
         }
     }
+
+   
 }

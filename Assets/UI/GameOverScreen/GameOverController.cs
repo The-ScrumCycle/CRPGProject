@@ -28,4 +28,16 @@ public class GameOverController : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
     #endif
     }
+
+    void Start()
+    {
+        // if not in exploration scene , player and other persistant objects should not exist 
+        if(SceneManager.GetActiveScene().name == "GameOverScene")
+        {
+            // CleanupSceneForGameOver();
+        }
+    }
+
+  
+
 }

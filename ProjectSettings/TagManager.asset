@@ -27,7 +27,11 @@ TagManager:
   - skeleton_melee
   - healer
   - Ogre
-  tags: []
+  - Pedestal
+  - Board
+  - HexGrid
+  - PartyManager
+  - ManagerScene
   layers:
   - Default
   - TransparentFX

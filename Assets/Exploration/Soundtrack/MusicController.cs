@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MusicController : MonoBehaviour
 {
@@ -85,5 +86,23 @@ public class MusicController : MonoBehaviour
     public AudioClip GetDeathMusic()
     {
         return DeathMusic;
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (SceneManager.GetActiveScene().name == "Exploration")
+        {
+            MusicController.Instance.SetMusic(explorationMusic);
+        }
     }
 }
