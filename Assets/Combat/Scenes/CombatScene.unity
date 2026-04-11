@@ -1555,9 +1555,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Grid.HexGridRenderer
   environmentTextures: []
-  gridWidth: 11
-  gridHeight: 11
-  hexScale: 11
+  gridWidth: 13
+  gridHeight: 13
+  hexScale: 13
   baseColor: {r: 0.3660378, g: 0.3660378, b: 0.3660378, a: 0.39215687}
   hexColor: {r: 1, g: 0.62466854, b: 0.3226415, a: 0.39215687}
   playerMoveColor: {r: 0, g: 0.5471698, b: 0.13679245, a: 0.5882353}
@@ -1616,6 +1616,7 @@ MonoBehaviour:
   fallbackEnemyPrefab: {fileID: 5360125738897828599, guid: 91c42ab44d92031408360c42de0bf489,
     type: 3}
   defaultEnemyStats: {fileID: 11400000, guid: 7610ce914544e144496c4a8842b5fc50, type: 2}
+  OgreStats: {fileID: 11400000, guid: 58f9118cf999e664d9f5ca9bc55fa8ae, type: 2}
 --- !u!4 &1945263019
 Transform:
   m_ObjectHideFlags: 0
