@@ -43,7 +43,7 @@ namespace Game.Combat.UI
                 if (backgroundImage != null) backgroundImage.color = activeBgColor;
                 if (statusText != null)
                 {
-                    statusText.text = "ACTION AVAILABLE";
+                    statusText.text = "READY";
                     statusText.color = activeStatusColor;
                     statusText.gameObject.SetActive(true);
                 }
