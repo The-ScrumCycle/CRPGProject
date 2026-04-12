@@ -18,6 +18,7 @@ public class NPCDialogue : MonoBehaviour
 
     [Header("NPC/Follower Settings")]
     public Sprite Face;
+    public Sprite Varek;
     public Sprite John;
     public Sprite Clarissa;
     public Sprite Malakor;
@@ -40,6 +41,11 @@ public class NPCDialogue : MonoBehaviour
     GameStateManager gameStateManager;
     private NavMeshAgent playerAgent;
     private CameraController camera;
+
+    //varek (mini boss) actions
+    private string varekSpeaking = "varekSpeaking";
+    private string startArenaFight = "startArenaFight";
+    private string arenaKeeperDefeated = "varek_defeated";
 
     // Main boss actions
     private string foundMalakor = "foundMalakor";
@@ -213,7 +219,14 @@ public class NPCDialogue : MonoBehaviour
             {
 
             }
-
+            // varek actions 
+            else if (curAction == startArenaFight)
+            {
+                this.state.setFlag("startArenaFight");
+                this.state.setFlag("varek_defeated");
+                GameStateManager.Instance.TransitionToCombat(gameObject);
+            }
+         
             // John actions
             else if (curAction == johnInParty)
             {
@@ -251,6 +264,10 @@ public class NPCDialogue : MonoBehaviour
                 uiRunner.UpdateFace(John);
             }
 
+            else if (curAction == varekSpeaking)
+            {
+                uiRunner.UpdateFace(Varek);
+            }
 
             // Clarissa actions
             else if (curAction == clarissaInParty)
