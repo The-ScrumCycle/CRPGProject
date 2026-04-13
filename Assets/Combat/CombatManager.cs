@@ -100,6 +100,10 @@ namespace Game.Combat
                 currentEnv = (currentEnv+1)%environments.Length;
                 SetEnvironment(environments[currentEnv]);
             }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                _intentRenderer._renderArrows = false;
+            }
 
             if (_state.CurrentState == CombatState.PlayerTurn)
             {

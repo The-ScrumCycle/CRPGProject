@@ -14,6 +14,7 @@ namespace Game.Combat.Actions
         private GameObject _arrowPrefab;
         private List<GameObject> _activeArrows;
         private HexGridRenderer _gridRenderer;
+        public bool _renderArrows {get; set;}
         private readonly Dictionary<HexCoordinates, HighlightType> _highlights;
 
         public CombatIntentRenderer(GameObject arrowPrefab)
@@ -22,13 +23,16 @@ namespace Game.Combat.Actions
             _arrowPrefab = arrowPrefab;
             _activeArrows = new List<GameObject>();
             _gridRenderer = UnityEngine.Object.FindObjectOfType<HexGridRenderer>();
+            _renderArrows = true;
         }
 
         private void RenderArrow(Vector3 startPos, Vector3 endPos, Color color)
         {
+            if (!_renderArrows) return;
+
             // The trajectory from start to end natively points towards the caster.
             GameObject arrow = Object.Instantiate(_arrowPrefab);
-            arrow.GetComponent<Arrow>().Render(startPos, endPos, color, Vector3.up * 0.15f);
+            arrow.GetComponent<ArrowRenderer>().Render(startPos, endPos, new Color(color.r, color.g, color.b, 0.5f), 0.1f);
             _activeArrows.Add(arrow);
         }
 
@@ -36,7 +40,7 @@ namespace Game.Combat.Actions
         // Our higlights currently are movement cells, AoE and regular attack cells, push direction arrow.
         public void Render(ActionIntent intent, UnitVisual visual)
         {
-            if (intent == null || !intent.IsValid) return;
+            if (intent == null || visual == null || !intent.IsValid) return;
 
             HighlightType type = MapVisualType(intent.VisualType);
             if (type == HighlightType.None) return;
@@ -64,22 +68,26 @@ namespace Game.Combat.Actions
             var targetCells = intent.Action.GetTargetCells();
             if (targetCells != null && !(intent.VisualType == ActionVisualType.MeleeAttack))
             {
-                HexCoordinates averagePos = new HexCoordinates(0, 0);
+                Vector3 averagePos = Vector3.zero;
                 int count = 0;
                 foreach (var cellCoords in targetCells)
                 {
                     AddWithPriority(cellCoords, type);
-                    averagePos += cellCoords;
+                    averagePos += _gridRenderer.HexToWorld(cellCoords);
                     count++;
                 }
                 averagePos /= count;
 
-                RenderArrow(
-                    _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
-                    _gridRenderer.HexToWorld(averagePos),
-                    _gridRenderer.GetGridColor(type)
-                );
-                visual.LookAtCell(averagePos);
+                if (intent.Actor.Role == UnitRole.Enemy)
+                {
+                    RenderArrow(
+                        _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
+                        _gridRenderer.HexToWorld(_gridRenderer.WorldToHex(averagePos)),
+                        _gridRenderer.GetGridColor(type)
+                    );
+                }
+
+                visual.LookAtCell(_gridRenderer.WorldToHex(averagePos));
             }
 
             // 3. RENDER PUSH / PULL ARROW
