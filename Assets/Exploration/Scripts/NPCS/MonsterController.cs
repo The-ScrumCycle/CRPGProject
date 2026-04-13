@@ -75,9 +75,15 @@ public class MonsterController : MonoBehaviour
         if (playerController == null)
         {
             //just a safety thing
-            playerCharacter = GameObject.FindGameObjectWithTag("Player").transform;
-        }
+            //playerCharacter = GameObject.FindGameObjectWithTag("Player").transform;
+            //this fix is for load save
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerCharacter = playerObj.transform;
+            }
 
+        }
         if (playerCharacter == null && playerController != null)
         {
             //if both empty, player position = position of object with the script attached to it
