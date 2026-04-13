@@ -13,6 +13,9 @@ namespace Game.Combat.UI
         [SerializeField] private UnitRosterUI unitRosterUI;
         [SerializeField] private ActionBarUI actionBarUI;
 
+        [Header("Unit Controls")]
+        [SerializeField] private GameObject endUnitTurnButton;
+
         void Update()
         {
             if (CombatManager.Instance == null) return;
@@ -27,6 +30,13 @@ namespace Game.Combat.UI
             foreach (var u in allUnits)
             {
                 if (u.IsPlayerControlled) playerUnits.Add(u);
+            }
+
+            // Dynamically show/hide the unit end turn button
+            if (endUnitTurnButton != null)
+            {
+                bool canUnitWait = isPlayerTurn && currentUnit != null && currentUnit.IsPlayerControlled && !CombatManager.Instance.HasUnitActed(currentUnit);
+                endUnitTurnButton.SetActive(canUnitWait);
             }
             
             // Push state down to view layer
@@ -44,6 +54,15 @@ namespace Game.Combat.UI
                 
                 actionBarUI.RefreshActionBar(currentMode, isPlayerTurn, activeUnitHasActed, activeUnitHasMoved, isPinned, currentUnit); 
             } 
+        }
+
+        // If player skips their turn in the UI end that unit's turn
+        public void OnSkipUnitTurnClicked()
+        {
+            if (CombatManager.Instance != null && CombatManager.Instance.IsPlayerTurn)
+            {
+                CombatManager.Instance.SkipCurrentUnitTurn();
+            }
         }
     }
 }

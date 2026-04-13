@@ -444,6 +444,8 @@ namespace Game.Combat
             if (Input.GetKeyDown(KeyCode.Alpha2)) SetActionMode(PlayerActionMode.Attack);
             // Optional 3rd action player units can have
             if (Input.GetKeyDown(KeyCode.Alpha3)) SetActionMode(PlayerActionMode.SecondaryAction);
+            // Button to end unit's own turn manually
+            if (Input.GetKeyDown(KeyCode.X)) SkipCurrentUnitTurn();
 
             // Action execution based on current mode
             if (Input.GetMouseButtonDown(0))
@@ -602,6 +604,38 @@ namespace Game.Combat
                 }
             }
         } 
+
+        // Allow player's to deliberately skip their unit's turn
+        public void SkipCurrentUnitTurn()
+        {
+            var unit = _flowController.GetCurrentUnit();
+            if (unit == null || !unit.IsPlayerControlled || _flowController.HasUnitActed(unit)) return;
+
+            Debug.Log($"[CombatManager] {unit.DisplayName} waits. Turn ended.");
+            
+            // Exhaust their turn
+            _flowController.MarkUnitActed(unit);
+            
+            // Clean up the UI intent layer
+            _currentHoverIntent = null;
+            _intentRenderer.Clear();
+            gridRenderer.ClearHighlights();
+            UpdateUnitWorldUIs();
+            RefreshAllUnitVisuals();
+
+            // Advance the combat flow
+            if (_flowController.HaveAllPlayerUnitsActed())
+            {
+                Invoke(nameof(EndTurn), 0.3f);
+            }
+            else
+            {
+                var nextUnit = _flowController.GetNextAvailablePlayerUnit();
+                if (nextUnit != null) _flowController.SelectPlayerUnit(nextUnit);
+                
+                Invoke(nameof(RefreshActionStateForCurrentUnit), 0.3f); 
+            }
+        }
         
         private void TryPlayerAbility(Unit caster, HexCell targetCell)
         {
