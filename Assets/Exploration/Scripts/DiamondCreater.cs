@@ -37,6 +37,7 @@ public class DiamondCreator : MonoBehaviour
 
 
         GameObject player = GameObject.FindWithTag("Player");
+        if (player == null) return; //bugfix
         float dist = Vector3.Distance(player.transform.position, diamond.transform.position);
         bool flag = gamestate.hasFlag(requiredFlag);
         //Debug.Log("Checking if has required flag");
