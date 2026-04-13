@@ -11,7 +11,7 @@ namespace Game.Combat.Actions
     public class MoveAction : ICombatAction
     {
         public Unit Actor { get; }
-        public HexCoordinates Destination { get; }
+        public HexCoordinates Destination { get; private set; }
         public List<HexCoordinates> Path { get; private set; }
 
         public MoveAction(Unit actor, HexCoordinates destination)
@@ -65,6 +65,11 @@ namespace Game.Combat.Actions
             Path = grid.FindPath(Actor.Coordinates, Destination, Actor.Stats.movementRange);
             return Path.Count > 0;
         } 
+
+        public void ApplyDisplacement(HexCoordinates offset)
+        {
+            Destination = new HexCoordinates(Destination.q + offset.q, Destination.r + offset.r);
+        }
 
         public void Execute(HexGrid grid)
         {

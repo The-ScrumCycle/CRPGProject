@@ -57,33 +57,36 @@ namespace Game.Combat.Actions
             // 3. RENDER PUSH / PULL ARROW
             if (intent.PushDestination.HasValue || intent.VisualType == ActionVisualType.Pull)
             {
-                HexCoordinates startHex = intent.TargetUnit.Coordinates;
-                
-                HexCoordinates endHex = intent.SecondaryBumpTarget != null ? 
-                                        intent.SecondaryBumpTarget.Coordinates : 
-                                        (intent.PushDestination.HasValue ? intent.PushDestination.Value : startHex);
-
-                if (startHex != endHex) // Only draw if displacement occurs
+                if (intent.TargetUnit != null) 
                 {
-                    Vector3 startWorldPos = _gridRenderer.HexToWorld(startHex);
-                    Vector3 endWorldPos = _gridRenderer.HexToWorld(endHex);
-
-                    // The trajectory from start to end natively points towards the caster.
-                    GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab);
+                    HexCoordinates startHex = intent.TargetUnit.Coordinates;
                     
-                    arrow.transform.position = (startWorldPos + endWorldPos) / 2f;
-                    arrow.transform.position += Vector3.up * 0.5f; 
+                    HexCoordinates endHex = intent.SecondaryBumpTarget != null ? 
+                                            intent.SecondaryBumpTarget.Coordinates : 
+                                            (intent.PushDestination.HasValue ? intent.PushDestination.Value : startHex);
 
-                    Vector3 direction = (endWorldPos - startWorldPos).normalized;
-                    if (direction != Vector3.zero)
+                    if (startHex != endHex) // Only draw if displacement occurs
                     {
-                        arrow.transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
+                        Vector3 startWorldPos = _gridRenderer.HexToWorld(startHex);
+                        Vector3 endWorldPos = _gridRenderer.HexToWorld(endHex);
+
+                        // The trajectory from start to end natively points towards the caster.
+                        GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab);
+                        
+                        arrow.transform.position = (startWorldPos + endWorldPos) / 2f;
+                        arrow.transform.position += Vector3.up * 0.5f; 
+
+                        Vector3 direction = (endWorldPos - startWorldPos).normalized;
+                        if (direction != Vector3.zero)
+                        {
+                            arrow.transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
+                        }
+
+                        float distance = Vector3.Distance(startWorldPos, endWorldPos);
+                        arrow.transform.localScale = new Vector3(1f, 1f, distance * 0.5f);
+
+                        _activeArrows.Add(arrow);
                     }
-
-                    float distance = Vector3.Distance(startWorldPos, endWorldPos);
-                    arrow.transform.localScale = new Vector3(1f, 1f, distance * 0.5f);
-
-                    _activeArrows.Add(arrow);
                 }
             } 
         } 

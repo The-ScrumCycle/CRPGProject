@@ -12,9 +12,9 @@ namespace Game.Combat.Actions
     {
         public Unit Actor { get; }
         public ICombatAction Action { get; }
-        public List<HexCoordinates> TargetCells { get; }
+        public IReadOnlyList<HexCoordinates> TargetCells { get; private set; }
         public int PredictedDamage { get; }
-        public Unit TargetUnit { get; }
+        public Unit TargetUnit { get; private set; }
         public ActionVisualType VisualType { get; }
         public List<HexCoordinates> MovementPath { get; }
         public bool IsValid { get; }
@@ -48,6 +48,23 @@ namespace Game.Combat.Actions
             TargetTakesBumpDamage = targetTakesBumpDamage;
             SecondaryBumpTarget = secondaryBumpTarget;
         } 
+
+        // Function to calculate intent's offset i.e "Aim" if enemy AI Unit is shoved around
+        public void Shift(HexCoordinates offset, HexGrid grid)
+        {
+            // 1. Shift the underlying action's mathematical targeting
+            Action.ApplyDisplacement(offset);
+
+            // 2. Re-evaluate the target cells for the UI red danger zones
+            TargetCells = new List<HexCoordinates>(Action.GetTargetCells());
+
+            // 3. Update the primary target unit if someone new is standing in the target zone
+            TargetUnit = null;
+            if (TargetCells.Count > 0)
+            {
+                TargetUnit = grid.GetCell(TargetCells[0])?.Occupant;
+            }
+        }
 
         public override string ToString()
         {

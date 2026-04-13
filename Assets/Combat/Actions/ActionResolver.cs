@@ -53,48 +53,50 @@ namespace Game.Combat.Actions
         public ActionIntent Preview(ICombatAction action)
         {
             if (action == null || action.Actor == null) return null;
-            bool isValid = Validate(action);
-            if (!isValid) return null;
 
+            ActionVisualType visualType = ActionVisualType.None;
             Unit targetUnit = null;
             int predictedDamage = 0;
-            ActionVisualType visualType = ActionVisualType.None;
-            List<HexCoordinates> movementPath = null;
-            
+            List<HexCoordinates> targetCells = new List<HexCoordinates>();
             HexCoordinates? pushDestination = null;
-            bool targetTakesBumpDamage = false;
             Unit secondaryBumpTarget = null;
-            const int BUMP_DAMAGE = 10;
+            bool targetTakesBumpDamage = false;
 
             if (action is MoveAction move)
             {
                 visualType = ActionVisualType.Move;
-                movementPath = new List<HexCoordinates>(move.Path);
+                targetCells.Add(move.Destination);
             }
-            else if (action is MeleeAttackAction melee || action is RangedAttackAction ranged)
+            else if (action is MeleeAttackAction melee)
             {
-                visualType = action is MeleeAttackAction ? ActionVisualType.MeleeAttack : ActionVisualType.RangedAttack;
-                targetUnit = action is MeleeAttackAction ? ((MeleeAttackAction)action).Target : ((RangedAttackAction)action).Target;
-                predictedDamage = action is MeleeAttackAction ? ((MeleeAttackAction)action).Damage : ((RangedAttackAction)action).Damage;
+                visualType = ActionVisualType.MeleeAttack;
+                targetUnit = _grid.GetCell(melee.TargetPos)?.Occupant;
+                predictedDamage = action.Actor.Stats.attackPower;
 
-                // Push Calculation (Pure preview, no grid mutation)
-                HexCoordinates bestPush = targetUnit.Coordinates.GetPushDestination(action.Actor.Coordinates); 
-
-                pushDestination = bestPush;
-                var destCell = _grid.GetCell(bestPush);
-
-                if (destCell == null || !destCell.IsWalkable)
+                if (targetUnit != null)
                 {
-                    predictedDamage += BUMP_DAMAGE;
-                    targetTakesBumpDamage = true;
-                    pushDestination = null; // Stays in place
+                    pushDestination = ResolveLinearPush(targetUnit, action.Actor.Coordinates, 1, out secondaryBumpTarget);
+                    if (secondaryBumpTarget != null || !_grid.GetCell(pushDestination.Value).IsWalkable)
+                    {
+                        predictedDamage += 10;
+                        targetTakesBumpDamage = true;
+                    }
                 }
-                else if (destCell.IsOccupied)
+            }
+            else if (action is RangedAttackAction ranged)
+            {
+                visualType = ActionVisualType.RangedAttack;
+                targetUnit = _grid.GetCell(ranged.TargetPos)?.Occupant;
+                predictedDamage = action.Actor.Stats.attackPower;
+
+                if (targetUnit != null)
                 {
-                    predictedDamage += BUMP_DAMAGE;
-                    targetTakesBumpDamage = true;
-                    secondaryBumpTarget = destCell.Occupant;
-                    pushDestination = null; // Stays in place
+                    pushDestination = ResolveLinearPush(targetUnit, action.Actor.Coordinates, 1, out secondaryBumpTarget);
+                    if (secondaryBumpTarget != null || !_grid.GetCell(pushDestination.Value).IsWalkable)
+                    {
+                        predictedDamage += 10;
+                        targetTakesBumpDamage = true;
+                    }
                 }
             }
             else if (action is HeavyMeleeAttackAction heavy)
@@ -105,12 +107,11 @@ namespace Game.Combat.Actions
 
                 if (targetUnit != null)
                 {
-                    // Predict the 3-hex shove
                     pushDestination = ResolveLinearPush(targetUnit, action.Actor.Coordinates, 3, out secondaryBumpTarget);
                     
                     if (secondaryBumpTarget != null || !_grid.GetCell(pushDestination.Value).IsWalkable)
                     {
-                        predictedDamage += BUMP_DAMAGE;
+                        predictedDamage += 10;
                         targetTakesBumpDamage = true;
                     }
                 }
@@ -122,12 +123,61 @@ namespace Game.Combat.Actions
 
                 if (targetUnit != null)
                 {
-                    // Predict the 3-hex pull
                     pushDestination = ResolveLinearPull(targetUnit, action.Actor.Coordinates, 3, out secondaryBumpTarget);
                     
                     if (secondaryBumpTarget != null || !_grid.GetCell(pushDestination.Value).IsWalkable)
                     {
-                        predictedDamage += BUMP_DAMAGE;
+                        predictedDamage += 10;
+                        targetTakesBumpDamage = true;
+                    }
+                }
+            }
+            else if (action is SplashAttackAction splash)
+            {
+                visualType = ActionVisualType.RangedAttack;
+                targetCells = new List<HexCoordinates>(splash.GetTargetCells());
+                predictedDamage = action.Actor.Stats.attackPower;
+
+                foreach (var cellCoord in targetCells)
+                {
+                    var cell = _grid.GetCell(cellCoord);
+                    if (cell?.Occupant != null && cell.Occupant != action.Actor)
+                    {
+                        targetUnit = cell.Occupant;
+                        break;
+                    }
+                }
+
+                if (targetUnit != null)
+                {
+                    pushDestination = ResolveLinearPush(targetUnit, action.Actor.Coordinates, 1, out secondaryBumpTarget);
+                    if (secondaryBumpTarget != null || !_grid.GetCell(pushDestination.Value).IsWalkable)
+                    {
+                        targetTakesBumpDamage = true;
+                    }
+                }
+            }
+            else if (action is SweepAttackAction sweep)
+            {
+                visualType = ActionVisualType.MeleeAttack;
+                targetCells = new List<HexCoordinates>(sweep.GetTargetCells());
+                predictedDamage = action.Actor.Stats.attackPower;
+
+                foreach (var cellCoord in targetCells)
+                {
+                    var cell = _grid.GetCell(cellCoord);
+                    if (cell?.Occupant != null && cell.Occupant != action.Actor)
+                    {
+                        targetUnit = cell.Occupant;
+                        break; 
+                    }
+                }
+
+                if (targetUnit != null)
+                {
+                    pushDestination = ResolveLinearPush(targetUnit, action.Actor.Coordinates, 1, out secondaryBumpTarget);
+                    if (secondaryBumpTarget != null || !_grid.GetCell(pushDestination.Value).IsWalkable)
+                    {
                         targetTakesBumpDamage = true;
                     }
                 }
@@ -135,52 +185,32 @@ namespace Game.Combat.Actions
             else if (action is GrappleAction grapple)
             {
                 visualType = ActionVisualType.Grapple;
-                targetUnit = grapple.Target;
-                predictedDamage = 0;
+                targetUnit = _grid.GetCell(grapple.TargetPos)?.Occupant;
+                predictedDamage = action.Actor.Stats.attackPower;
             }
             else if (action is RangedHealAction heal)
             {
                 visualType = ActionVisualType.Heal;
-                targetUnit = heal.Target;
-                predictedDamage = -heal.healAmount; // Negative damage acts as healing for the UI
+                targetUnit = _grid.GetCell(heal.TargetPos)?.Occupant;
+                predictedDamage = -heal.healAmount; 
             }
-            // --- Enemy AOE damage attacks ---
-            else if (action is SweepAttackAction sweep)
-            {
-                visualType = ActionVisualType.MeleeAttack;
-                predictedDamage = action.Actor.Stats.attackPower;
-                
-                // Grab the first valid target to satisfy the base ActionIntent constructor
-                foreach (var cellCoord in sweep.GetTargetCells())
-                {
-                    var cell = _grid.GetCell(cellCoord);
-                    if (cell?.Occupant != null && cell.Occupant != action.Actor)
-                    {
-                        targetUnit = cell.Occupant;
-                        break;
-                    }
-                }
-            }
-            else if (action is SplashAttackAction splash)
-            {
-                visualType = ActionVisualType.RangedAttack;
-                predictedDamage = action.Actor.Stats.attackPower;
 
-                // Grab the first valid target to satisfy the base ActionIntent constructor
-                foreach (var cellCoord in splash.GetTargetCells())
-                {
-                    var cell = _grid.GetCell(cellCoord);
-                    if (cell?.Occupant != null && cell.Occupant != action.Actor)
-                    {
-                        targetUnit = cell.Occupant;
-                        break;
-                    }
-                }
+            if (targetCells.Count == 0 && action.GetTargetCells() != null)
+            {
+                targetCells.AddRange(action.GetTargetCells());
             }
 
             return new ActionIntent(
-                action.Actor, action, targetUnit, predictedDamage, visualType,
-                movementPath, isValid, pushDestination, targetTakesBumpDamage, secondaryBumpTarget
+                action.Actor, 
+                action, 
+                targetUnit, 
+                predictedDamage, 
+                visualType, 
+                null, 
+                true, 
+                pushDestination, 
+                targetTakesBumpDamage, 
+                secondaryBumpTarget
             );
         } 
 
@@ -190,8 +220,6 @@ namespace Game.Combat.Actions
             var reachable = _grid.GetReachableCells(unit.Coordinates, unit.Stats.movementRange);
             var validDestinations = new List<HexCoordinates>();
 
-            // Look at the intents already locked in for this round. 
-            // Treat their destinations as occupied cells to avoid AIs wanting to move to same hex.
             var claimedHexes = new HashSet<HexCoordinates>();
             if (CombatManager.Instance != null)
             {
@@ -213,7 +241,7 @@ namespace Game.Combat.Actions
             }
 
             return validDestinations;
-        } 
+        }
 
         // Get all valid attack targets for a unit (melee).
         public List<Unit> GetValidMeleeTargets(Unit attacker)
@@ -266,44 +294,6 @@ namespace Game.Combat.Actions
             return validTargets;
         }
 
-        // Create a MoveAction for a unit to a destination.
-        public MoveAction CreateMoveAction(Unit actor, HexCoordinates destination)
-        {
-            return new MoveAction(actor, destination);
-        }
-
-        // Create a MeleeAttackAction for a unit against a target.
-        public MeleeAttackAction CreateMeleeAttack(Unit actor, Unit target)
-        {
-            return new MeleeAttackAction(actor, target);
-        }
-
-        // Create a RangedAttackAction for a unit against a target.
-        public RangedAttackAction CreateRangedAttack(Unit actor, Unit target)
-        {
-            return new RangedAttackAction(actor, target);
-        }
-
-        public GrappleAction CreateGrapple(Unit actor, Unit target)
-        {
-            return new GrappleAction(actor, target);
-        }
-
-        public RangedHealAction CreateRangedHeal(Unit actor, Unit target)
-        {
-            return new RangedHealAction(actor, target);
-        }
-
-        public ICombatAction CreateHeavyMeleeAttack(Unit actor, HexCell targetCell)
-        {
-            return new HeavyMeleeAttackAction(actor, targetCell.Coordinates);
-        }
-
-        public ICombatAction CreatePull(Unit actor, HexCell targetCell)
-        {
-            return new PullAction(actor, targetCell.Coordinates);
-        }
-
         public ActionIntent GeneratePullIntent(Unit actor, HexCell targetCell)
         {
             var targetUnit = targetCell.Occupant;
@@ -337,40 +327,16 @@ namespace Game.Combat.Actions
             );
         } 
 
-        // Builds a 7-hex area ranged splash attack
-        public ICombatAction CreateSplashAttack(Unit actor, HexCell targetCell)
-        {
-            var aoe = new List<HexCoordinates>();
-            
-            // A splash hits the center (dist 0) and immediate adjacent hexes (dist 1)
-            foreach (var cell in _grid.GetAllCells())
-            {
-                if (_grid.GetDistance(targetCell.Coordinates, cell.Coordinates) <= 1)
-                {
-                    aoe.Add(cell.Coordinates);
-                }
-            }
-            
-            return new SplashAttackAction(actor, targetCell.Coordinates, aoe);
-        } 
-
-        // Builds a 3-hex frontal melee attack
-        public ICombatAction CreateSweepAttack(Unit actor, HexCell targetCell)
-        {
-            var sweep = new List<HexCoordinates> { targetCell.Coordinates };
-            
-            // Any cell that is exactly distance 1 from BOTH the Actor AND the Target
-            foreach (var cell in _grid.GetAllCells())
-            {
-                if (_grid.GetDistance(actor.Coordinates, cell.Coordinates) == 1 &&
-                    _grid.GetDistance(targetCell.Coordinates, cell.Coordinates) == 1)
-                {
-                    sweep.Add(cell.Coordinates);
-                }
-            }
-            
-            return new SweepAttackAction(actor, targetCell.Coordinates, sweep);
-        } 
+        public ICombatAction CreateMoveAction(Unit actor, HexCoordinates destination) => new MoveAction(actor, destination);
+        public ICombatAction CreateSweepAttack(Unit actor, HexCell targetCell) => new SweepAttackAction(actor, targetCell.Coordinates, _grid); 
+        public ICombatAction CreateSplashAttack(Unit actor, HexCell targetCell) => new SplashAttackAction(actor, targetCell.Coordinates, _grid);
+        public ICombatAction CreateHeavyMeleeAttack(Unit actor, HexCell targetCell) => new HeavyMeleeAttackAction(actor, targetCell.Coordinates);
+        public ICombatAction CreatePull(Unit actor, HexCell targetCell) => new PullAction(actor, targetCell.Coordinates);
+        
+        public ICombatAction CreateMeleeAttack(Unit actor, HexCell targetCell) => new MeleeAttackAction(actor, targetCell.Coordinates);
+        public ICombatAction CreateRangedAttack(Unit actor, HexCell targetCell) => new RangedAttackAction(actor, targetCell.Coordinates);
+        public ICombatAction CreateRangedHeal(Unit actor, HexCell targetCell) => new RangedHealAction(actor, targetCell.Coordinates);
+        public ICombatAction CreateGrappleAction(Unit actor, HexCell targetCell) => new GrappleAction(actor, targetCell.Coordinates);
 
         // Calculates a multi-hex shove. Returns the final valid hex and outputs any unit that was collided with so we can consider bump damage.
         public HexCoordinates ResolveLinearPush(Unit targetUnit, HexCoordinates attackerPos, int pushDistance, out Unit bumpedUnit)
@@ -384,18 +350,15 @@ namespace Game.Combat.Actions
                 HexCoordinates nextPos = currentPos.GetPushDestination(prevPos);
                 HexCell nextCell = _grid.GetCell(nextPos);
 
-                // Collision: Hit a wall or out of bounds
                 if (nextCell == null || !nextCell.CanEnter()) 
                     break;
 
-                // Collision: Hit another unit
                 if (nextCell.Occupant != null && nextCell.Occupant != targetUnit)
                 {
                     bumpedUnit = nextCell.Occupant;
                     break;
                 }
 
-                // Space is clear, advance the trajectory
                 prevPos = currentPos;
                 currentPos = nextPos;
             }
@@ -411,7 +374,6 @@ namespace Game.Combat.Actions
 
             for (int i = 0; i < pullDistance; i++)
             {
-                // Find the neighbor of currentPos that is mathematically closest to the puller
                 HexCoordinates bestNeighbor = currentPos;
                 int minDistance = HexCoordinates.Distance(currentPos, pullerPos);
 
@@ -426,12 +388,10 @@ namespace Game.Combat.Actions
                     }
                 }
 
-                // If we are already adjacent to the puller, stop pulling
                 if (bestNeighbor == currentPos || minDistance == 0) break;
 
                 HexCell nextCell = _grid.GetCell(bestNeighbor);
 
-                // Collision checks
                 if (nextCell == null || !nextCell.CanEnter()) break;
                 if (nextCell.Occupant != null && nextCell.Occupant != targetUnit)
                 {

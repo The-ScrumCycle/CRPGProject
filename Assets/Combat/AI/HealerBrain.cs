@@ -17,7 +17,10 @@ namespace Game.Combat.AI
 
                 // Priority 1: Heal if adjacent/in range
                 if (distance >= 1 && distance <= enemyUnit.Stats.attackRange)
-                    return new RangedHealAction(enemyUnit, damagedAlly);
+                {
+                    var healAction = resolver.CreateRangedHeal(enemyUnit, grid.GetCell(damagedAlly.Coordinates));
+                    if (resolver.Validate(healAction)) return healAction;
+                }
 
                 // Priority 2: Retreat away from players (the injured ally will come to us)
                 var retreat = BrainHelpers.MoveAwayFromPlayers(enemyUnit, allUnits, grid, resolver);
@@ -29,7 +32,7 @@ namespace Game.Combat.AI
             {
                 if (!unit.IsAlive || !unit.IsPlayerControlled) continue;
                 if (grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates) == 1)
-                    return resolver.CreateMeleeAttack(enemyUnit, unit);
+                    return resolver.CreateMeleeAttack(enemyUnit, grid.GetCell(unit.Coordinates));
             }
 
             // Nobody hurt, nobody adjacent — idle

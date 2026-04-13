@@ -9,7 +9,7 @@ namespace Game.Combat.Actions
     public class HeavyMeleeAttackAction : ICombatAction
     {
         public Unit Actor { get; }
-        public HexCoordinates TargetPos { get; }
+        public HexCoordinates TargetPos { get; private set; }
         
         private const int KNOCKBACK_DISTANCE = 3;
         private const int BUMP_DAMAGE = 10;
@@ -43,13 +43,18 @@ namespace Game.Combat.Actions
 
                 // 2. Physics: Calculate the 3-hex shove
                 ActionResolver resolver = CombatManager.Instance.GetActionResolver();
+                HexCoordinates oldPos = targetUnit.Coordinates;
                 HexCoordinates finalPos = resolver.ResolveLinearPush(targetUnit, Actor.Coordinates, KNOCKBACK_DISTANCE, out Unit bumpedUnit);
 
                 // 3. Move the unit physically on the grid
-                if (finalPos != targetUnit.Coordinates)
+                if (finalPos != oldPos)
                 {
                     grid.MoveUnit(targetUnit, finalPos);
-                }
+                    
+                    // BROADCAST SHIFT
+                    HexCoordinates offset = new HexCoordinates(finalPos.q - oldPos.q, finalPos.r - oldPos.r);
+                    CombatManager.Instance.ShiftUnitIntent(targetUnit, offset);
+                } 
 
                 // 4. Apply Bump Damage to BOTH units if a collision occurred!
                 if (bumpedUnit != null && bumpedUnit.IsAlive)
@@ -62,5 +67,10 @@ namespace Game.Combat.Actions
         }
 
         public IEnumerable<HexCoordinates> GetTargetCells() => new List<HexCoordinates> { TargetPos };
+
+        public void ApplyDisplacement(HexCoordinates offset)
+        {
+            TargetPos = new HexCoordinates(TargetPos.q + offset.q, TargetPos.r + offset.r);
+        }
     }
 }

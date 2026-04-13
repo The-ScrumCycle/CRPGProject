@@ -8,7 +8,7 @@ namespace Game.Combat.Actions
     public class PullAction : ICombatAction
     {
         public Unit Actor { get; }
-        public HexCoordinates TargetPos { get; }
+        public HexCoordinates TargetPos { get; private set; }
         
         private const int PULL_DISTANCE = 8;
         private const int BUMP_DAMAGE = 10;
@@ -39,13 +39,18 @@ namespace Game.Combat.Actions
             {
                 // 1. Physics: Calculate a multi-hex pull towards the caster
                 ActionResolver resolver = CombatManager.Instance.GetActionResolver();
+                HexCoordinates oldPos = targetUnit.Coordinates;
                 HexCoordinates finalPos = resolver.ResolveLinearPull(targetUnit, Actor.Coordinates, PULL_DISTANCE, out Unit bumpedUnit);
 
                 // 2. Move the unit physically on the grid
-                if (finalPos != targetUnit.Coordinates)
+                if (finalPos != oldPos)
                 {
                     grid.MoveUnit(targetUnit, finalPos);
-                }
+                    
+                    // BROADCAST SHIFT
+                    HexCoordinates offset = new HexCoordinates(finalPos.q - oldPos.q, finalPos.r - oldPos.r);
+                    CombatManager.Instance.ShiftUnitIntent(targetUnit, offset);
+                } 
 
                 // 3. UNIVERSAL RULE: Apply Bump Damage if a collision occurred
                 if (bumpedUnit != null && bumpedUnit.IsAlive)
@@ -55,6 +60,11 @@ namespace Game.Combat.Actions
                     Debug.Log($"[Physics] {targetUnit.DisplayName} collided with {bumpedUnit.DisplayName} during pull for {BUMP_DAMAGE} damage!");
                 }
             }
+        }
+
+        public void ApplyDisplacement(HexCoordinates offset)
+        {
+            TargetPos = new HexCoordinates(TargetPos.q + offset.q, TargetPos.r + offset.r);
         }
 
         public IEnumerable<HexCoordinates> GetTargetCells() => new List<HexCoordinates> { TargetPos };

@@ -1,4 +1,3 @@
-// --- Snippet for Assets/Combat/AI/SkeletonRangedBrain.cs ---
 using Game.Combat.Units;
 using Game.Combat.Actions;
 using Game.Combat.Grid;
@@ -31,35 +30,26 @@ namespace Game.Combat.AI
                 
                 if (distanceToTarget > 1) // Standard Ranged needs distance
                 {
-                    var ranged = resolver.CreateRangedAttack(enemyUnit, target);
+                    var ranged = resolver.CreateRangedAttack(enemyUnit, grid.GetCell(target.Coordinates));
                     if (resolver.Validate(ranged)) return ranged;
+                }
+                else
+                {
+                    // Fallback to standard Melee
+                    return resolver.CreateMeleeAttack(enemyUnit, grid.GetCell(target.Coordinates));
                 }
             }
 
-            // Priority 2: Reposition to ideal range (attackRange distance)
-            var reposition = MoveToOptimalRange(enemyUnit, target, grid, resolver);
-            if (reposition != null) return reposition;
-            
-            // Priority 3: Cornered at distance 1 — desperation melee
-            if (distanceToTarget == 1)
-                return resolver.CreateMeleeAttack(enemyUnit, target);
+            // Priority 2: Move to ideal firing distance
+            int bestScore = Mathf.Abs(distanceToTarget - enemyUnit.Stats.attackRange);
+            HexCoordinates bestCell = enemyUnit.Coordinates;
 
-            return null;
-        }
-
-        private MoveAction MoveToOptimalRange(Unit mover, Unit target, HexGrid grid, ActionResolver resolver)
-        {
-            // Baseline: score of staying put
-            int currentDist = grid.GetDistance(mover.Coordinates, target.Coordinates);
-            int bestScore = Mathf.Abs(currentDist - mover.Stats.attackRange);
-            HexCoordinates bestCell = mover.Coordinates;
-
-            var validMoves = resolver.GetValidMoveDestinations(mover);
+            var validMoves = resolver.GetValidMoveDestinations(enemyUnit);
 
             foreach (var cell in validMoves)
             {
                 int distToTarget = grid.GetDistance(cell, target.Coordinates);
-                int score = Mathf.Abs(distToTarget - mover.Stats.attackRange);
+                int score = Mathf.Abs(distToTarget - enemyUnit.Stats.attackRange);
 
                 // Prefer strictly better score, or same score but farther (stay at max range)
                 if (score < bestScore || (score == bestScore && distToTarget > grid.GetDistance(bestCell, target.Coordinates)))
@@ -69,8 +59,8 @@ namespace Game.Combat.AI
                 }
             }
 
-            if (bestCell == mover.Coordinates) return null; // Already optimal
-            return resolver.CreateMoveAction(mover, bestCell);
+            if (bestCell == enemyUnit.Coordinates) return null; // Already optimal
+            return resolver.CreateMoveAction(enemyUnit, bestCell);
         }
 
         private Unit FindNearestPlayer(Unit fromUnit, IReadOnlyList<Unit> allUnits, HexGrid grid)

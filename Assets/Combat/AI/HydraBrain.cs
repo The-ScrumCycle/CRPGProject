@@ -35,7 +35,7 @@ namespace Game.Combat.AI
                 if (closestDist == 1) 
                 {
                     // In range use the Grapple Action
-                    return new GrappleAction(enemyUnit, bestTarget);
+                    return new GrappleAction(enemyUnit, bestTarget.Coordinates);
                 }
                 else
                 {

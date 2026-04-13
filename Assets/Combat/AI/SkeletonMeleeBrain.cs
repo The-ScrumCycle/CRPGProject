@@ -26,7 +26,7 @@ namespace Game.Combat.AI
                     }
                     
                     // Fallback to standard Melee if Sweep isn't equipped or is invalid
-                    return resolver.CreateMeleeAttack(enemyUnit, unit);
+                    return resolver.CreateMeleeAttack(enemyUnit, grid.GetCell(unit.Coordinates));
                 }
             }
 
@@ -54,7 +54,8 @@ namespace Game.Combat.AI
             return lowest;
         }
 
-        private MoveAction MoveToward(Unit mover, Unit target, HexGrid grid, ActionResolver resolver)
+        // FIXED: Now correctly returns ICombatAction instead of MoveAction
+        private ICombatAction MoveToward(Unit mover, Unit target, HexGrid grid, ActionResolver resolver)
         {
             var validMoves = resolver.GetValidMoveDestinations(mover);
             if (validMoves.Count == 0) return null;

@@ -58,7 +58,7 @@ namespace Game.Combat.AI
         }
 
         // Move toward a target unit, picking the reachable cell closest to them.
-        public static MoveAction MoveToward(Unit mover, Unit target, HexGrid grid, ActionResolver resolver)
+        public static ICombatAction MoveToward(Unit mover, Unit target, HexGrid grid, ActionResolver resolver)
         {
             var validMoves = resolver.GetValidMoveDestinations(mover);
             if (validMoves.Count == 0) return null;
@@ -82,8 +82,9 @@ namespace Game.Combat.AI
             return resolver.CreateMoveAction(mover, bestCell);
         }
 
+        // FIXED: Added "Unit retreatTarget = null" so the internal math has a context for it!
         // Move away from the nearest player, preferring cells closer to retreatTarget.
-        public static MoveAction MoveAwayFromPlayers(Unit mover, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver, Unit retreatTarget = null)
+        public static ICombatAction MoveAwayFromPlayers(Unit mover, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver, Unit retreatTarget = null)
         {
             Unit nearestPlayer = FindNearestPlayer(mover, allUnits, grid);
             if (nearestPlayer == null) return null;

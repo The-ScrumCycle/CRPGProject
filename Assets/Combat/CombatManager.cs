@@ -690,15 +690,15 @@ namespace Game.Combat
             switch (type)
             {
                 case CombatActionType.MeleeAttack:
-                    return _actionResolver.CreateMeleeAttack(actor, targetCell.Occupant);
+                    return _actionResolver.CreateMeleeAttack(actor, targetCell);
                 case CombatActionType.RangedAttack:
-                    return _actionResolver.CreateRangedAttack(actor, targetCell.Occupant);
+                    return _actionResolver.CreateRangedAttack(actor, targetCell);
                 case CombatActionType.HeavyMeleeAttack:
                     return _actionResolver.CreateHeavyMeleeAttack(actor, targetCell);
                 case CombatActionType.PullAlly:
                     return _actionResolver.CreatePull(actor, targetCell);
                 case CombatActionType.RangedHeal:
-                    return _actionResolver.CreateRangedHeal(actor, targetCell.Occupant);
+                    return _actionResolver.CreateRangedHeal(actor, targetCell);
                 default:
                     return null;
             }
@@ -868,6 +868,23 @@ namespace Game.Combat
         public IReadOnlyList<ActionIntent> GetEnemyIntents()
         {
             return _state.GetIntents();
+        }
+
+        // Shift enemy AI's attack intent per unit offset 
+        public void ShiftUnitIntent(Unit unit, HexCoordinates offset)
+        {
+            if (unit == null || (offset.q == 0 && offset.r == 0)) return;
+
+            foreach (var intent in _state.GetIntents())
+            {
+                // If the unit that was pushed has a locked-in attack, shift it.
+                if (intent.Actor == unit)
+                {
+                    intent.Shift(offset, _grid);
+                    Debug.Log($"[Physics] Shifted {unit.DisplayName}'s telegraphed aim by {offset.q}, {offset.r}");
+                    break;
+                }
+            }
         }
 
         // Check if the player has acted / moved this turn

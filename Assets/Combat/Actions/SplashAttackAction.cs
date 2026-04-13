@@ -4,17 +4,34 @@ using Game.Combat.Grid;
 
 namespace Game.Combat.Actions
 {
-    public class SplashAttackAction : ICombatAction
+   public class SplashAttackAction : ICombatAction
     {
         public Unit Actor { get; }
-        private readonly HexCoordinates _targetCenter;
-        private readonly List<HexCoordinates> _aoeCells;
+        private HexCoordinates _targetCenter;
+        private readonly HexGrid _grid;
+        private readonly List<HexCoordinates> _aoeCells = new List<HexCoordinates>();
 
-        public SplashAttackAction(Unit actor, HexCoordinates targetCenter, List<HexCoordinates> aoeCells)
+        public SplashAttackAction(Unit actor, HexCoordinates targetCenter, HexGrid grid)
         {
             Actor = actor;
             _targetCenter = targetCenter;
-            _aoeCells = aoeCells;
+            _grid = grid;
+            RecalculateAoE();
+        }
+
+        // Dynamically builds a perfect 7-hex shape around central aim point
+        private void RecalculateAoE()
+        {
+            _aoeCells.Clear();
+            if (_grid == null) return;
+
+            foreach (var cell in _grid.GetAllCells())
+            {
+                if (_grid.GetDistance(_targetCenter, cell.Coordinates) <= 1)
+                {
+                    _aoeCells.Add(cell.Coordinates);
+                }
+            }
         }
 
         public IEnumerable<HexCoordinates> GetTargetCells() => _aoeCells;
@@ -28,7 +45,6 @@ namespace Game.Combat.Actions
 
         public void Execute(HexGrid grid)
         {
-            // Bypass dictionary hash lookups and evaluate pure distance
             foreach (var cell in grid.GetAllCells())
             {
                 if (cell != null && cell.Occupant != null && cell.Occupant.IsAlive)
@@ -38,11 +54,18 @@ namespace Game.Combat.Actions
                         if (grid.GetDistance(blastCoord, cell.Occupant.Coordinates) == 0)
                         {
                             cell.Occupant.TakeDamage(Actor.Stats.attackPower);
-                            break; // Prevent double-damage if coordinates overlap
+                            break; 
                         }
                     }
                 }
             }
-        } 
+        }
+
+        public void ApplyDisplacement(HexCoordinates offset)
+        {
+            // Shift the center, then let the grid draw the new shape
+            _targetCenter = new HexCoordinates(_targetCenter.q + offset.q, _targetCenter.r + offset.r);
+            RecalculateAoE();
+        }
     }
-}
+} 
