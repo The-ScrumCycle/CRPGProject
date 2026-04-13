@@ -27,12 +27,14 @@ TagManager:
   - skeleton_melee
   - healer
   - Ogre
-  tags: []
+  - Board
+  - HexGrid
+  - Pedestal
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - ReceiveOutline
   - Water
   - UI
   - 

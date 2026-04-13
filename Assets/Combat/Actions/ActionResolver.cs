@@ -36,7 +36,7 @@ namespace Game.Combat.Actions
 
         // Execute an action if valid.
         // Returns true if action was executed.
-        public bool Execute(ICombatAction action, UnitVisual visual)
+        public bool Execute(ICombatAction action)
         {
             if (!Validate(action))
             {
@@ -44,7 +44,7 @@ namespace Game.Combat.Actions
                 return false;
             }
 
-            action.Execute(_grid, visual);
+            action.Execute(_grid);
             Debug.Log($"[ActionResolver] Executed: {action.Actor.DisplayName} -> {action.GetType().Name}");
             return true;
         }

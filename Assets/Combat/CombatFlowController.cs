@@ -182,5 +182,21 @@ namespace Game.Combat
 
             return targets;
         }
+
+        // Get all cells in attack range (melee + ranged)
+        public List<HexCoordinates> GetCellsInAttackRange(Unit unit)
+        {
+            var targets = new List<HexCoordinates>();
+
+            foreach (var cell in _grid.GetNeighbors(unit.Coordinates)){
+                targets.Add(cell.Coordinates);
+            }
+
+            foreach (var cell in _grid.GetCellsInRange(unit.Coordinates, unit.Stats.attackRange)){
+                targets.Add(cell.Coordinates);
+            }
+
+            return targets;
+        }
     }
 } 

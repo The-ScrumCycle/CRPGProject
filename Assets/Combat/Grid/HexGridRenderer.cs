@@ -88,9 +88,6 @@ namespace Game.Combat.Grid
                 Gizmos.DrawSphere(HexToWorld(hex.Coordinates), 1.0f/hexScale);
             }
 
-            // Log distance from hovered hex to origin
-            //Debug.Log(HexCoordinates.Distance(_hoveredHex, WorldToHex(GridOrigin)));
-
             // Draw point at grid origin
             Gizmos.color = Color.magenta;
             Gizmos.DrawSphere(GridOrigin, 1.0f/hexScale);
@@ -234,6 +231,25 @@ namespace Game.Combat.Grid
         #endregion
 
         #region Highlighting
+
+        public Color GetGridColor(HighlightType type)
+        {
+            switch (type)
+            {
+                case HighlightType.None:
+                    return baseColor;
+                case HighlightType.PlayerMove:
+                    return playerMoveColor;
+                case HighlightType.PlayerAttack:
+                    return playerAttackColor;
+                case HighlightType.AI_Move:
+                    return aiMoveColor;
+                case HighlightType.AI_Attack:
+                    return aiAttackBaseColor;
+                default:
+                    return new Color(1, 0, 1, 1);
+            }
+        }
 
         public HexCoordinates GetHoveredHex()
         {

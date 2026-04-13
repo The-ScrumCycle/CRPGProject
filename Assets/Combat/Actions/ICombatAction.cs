@@ -20,6 +20,6 @@ namespace Game.Combat.Actions
         bool IsValid(HexGrid grid);
 
         // Execute the action. Only call if IsValid returns true.
-        void Execute(HexGrid grid, UnitVisual visual);
+        void Execute(HexGrid grid);
     }
 }

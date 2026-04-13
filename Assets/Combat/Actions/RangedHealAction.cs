@@ -49,7 +49,7 @@ namespace Game.Combat.Actions
         }
 
 	    // Execute attack
-        public void Execute(HexGrid grid, UnitVisual visual)
+        public void Execute(HexGrid grid)
         {
             int before = Target.Stats.currentHealth;
             Target.Heal(healAmount);

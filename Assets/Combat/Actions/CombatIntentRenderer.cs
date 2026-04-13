@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Game.Combat.Grid;
+using Game.Combat.Units;
 
 namespace Game.Combat.Actions
 {
@@ -23,9 +24,17 @@ namespace Game.Combat.Actions
             _gridRenderer = UnityEngine.Object.FindObjectOfType<HexGridRenderer>();
         }
 
+        private void RenderArrow(Vector3 startPos, Vector3 endPos, Color color)
+        {
+            // The trajectory from start to end natively points towards the caster.
+            GameObject arrow = Object.Instantiate(_arrowPrefab);
+            arrow.GetComponent<Arrow>().Render(startPos, endPos, color, Vector3.up * 0.15f);
+            _activeArrows.Add(arrow);
+        }
+
         // Render a single intent into highlight data.
         // Our higlights currently are movement cells, AoE and regular attack cells, push direction arrow.
-        public void Render(ActionIntent intent)
+        public void Render(ActionIntent intent, UnitVisual visual)
         {
             if (intent == null || !intent.IsValid) return;
 
@@ -42,16 +51,35 @@ namespace Game.Combat.Actions
                         AddWithPriority(coords, HighlightType.AI_Move);
                     }
                 }
+
+                RenderArrow(
+                    _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
+                    _gridRenderer.HexToWorld(intent.MovementPath[^1]),
+                    _gridRenderer.GetGridColor(type)
+                );
+                visual.LookAtCell(intent.MovementPath[^1]);
             }
 
             // 2. HIGHLIGHT ALL AOE TARGET CELLS
             var targetCells = intent.Action.GetTargetCells();
-            if (targetCells != null)
+            if (targetCells != null && !(intent.VisualType == ActionVisualType.MeleeAttack))
             {
+                HexCoordinates averagePos = new HexCoordinates(0, 0);
+                int count = 0;
                 foreach (var cellCoords in targetCells)
                 {
                     AddWithPriority(cellCoords, type);
+                    averagePos += cellCoords;
+                    count++;
                 }
+                averagePos /= count;
+
+                RenderArrow(
+                    _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
+                    _gridRenderer.HexToWorld(averagePos),
+                    _gridRenderer.GetGridColor(type)
+                );
+                visual.LookAtCell(averagePos);
             }
 
             // 3. RENDER PUSH / PULL ARROW
@@ -65,36 +93,23 @@ namespace Game.Combat.Actions
 
                 if (startHex != endHex) // Only draw if displacement occurs
                 {
-                    Vector3 startWorldPos = _gridRenderer.HexToWorld(startHex);
-                    Vector3 endWorldPos = _gridRenderer.HexToWorld(endHex);
-
-                    // The trajectory from start to end natively points towards the caster.
-                    GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab);
-                    
-                    arrow.transform.position = (startWorldPos + endWorldPos) / 2f;
-                    arrow.transform.position += Vector3.up * 0.5f; 
-
-                    Vector3 direction = (endWorldPos - startWorldPos).normalized;
-                    if (direction != Vector3.zero)
-                    {
-                        arrow.transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
-                    }
-
-                    float distance = Vector3.Distance(startWorldPos, endWorldPos);
-                    arrow.transform.localScale = new Vector3(1f, 1f, distance * 0.5f);
-
-                    _activeArrows.Add(arrow);
+                    RenderArrow(
+                        _gridRenderer.HexToWorld(startHex), 
+                        _gridRenderer.HexToWorld(endHex),
+                        _gridRenderer.GetGridColor(HighlightType.PlayerAttack)
+                    );
+                    visual.LookAtCell(endHex);
                 }
             } 
         } 
 
         // Render all intents from a list into highlight data
         // NOTE: Call Clear() first if you want a fresh pass
-        public void RenderAll(IReadOnlyList<ActionIntent> intents)
+        public void RenderAll(IReadOnlyDictionary<ActionIntent, UnitVisual> intents)
         {
-            for (int i = 0; i < intents.Count; i++)
+            foreach (var (intent, visual) in intents)
             {
-                Render(intents[i]);
+                Render(intent, visual);
             }
         }
 
@@ -128,6 +143,10 @@ namespace Game.Combat.Actions
                     return HighlightType.AI_Attack;
                 case ActionVisualType.Heal:
                     return HighlightType.AI_Move;
+                case ActionVisualType.Push:
+                    return HighlightType.PlayerAttack;
+                case ActionVisualType.Pull:
+                    return HighlightType.PlayerAttack;
                 default:
                     return HighlightType.None;
             }

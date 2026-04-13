@@ -48,7 +48,7 @@ namespace Game.Combat.Actions
         }
 
 	    // Execute attack
-        public void Execute(HexGrid grid, UnitVisual visual)
+        public void Execute(HexGrid grid)
         {
             const int BUMP_DAMAGE = 10;
             int totalDamage = Damage;

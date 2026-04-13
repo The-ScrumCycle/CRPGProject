@@ -30,7 +30,7 @@ namespace Game.Combat.Actions
             return grid.GetDistance(Actor.Coordinates, TargetPos) <= PULL_DISTANCE;
         }
 
-        public void Execute(HexGrid grid, UnitVisual visual)
+        public void Execute(HexGrid grid)
         {
             var targetCell = grid.GetCell(TargetPos);
             var targetUnit = targetCell?.Occupant;

@@ -1,5 +1,6 @@
 using UnityEngine;
 using Game.Combat.Grid;
+using System.Collections;
 
 namespace Game.Combat.Units
 {
@@ -12,11 +13,17 @@ namespace Game.Combat.Units
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float rotateSpeed = 400f;
+        [SerializeField] private Color flashColor = Color.red;
+        [SerializeField] private int numFlashes = 4;
+        [SerializeField] private float flashDuration = 0.1f;
+        [SerializeField] private float deathTime = 1.0f;
 
         private Unit _unit;
         private HexGridRenderer _gridRenderer;
         private Vector3 _targetPosition;
         private Quaternion _targetRotation;
+        private Material _mat;
+        private int _standardLayer;
         private bool _isMoving;
         private bool _isRotating;
         private float positionOffset = 0.0f;
@@ -28,6 +35,8 @@ namespace Game.Combat.Units
         {
             _unit = unit;
             _gridRenderer = gridRenderer;
+            _mat = GetComponentInChildren<SkinnedMeshRenderer>().material;
+            _standardLayer = gameObject.layer;
 
             // Get Position Offset Safely
             GameObject offsetObj = gameObject;
@@ -121,6 +130,80 @@ namespace Game.Combat.Units
                 _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up*positionOffset;
                 transform.position = _targetPosition;
                 _isMoving = false;
+            }
+        }
+
+        public void SetHighlight(bool highlight)
+        {
+            int intendedLayer = _standardLayer;
+            if (highlight) intendedLayer = LayerMask.NameToLayer("ReceiveOutline");
+
+            gameObject.layer = intendedLayer;
+            foreach (Transform child in transform)
+            {
+                child.gameObject.layer = intendedLayer;
+            }
+        }
+
+        public void Flash()
+        {
+            StartCoroutine(FlashRoutine());
+        }
+
+        private IEnumerator FlashRoutine()
+        {
+            _mat.SetColor("_BaseColor", flashColor);
+            yield return new WaitForSeconds(flashDuration*0.8f);
+            _mat.SetColor("_BaseColor", Color.white);
+
+            for (int i = 0; i < numFlashes; i++)
+            {
+                SetVisibility(false);
+                yield return new WaitForSeconds(flashDuration);
+                SetVisibility(true);
+                yield return new WaitForSeconds(flashDuration);
+            }
+        }
+
+        public void Die()
+        {
+            StartCoroutine(DeathRoutine());
+        }
+
+        private IEnumerator DeathRoutine()
+        {
+            float timeElapsed = 0.0f;
+            while (timeElapsed < deathTime)
+            {
+                timeElapsed += Time.deltaTime;
+
+                _mat.color = Color.Lerp(_mat.color, Color.black, Time.deltaTime);
+                transform.position -= new Vector3(0.0f, Time.deltaTime, 0.0f);
+
+                yield return null;
+            }
+            Destroy(gameObject);
+        }
+
+        public void HealEffect()
+        {
+            StartCoroutine(HealRoutine());
+        }
+
+        private IEnumerator HealRoutine()
+        {
+           yield return null; 
+        }
+
+        public void SetVisibility(bool visible)
+        {
+            foreach(MeshRenderer renderer in GetComponentsInChildren<MeshRenderer>())
+            {
+                renderer.enabled = visible;
+            }
+            foreach(SkinnedMeshRenderer renderer in GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                renderer.enabled = visible;
             }
         }
     }

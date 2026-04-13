@@ -66,10 +66,10 @@ namespace Game.Combat.Actions
             return Path.Count > 0;
         } 
 
-        public void Execute(HexGrid grid, UnitVisual visual)
+        public void Execute(HexGrid grid)
         {
             grid.MoveUnit(Actor, Destination);
-            visual.LookAtCell(Destination);
+            Actor.Visual.LookAtCell(Destination);
         }
     }
 }
