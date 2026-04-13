@@ -37,9 +37,13 @@ namespace Game.Combat.UI
 
             if (actionBarUI != null)
             {
+                // Determine if unit is pinned to see if they have dodge or move action available
                 bool activeUnitHasActed = currentUnit != null && CombatManager.Instance.HasUnitActed(currentUnit);
-                actionBarUI.RefreshActionBar(currentMode, isPlayerTurn, activeUnitHasActed, currentUnit);
-            }
+                bool activeUnitHasMoved = currentUnit != null && CombatManager.Instance.HasUnitMoved(currentUnit);
+                bool isPinned = CombatManager.Instance.IsUnitPinned(currentUnit);
+                
+                actionBarUI.RefreshActionBar(currentMode, isPlayerTurn, activeUnitHasActed, activeUnitHasMoved, isPinned, currentUnit); 
+            } 
         }
     }
 }

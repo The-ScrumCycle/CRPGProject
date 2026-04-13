@@ -102,8 +102,19 @@ namespace Game.Combat
             return currentUnit != null && currentUnit.IsPlayerControlled;
         }
 
-        public void MarkUnitActed(Unit unit) { _state.ActedUnits.Add(unit); }
+        public void MarkUnitActed(Unit unit) 
+        { 
+            _state.ActedUnits.Add(unit); 
+            _state.MovedUnits.Add(unit); // Acting also exhausts movement e.g ends unit's turn
+        }
+        
+        public void MarkUnitMoved(Unit unit) 
+        { 
+            _state.MovedUnits.Add(unit); 
+        }
+
         public bool HasUnitActed(Unit unit) { return _state.ActedUnits.Contains(unit); }
+        public bool HasUnitMoved(Unit unit) { return _state.MovedUnits.Contains(unit); }
 
         public bool HaveAllPlayerUnitsActed()
         {

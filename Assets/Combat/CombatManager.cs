@@ -440,16 +440,8 @@ namespace Game.Combat
             if (currentUnit == null || !currentUnit.IsPlayerControlled || _flowController.HasUnitActed(currentUnit)) return;
 
             // Mode switching
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                SetActionMode(PlayerActionMode.Move);
-            }
-
-            if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                SetActionMode(PlayerActionMode.Attack);
-            }
-
+            if (Input.GetKeyDown(KeyCode.Alpha1) && !_flowController.HasUnitMoved(currentUnit)) SetActionMode(PlayerActionMode.Move); 
+            if (Input.GetKeyDown(KeyCode.Alpha2)) SetActionMode(PlayerActionMode.Attack);
             // Optional 3rd action player units can have
             if (Input.GetKeyDown(KeyCode.Alpha3)) SetActionMode(PlayerActionMode.SecondaryAction);
 
@@ -467,12 +459,11 @@ namespace Game.Combat
                 // Swap unit when player clicks on a unit on grid
                 if (clickedCell.Occupant != null && clickedCell.Occupant.IsPlayerControlled && clickedCell.Occupant.IsAlive)
                 {
-                    // Only allow swap if player has move action selected, so they don't swap while attempting to perform an action on their units
-                    if (!_flowController.HasUnitActed(clickedCell.Occupant) && _currentActionMode == PlayerActionMode.Move)
+                    if (!_flowController.HasUnitActed(clickedCell.Occupant))
                     {
                         _flowController.SelectPlayerUnit(clickedCell.Occupant);
-                        SetActionMode(PlayerActionMode.Move);
-                        return; // Successfully swapped, abort action execution
+                        RefreshActionStateForCurrentUnit(); // Set them to Move or Attack appropriately
+                        return; 
                     } 
                 }
 
@@ -539,22 +530,65 @@ namespace Game.Combat
             RefreshPlayerHighlights(_currentHoverIntent);
         } 
 
+        /* Unit Pinned State -
+        //  1) If player is in a targeted hex his "move" action becomes "dodge" as they're in pinned state which exhausts the unit's turn
+        //  2) If player is not in a targeted hex the player gets to "move" and then play a secondary/thirdary action e.g attack.
+        */
+        public bool IsUnitPinned(Unit unit)
+        {
+            if (unit == null) return false;
+
+            foreach (var intent in _state.GetIntents())
+            {
+                // Check direct targeting
+                if (intent.TargetUnit == unit) return true;
+                
+                // Check AoE Danger Zones
+                if (intent.TargetCells != null)
+                {
+                    foreach (var cell in intent.TargetCells)
+                    {
+                        if (cell == unit.Coordinates) return true;
+                    }
+                }
+
+                // Check physical collision bump paths
+                if (intent.SecondaryBumpTarget == unit) return true;
+            }
+            return false;
+        }
+
         private void TryPlayerMove(Unit unit, HexCoordinates destination)
         {
+            // CHECK PINNED STATUS BEFORE THEY MOVE (refer to function IsUnitPinned)
+            bool wasPinned = IsUnitPinned(unit); 
+
             var moveAction = _actionResolver.CreateMoveAction(unit, destination);
             if (_actionResolver.Execute(moveAction))
             {
-                var currentUnit = _flowController.GetCurrentUnit();
-                _flowController.MarkUnitActed(currentUnit);
+                SweepForDeaths();
+
+                if (wasPinned)
+                {
+                    // DODGE: Consumes the Unit's entire turn to move
+                    _flowController.MarkUnitActed(unit);
+                    Debug.Log($"[CombatManager] {unit.DisplayName} Dodged! Turn ended.");
+                }
+                else
+                {
+                    // FREE REPOSITION: Consumes move, leaves attack actions intact
+                    _flowController.MarkUnitMoved(unit);
+                    SetActionMode(PlayerActionMode.Attack);
+                    Debug.Log($"[CombatManager] {unit.DisplayName} repositioned. Can still act.");
+                }
                 
-                // Clear UI and Highlights immediately as player action is done
+                // Handle visual and intent layer
                 _currentHoverIntent = null;
                 _intentRenderer.Clear();
                 gridRenderer.ClearHighlights();
                 UpdateUnitWorldUIs();
                 RefreshAllUnitVisuals();
                 
-                // End turn if player played all unit turns OR go to next unit
                 if (_flowController.HaveAllPlayerUnitsActed())
                 {
                     Invoke(nameof(EndTurn), 0.3f);
@@ -564,12 +598,10 @@ namespace Game.Combat
                     var nextUnit = _flowController.GetNextAvailablePlayerUnit();
                     if (nextUnit != null) _flowController.SelectPlayerUnit(nextUnit);
                     
-                    // Delay the UI refresh slightly so visual slide finishes before drawing new grids
-                    Invoke(nameof(ResetModeToMove), 0.3f); 
+                    Invoke(nameof(RefreshActionStateForCurrentUnit), 0.3f);
                 }
             }
         } 
-
         
         private void TryPlayerAbility(Unit caster, HexCell targetCell)
         {
@@ -610,7 +642,7 @@ namespace Game.Combat
                     var nextUnit = _flowController.GetNextAvailablePlayerUnit();
                     if (nextUnit != null) _flowController.SelectPlayerUnit(nextUnit);
                     
-                    Invoke(nameof(ResetModeToMove), 0.3f); 
+                    Invoke(nameof(RefreshActionStateForCurrentUnit), 0.3f);
                 }
             }
         }
@@ -638,10 +670,14 @@ namespace Game.Combat
             }
         }
 
-        private void ResetModeToMove()
+        private void RefreshActionStateForCurrentUnit()
         {
-            SetActionMode(PlayerActionMode.Move);
-        }
+            var unit = _flowController.GetCurrentUnit();
+            if (unit != null && !_flowController.HasUnitMoved(unit))
+                SetActionMode(PlayerActionMode.Move);
+            else if (unit != null)
+                SetActionMode(PlayerActionMode.Attack);
+        } 
         #endregion
 
         #region Enemy AI
@@ -800,8 +836,9 @@ namespace Game.Combat
             return _state.GetIntents();
         }
 
-        // Check if the player has acted this turn
+        // Check if the player has acted / moved this turn
         public bool HasUnitActed(Unit unit) => _flowController != null && _flowController.HasUnitActed(unit);
+        public bool HasUnitMoved(Unit unit) => _flowController != null && _flowController.HasUnitMoved(unit);
 
         public bool IsPlayerTurn => _state != null && _state.CurrentState == CombatState.PlayerTurn;
         #endregion

@@ -15,18 +15,25 @@ namespace Game.Combat.UI
         [SerializeField] private GameObject actionBarContainer;
 
         // Dynamically refresh our Action bar depending on currently selected unit and the unit's loadout
-        public void RefreshActionBar(PlayerActionMode currentMode, bool isPlayerTurn, bool hasActed, Unit currentUnit)
+        public void RefreshActionBar(PlayerActionMode currentMode, bool isPlayerTurn, bool hasActed, bool hasMoved, bool isPinned, Unit currentUnit)
         {
             bool shouldShow = isPlayerTurn && !hasActed;
-
             if (actionBarContainer != null) actionBarContainer.SetActive(shouldShow);
             if (!shouldShow || currentUnit == null) return;
 
             // 1. Move Card is always standard and guaranteed
             if (moveCard != null) 
             {
-                moveCard.Setup("Move", "[1]", PlayerActionMode.Move);
-                moveCard.SetSelected(currentMode == PlayerActionMode.Move);
+                // Disable the move card if unit already moved this turn
+                moveCard.gameObject.SetActive(!hasMoved);
+
+                // Display either "Move" or "Dodge" for action card depending on pinned status
+                if (!hasMoved)
+                {
+                    string moveText = isPinned ? "Dodge" : "Move";
+                    moveCard.Setup(moveText, "[1]", PlayerActionMode.Move);
+                    moveCard.SetSelected(currentMode == PlayerActionMode.Move);
+                }
             }
 
             // 2. Dynamically assign the 2nd and 3rd cards based on loadout
