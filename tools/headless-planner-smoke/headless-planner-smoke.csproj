@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <UseSharedCompilation>false</UseSharedCompilation>
+    <BuildInParallel>false</BuildInParallel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../Assets/Core/Party/UnitStats.cs" Link="Repo/UnitStats.cs" />
+    <Compile Include="../../Assets/Combat/Grid/HexCoordinates.cs" Link="Repo/HexCoordinates.cs" />
+    <Compile Include="../../Assets/Combat/Grid/HexCell.cs" Link="Repo/HexCell.cs" />
+    <Compile Include="../../Assets/Combat/Grid/HexGrid.cs" Link="Repo/HexGrid.cs" />
+    <Compile Include="../../Assets/Combat/Units/AIBehavior.cs" Link="Repo/AIBehavior.cs" />
+    <Compile Include="../../Assets/Combat/Units/UnitRole.cs" Link="Repo/UnitRole.cs" />
+    <Compile Include="../../Assets/Combat/Units/Unit.cs" Link="Repo/Unit.cs" />
+    <Compile Include="../../Assets/Combat/CombatState.cs" Link="Repo/CombatState.cs" />
+    <Compile Include="../../Assets/Combat/CombatRuntimeState.cs" Link="Repo/CombatRuntimeState.cs" />
+    <Compile Include="../../Assets/Combat/EnemyDecisionService.cs" Link="Repo/EnemyDecisionService.cs" />
+    <Compile Include="../../Assets/Combat/AI/IEnemyBrain.cs" Link="Repo/IEnemyBrain.cs" />
+    <Compile Include="../../Assets/Combat/AI/BrainFactory.cs" Link="Repo/BrainFactory.cs" />
+    <Compile Include="../../Assets/Combat/AI/BrainHelpers.cs" Link="Repo/BrainHelpers.cs" />
+    <Compile Include="../../Assets/Combat/AI/HealerBrain.cs" Link="Repo/HealerBrain.cs" />
+    <Compile Include="../../Assets/Combat/AI/HydraBrain.cs" Link="Repo/HydraBrain.cs" />
+    <Compile Include="../../Assets/Combat/AI/SkeletonMeleeBrain.cs" Link="Repo/SkeletonMeleeBrain.cs" />
+    <Compile Include="../../Assets/Combat/AI/SkeletonRangedBrain.cs" Link="Repo/SkeletonRangedBrain.cs" />
+    <Compile Include="../../Assets/Combat/AI/EnemyActionScorer.cs" Link="Repo/EnemyActionScorer.cs" />
+    <Compile Include="../../Assets/Combat/AI/EnemyPlanningContext.cs" Link="Repo/EnemyPlanningContext.cs" />
+    <Compile Include="../../Assets/Combat/Actions/CombatActionType.cs" Link="Repo/CombatActionType.cs" />
+    <Compile Include="../../Assets/Combat/Actions/ICombatAction.cs" Link="Repo/ICombatAction.cs" />
+    <Compile Include="../../Assets/Combat/Actions/ActionVisualType.cs" Link="Repo/ActionVisualType.cs" />
+    <Compile Include="../../Assets/Combat/Actions/ActionIntent.cs" Link="Repo/ActionIntent.cs" />
+    <Compile Include="../../Assets/Combat/Actions/MoveAction.cs" Link="Repo/MoveAction.cs" />
+    <Compile Include="../../Assets/Combat/Actions/MeleeAttackAction.cs" Link="Repo/MeleeAttackAction.cs" />
+    <Compile Include="../../Assets/Combat/Actions/RangedAttackAction.cs" Link="Repo/RangedAttackAction.cs" />
+    <Compile Include="../../Assets/Combat/Actions/SplashAttackAction.cs" Link="Repo/SplashAttackAction.cs" />
+    <Compile Include="../../Assets/Combat/Actions/SweepAttackAction.cs" Link="Repo/SweepAttackAction.cs" />
+    <Compile Include="../../Assets/Combat/Actions/GrappleAction.cs" Link="Repo/GrappleAction.cs" />
+    <Compile Include="../../Assets/Combat/Actions/RangedHealAction.cs" Link="Repo/RangedHealAction.cs" />
+    <Compile Include="../../Assets/Combat/Actions/ActionResolver.cs" Link="Repo/ActionResolver.cs" />
+  </ItemGroup>
+</Project>

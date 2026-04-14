@@ -12,6 +12,7 @@ namespace Game.Combat.AI
     public class EnemyPlanningContext
     {
         private readonly Dictionary<Unit, int> _plannedDamageByPlayer = new Dictionary<Unit, int>();
+        private readonly Dictionary<Unit, HexCoordinates> _plannedPositionsByUnit = new Dictionary<Unit, HexCoordinates>();
         private readonly HashSet<HexCoordinates> _reservedMoveDestinations = new HashSet<HexCoordinates>();
         private readonly HashSet<HexCoordinates> _reservedAttackCells = new HashSet<HexCoordinates>();
         private readonly HashSet<Unit> _frontlineAllies = new HashSet<Unit>();
@@ -39,6 +40,24 @@ namespace Game.Combat.AI
         public void ReserveMoveDestination(HexCoordinates destination)
         {
             _reservedMoveDestinations.Add(destination);
+        }
+
+        public void SetPlannedPosition(Unit unit, HexCoordinates destination)
+        {
+            if (unit != null)
+            {
+                _plannedPositionsByUnit[unit] = destination;
+            }
+        }
+
+        public HexCoordinates GetProjectedPosition(Unit unit)
+        {
+            if (unit != null && _plannedPositionsByUnit.TryGetValue(unit, out HexCoordinates destination))
+            {
+                return destination;
+            }
+
+            return unit != null ? unit.Coordinates : HexCoordinates.Invalid;
         }
 
         public bool IsAttackCellReserved(HexCoordinates cell)

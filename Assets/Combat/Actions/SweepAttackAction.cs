@@ -7,6 +7,7 @@ namespace Game.Combat.Actions
     public class SweepAttackAction : ICombatAction
     {
         public Unit Actor { get; }
+        public HexCoordinates MainTarget => _mainTarget;
         private HexCoordinates _mainTarget;
         private readonly HexGrid _grid;
         private readonly List<HexCoordinates> _sweepCells = new List<HexCoordinates>();
@@ -20,6 +21,7 @@ namespace Game.Combat.Actions
             RecalculateSweep();
         }
 
+        // Dynamically builds an 8-hex (2-depth) frontal cone
         private void RecalculateSweep()
         {
             _sweepCells.Clear();
@@ -49,7 +51,7 @@ namespace Game.Combat.Actions
                         {
                             if (!_sweepCells.Contains(cell.Coordinates))
                                 _sweepCells.Add(cell.Coordinates);
-                            break; 
+                            break; // Move to the next grid cell once added to avoid duplicates
                         }
                     }
                 }
@@ -61,7 +63,7 @@ namespace Game.Combat.Actions
         public bool IsValid(HexGrid grid)
         {
             if (Actor == null || !Actor.IsAlive) return false;
-            return grid.GetDistance(Actor.Coordinates, _mainTarget) == 1; 
+            return grid.GetDistance(Actor.Coordinates, _mainTarget) == 1; // Anchor must be adjacent
         }
 
         public void Execute(HexGrid grid)
@@ -104,6 +106,7 @@ namespace Game.Combat.Actions
 
         public void ApplyDisplacement(HexCoordinates offset)
         {
+            // Shift the center, then dynamically redraw the 8-hex cone
             _mainTarget = new HexCoordinates(_mainTarget.q + offset.q, _mainTarget.r + offset.r);
             RecalculateSweep();
         }

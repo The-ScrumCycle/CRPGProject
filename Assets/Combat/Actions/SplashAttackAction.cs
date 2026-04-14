@@ -7,6 +7,7 @@ namespace Game.Combat.Actions
     public class SplashAttackAction : ICombatAction
     {
         public Unit Actor { get; }
+        public HexCoordinates TargetCenter => _targetCenter;
         private HexCoordinates _targetCenter;
         private readonly HexGrid _grid;
         private readonly List<HexCoordinates> _aoeCells = new List<HexCoordinates>();
@@ -19,6 +20,7 @@ namespace Game.Combat.Actions
             RecalculateAoE();
         }
 
+        // Dynamically builds a perfect 7-hex shape around central aim point
         private void RecalculateAoE()
         {
             _aoeCells.Clear();
@@ -58,6 +60,7 @@ namespace Game.Combat.Actions
 
         public void ApplyDisplacement(HexCoordinates offset)
         {
+            // Shift the center, then let the grid draw the new shape
             _targetCenter = new HexCoordinates(_targetCenter.q + offset.q, _targetCenter.r + offset.r);
             RecalculateAoE();
         }

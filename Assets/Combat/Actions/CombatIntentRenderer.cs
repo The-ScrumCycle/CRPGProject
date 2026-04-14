@@ -63,7 +63,7 @@ namespace Game.Combat.Actions
 
             // 2. HIGHLIGHT ALL AOE TARGET CELLS
             var targetCells = intent.Action.GetTargetCells();
-            if (targetCells != null)
+            if (targetCells != null && !(intent.VisualType == ActionVisualType.MeleeAttack))
             {
                 Vector3 averagePos = Vector3.zero;
                 int count = 0;
@@ -78,8 +78,7 @@ namespace Game.Combat.Actions
                 {
                     averagePos /= count;
 
-                    // Only render attack aim arrows for AI intents, and ignore for Melee
-                    if (intent.Actor.Role == UnitRole.Enemy && intent.VisualType != ActionVisualType.MeleeAttack)
+                    if (intent.Actor.Role == UnitRole.Enemy)
                     {
                         RenderArrow(
                             _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
@@ -95,9 +94,10 @@ namespace Game.Combat.Actions
             // 3. RENDER PUSH / PULL ARROW
             if (intent.PushDestination.HasValue || intent.VisualType == ActionVisualType.Pull)
             {
-                // Strict null-safety check for dynamic coordinate targeting
+                // OUR NULL-SAFETY CHECK
                 if (intent.TargetUnit != null) 
                 {
+                    // OUR DYNAMIC MATH
                     HexCoordinates startHex = intent.TargetUnit.Coordinates;
                     
                     HexCoordinates endHex = intent.SecondaryBumpTarget != null ? 
@@ -106,6 +106,7 @@ namespace Game.Combat.Actions
 
                     if (startHex != endHex) // Only draw if displacement occurs
                     {
+                        // Arrow VISUAL RENDERER
                         RenderArrow(
                             _gridRenderer.HexToWorld(startHex), 
                             _gridRenderer.HexToWorld(endHex),
@@ -118,6 +119,8 @@ namespace Game.Combat.Actions
             } 
         }
 
+        // Render all intents from a list into highlight data
+        // NOTE: Call Clear() first if you want a fresh pass
         public void RenderAll(IReadOnlyDictionary<ActionIntent, UnitVisual> intents)
         {
             foreach (var (intent, visual) in intents)
@@ -126,6 +129,7 @@ namespace Game.Combat.Actions
             }
         }
 
+        // Clear all stored highlight data and attack arrows
         public void Clear()
         {
             _highlights.Clear();
@@ -136,11 +140,13 @@ namespace Game.Combat.Actions
             _activeArrows.Clear();
         }
 
+        // Get the current highlight dictionary for feeding into HexGridRenderer.
         public IReadOnlyDictionary<HexCoordinates, HighlightType> GetHighlights()
         {
             return _highlights;
         }
 
+        /// Map ActionVisualType to the corresponding AI HighlightType
         private HighlightType MapVisualType(ActionVisualType visualType)
         {
             switch (visualType)
@@ -162,6 +168,7 @@ namespace Game.Combat.Actions
             }
         }
 
+        // Add a highlight, only overwriting if new type has higher priority
         private void AddWithPriority(HexCoordinates coords, HighlightType type)
         {
             if (_highlights.TryGetValue(coords, out var existing))

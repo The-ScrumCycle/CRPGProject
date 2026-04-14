@@ -97,6 +97,7 @@ namespace Game.Combat
             if (intent.Action is MoveAction move)
             {
                 planningContext.ReserveMoveDestination(move.Destination);
+                planningContext.SetPlannedPosition(intent.Actor, move.Destination);
 
                 if (IsFrontlineMove(intent.Actor, move.Destination, allUnits))
                 {

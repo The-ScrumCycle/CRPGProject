@@ -104,3 +104,8 @@ InitTestScene*.unity*
 
 # DS stores 
 .DS_Store
+
+# Headless tool build output
+/tools/**/bin/
+/tools/**/obj/
+!/tools/**/*.csproj

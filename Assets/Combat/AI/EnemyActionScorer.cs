@@ -20,6 +20,8 @@ namespace Game.Combat.AI
         private const float HealCriticalBonus = 18.0f;
         private const float RetreatBonus = 16.0f;
         private const float FrontlineProtectBonus = 16.0f;
+        private const float FriendlyHitPenalty = 30.0f;
+        private const float SelfHitPenalty = 45.0f;
         private const float ReservedMovePenalty = 1000.0f;
         private const float ReservedAttackCellPenalty = 1000.0f;
 
@@ -45,7 +47,7 @@ namespace Game.Combat.AI
             }
             else if (intent.Action is RangedHealAction)
             {
-                // FIX: Use the resolved TargetUnit from the Intent, since actions target coordinates now!
+                // Uses intent.TargetUnit from our refactor!
                 score += ScoreHeal(intent.TargetUnit, intent, allUnits, planningContext);
             }
             else
@@ -55,7 +57,7 @@ namespace Game.Combat.AI
 
             if (intent.Action is GrappleAction)
             {
-                // FIX: Use the resolved TargetUnit from the Intent
+                // Uses intent.TargetUnit from our refactor!
                 score += ScoreGrapple(intent.TargetUnit);
             }
 
@@ -127,7 +129,46 @@ namespace Game.Combat.AI
                 }
             }
 
+            score += ScoreFriendlyFirePenalty(intent, allUnits, planningContext);
+
             return score;
+        }
+
+        private float ScoreFriendlyFirePenalty(ActionIntent intent, IReadOnlyList<Unit> allUnits, EnemyPlanningContext planningContext)
+        {
+            if (intent?.Actor == null || allUnits == null || intent.PredictedDamage <= 0)
+            {
+                return 0.0f;
+            }
+
+            float penalty = 0.0f;
+            var targetedCells = new HashSet<HexCoordinates>(intent.TargetCells);
+
+            foreach (var unit in allUnits)
+            {
+                if (unit == null || !unit.IsAlive || unit.IsPlayerControlled != intent.Actor.IsPlayerControlled)
+                {
+                    continue;
+                }
+
+                HexCoordinates threatenedPosition = planningContext != null
+                    ? planningContext.GetProjectedPosition(unit)
+                    : unit.Coordinates;
+
+                if (targetedCells.Contains(threatenedPosition))
+                {
+                    penalty -= unit == intent.Actor ? SelfHitPenalty : FriendlyHitPenalty;
+                }
+            }
+
+            if (intent.SecondaryBumpTarget != null &&
+                intent.SecondaryBumpTarget.IsAlive &&
+                intent.SecondaryBumpTarget.IsPlayerControlled == intent.Actor.IsPlayerControlled)
+            {
+                penalty -= intent.SecondaryBumpTarget == intent.Actor ? SelfHitPenalty : FriendlyHitPenalty;
+            }
+
+            return penalty;
         }
 
         private float ScoreHeal(Unit target, ActionIntent intent, IReadOnlyList<Unit> allUnits, EnemyPlanningContext planningContext)
