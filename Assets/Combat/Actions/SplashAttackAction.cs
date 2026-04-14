@@ -7,6 +7,7 @@ namespace Game.Combat.Actions
     public class SplashAttackAction : ICombatAction
     {
         public Unit Actor { get; }
+        public HexCoordinates TargetCenter => _targetCenter;
         private readonly HexCoordinates _targetCenter;
         private readonly List<HexCoordinates> _aoeCells;
 
