@@ -115,6 +115,72 @@ namespace Game.Combat.AI
             return resolver.CreateMoveAction(mover, bestCell);
         }
 
+        // Move into healing range of an ally while still preferring safer cells.
+        public static MoveAction MoveToHealingPosition(Unit mover, Unit healTarget, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
+        {
+            if (mover == null || healTarget == null || !healTarget.IsAlive)
+            {
+                return null;
+            }
+
+            var validMoves = resolver.GetValidMoveDestinations(mover);
+            if (validMoves.Count == 0)
+            {
+                return null;
+            }
+
+            Unit nearestPlayer = FindNearestPlayer(mover, allUnits, grid);
+            HexCoordinates currentCell = mover.Coordinates;
+            HexCoordinates bestCell = currentCell;
+            int bestSupportDistance = grid.GetDistance(currentCell, healTarget.Coordinates);
+            bool bestInHealRange = bestSupportDistance >= 1 && bestSupportDistance <= mover.Stats.attackRange;
+            int bestThreatDistance = nearestPlayer != null ? grid.GetDistance(currentCell, nearestPlayer.Coordinates) : int.MinValue;
+
+            foreach (var cell in validMoves)
+            {
+                int supportDistance = grid.GetDistance(cell, healTarget.Coordinates);
+                bool inHealRange = supportDistance >= 1 && supportDistance <= mover.Stats.attackRange;
+                int threatDistance = nearestPlayer != null ? grid.GetDistance(cell, nearestPlayer.Coordinates) : int.MinValue;
+
+                if (!bestInHealRange && inHealRange)
+                {
+                    bestCell = cell;
+                    bestSupportDistance = supportDistance;
+                    bestInHealRange = true;
+                    bestThreatDistance = threatDistance;
+                    continue;
+                }
+
+                if (bestInHealRange == inHealRange)
+                {
+                    if (inHealRange)
+                    {
+                        if (threatDistance > bestThreatDistance ||
+                            (threatDistance == bestThreatDistance && supportDistance < bestSupportDistance))
+                        {
+                            bestCell = cell;
+                            bestSupportDistance = supportDistance;
+                            bestThreatDistance = threatDistance;
+                        }
+                    }
+                    else if (supportDistance < bestSupportDistance ||
+                             (supportDistance == bestSupportDistance && threatDistance > bestThreatDistance))
+                    {
+                        bestCell = cell;
+                        bestSupportDistance = supportDistance;
+                        bestThreatDistance = threatDistance;
+                    }
+                }
+            }
+
+            if (bestCell == currentCell)
+            {
+                return null;
+            }
+
+            return resolver.CreateMoveAction(mover, bestCell);
+        }
+
         public static Unit FindNearestPlayer(Unit fromUnit, IReadOnlyList<Unit> allUnits, HexGrid grid)
         {
             Unit nearest = null;
