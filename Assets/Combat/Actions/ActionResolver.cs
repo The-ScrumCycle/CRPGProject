@@ -147,19 +147,10 @@ namespace Game.Combat.Actions
                         break;
                     }
                 }
-
-                if (targetUnit != null)
-                {
-                    pushDestination = ResolveLinearPush(targetUnit, action.Actor.Coordinates, 1, out secondaryBumpTarget);
-                    if (secondaryBumpTarget != null || !_grid.GetCell(pushDestination.Value).IsWalkable)
-                    {
-                        targetTakesBumpDamage = true;
-                    }
-                }
             }
             else if (action is SweepAttackAction sweep)
             {
-                visualType = ActionVisualType.MeleeAttack;
+                visualType = ActionVisualType.RangedAttack; // Forces AoE Hex Drawing
                 targetCells = new List<HexCoordinates>(sweep.GetTargetCells());
                 predictedDamage = action.Actor.Stats.attackPower;
 
@@ -173,6 +164,7 @@ namespace Game.Combat.Actions
                     }
                 }
 
+                // predict 1-hex push for the primary target
                 if (targetUnit != null)
                 {
                     pushDestination = ResolveLinearPush(targetUnit, action.Actor.Coordinates, 1, out secondaryBumpTarget);
@@ -181,7 +173,7 @@ namespace Game.Combat.Actions
                         targetTakesBumpDamage = true;
                     }
                 }
-            }
+            } 
             else if (action is GrappleAction grapple)
             {
                 visualType = ActionVisualType.Grapple;
@@ -328,8 +320,8 @@ namespace Game.Combat.Actions
         } 
 
         public ICombatAction CreateMoveAction(Unit actor, HexCoordinates destination) => new MoveAction(actor, destination);
-        public ICombatAction CreateSweepAttack(Unit actor, HexCell targetCell) => new SweepAttackAction(actor, targetCell.Coordinates, _grid); 
         public ICombatAction CreateSplashAttack(Unit actor, HexCell targetCell) => new SplashAttackAction(actor, targetCell.Coordinates, _grid);
+        public ICombatAction CreateSweepAttack(Unit actor, HexCell targetCell) => new SweepAttackAction(actor, targetCell.Coordinates, _grid);
         public ICombatAction CreateHeavyMeleeAttack(Unit actor, HexCell targetCell) => new HeavyMeleeAttackAction(actor, targetCell.Coordinates);
         public ICombatAction CreatePull(Unit actor, HexCell targetCell) => new PullAction(actor, targetCell.Coordinates);
         

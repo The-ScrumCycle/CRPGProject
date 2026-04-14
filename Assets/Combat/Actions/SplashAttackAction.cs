@@ -4,7 +4,7 @@ using Game.Combat.Grid;
 
 namespace Game.Combat.Actions
 {
-   public class SplashAttackAction : ICombatAction
+    public class SplashAttackAction : ICombatAction
     {
         public Unit Actor { get; }
         private HexCoordinates _targetCenter;
@@ -19,7 +19,6 @@ namespace Game.Combat.Actions
             RecalculateAoE();
         }
 
-        // Dynamically builds a perfect 7-hex shape around central aim point
         private void RecalculateAoE()
         {
             _aoeCells.Clear();
@@ -49,13 +48,9 @@ namespace Game.Combat.Actions
             {
                 if (cell != null && cell.Occupant != null && cell.Occupant.IsAlive)
                 {
-                    foreach (var blastCoord in _aoeCells)
+                    if (_aoeCells.Contains(cell.Occupant.Coordinates))
                     {
-                        if (grid.GetDistance(blastCoord, cell.Occupant.Coordinates) == 0)
-                        {
-                            cell.Occupant.TakeDamage(Actor.Stats.attackPower);
-                            break; 
-                        }
+                        cell.Occupant.TakeDamage(Actor.Stats.attackPower);
                     }
                 }
             }
@@ -63,9 +58,8 @@ namespace Game.Combat.Actions
 
         public void ApplyDisplacement(HexCoordinates offset)
         {
-            // Shift the center, then let the grid draw the new shape
             _targetCenter = new HexCoordinates(_targetCenter.q + offset.q, _targetCenter.r + offset.r);
             RecalculateAoE();
         }
     }
-} 
+}

@@ -267,7 +267,6 @@ namespace Game.Combat
         private void UpdateUnitWorldUIs(ActionIntent hoverIntent = null)
         {
             var intents = new List<ActionIntent>();
-            // get intents from the combat runtime state
             if (_state != null) intents.AddRange(_state.GetIntents());
             if (hoverIntent != null) intents.Add(hoverIntent);
 
@@ -293,12 +292,12 @@ namespace Game.Combat
                     // --- Damage Preview Layer for AOE Attacks ---
                     bool isTargetedByAction = false;
                     
-                    // Check if player is in AoE damage zone or targetted by an attack
                     if (intent.TargetCells != null && intent.TargetCells.Count > 0)
                     {
+                        // Safely loop through the target cells instead of relying on missing LINQ extensions
                         foreach (var cellCoord in intent.TargetCells)
                         {
-                            if (_grid.GetDistance(cellCoord, unit.Coordinates) == 0)
+                            if (cellCoord == unit.Coordinates)
                             {
                                 isTargetedByAction = true;
                                 break;
@@ -307,7 +306,6 @@ namespace Game.Combat
                     } 
                     else
                     {
-                        // Standard single-target check
                         isTargetedByAction = intent.TargetUnit == unit;
                     }
 
@@ -316,7 +314,6 @@ namespace Game.Combat
                         incomingDamage += intent.PredictedDamage;
                     }
 
-                    // Check for Bump Damage
                     if (intent.SecondaryBumpTarget == unit) 
                     {
                         incomingDamage += 10; // BUMP_DAMAGE
@@ -324,7 +321,6 @@ namespace Game.Combat
                     }
                 }
 
-                // show health bar constantly while taking damage
                 bool isHovered = (unit == hoveredUnit) || isSecondaryTarget || (incomingDamage > 0);
                 worldUI.UpdateState(unit.Stats.currentHealth, unit.Stats.maxHealth, incomingDamage, isHovered, unit.IsPlayerControlled);
             }
@@ -341,6 +337,22 @@ namespace Game.Combat
 
             Debug.Log($"[CombatManager] Action mode set to: {_currentActionMode}");
             RefreshPlayerHighlights(); // Pass no intent, clears the screen until mouse updates
+        }
+
+        private void RefreshEnemyIntents()
+        {
+            if (_state == null) return;
+            var currentIntents = new List<ActionIntent>(_state.GetIntents());
+            
+            _state.ClearIntents(); 
+            foreach (var intent in currentIntents)
+            {
+                if (intent.Actor != null && intent.Actor.IsAlive)
+                {
+                    var freshIntent = _actionResolver.Preview(intent.Action);
+                    _state.AddIntent(freshIntent);
+                }
+            }
         }
 
         // Build and push all active highlights to the renderer.
@@ -487,8 +499,21 @@ namespace Game.Combat
                 var clickedCell = _grid.GetCell(clickedHex);
                 if (clickedCell == null) return;
 
-                // Swap unit when player clicks on a unit on grid
-                if (clickedCell.Occupant != null && clickedCell.Occupant.IsPlayerControlled && clickedCell.Occupant.IsAlive)
+                // Prevent Heal/Friendly Spells from swapping characters
+                bool isExecutingFriendlyAction = false;
+                if (_currentActionMode == PlayerActionMode.SecondaryAction && currentUnit.AvailableActions.Count > 1)
+                {
+                    var action = CreateActionFromType(currentUnit.AvailableActions[1], currentUnit, clickedCell);
+                    if (action != null && action.IsValid(_grid)) isExecutingFriendlyAction = true;
+                }
+                else if (_currentActionMode == PlayerActionMode.Attack && currentUnit.AvailableActions.Count > 0)
+                {
+                    var action = CreateActionFromType(currentUnit.AvailableActions[0], currentUnit, clickedCell);
+                    if (action != null && action.IsValid(_grid)) isExecutingFriendlyAction = true;
+                }
+
+                // Swap unit when player clicks on a unit on grid (Bypassed if aiming a valid heal)
+                if (!isExecutingFriendlyAction && clickedCell.Occupant != null && clickedCell.Occupant.IsPlayerControlled && clickedCell.Occupant.IsAlive)
                 {
                     if (!_flowController.HasUnitActed(clickedCell.Occupant))
                     {
@@ -598,6 +623,7 @@ namespace Game.Combat
             if (_actionResolver.Execute(moveAction))
             {
                 SweepForDeaths();
+                RefreshEnemyIntents();
 
                 if (wasPinned)
                 {
@@ -686,6 +712,7 @@ namespace Game.Combat
                 Debug.Log($"[CombatManager] {caster.DisplayName} used {abilityType} on {targetCell.Occupant?.DisplayName ?? "Empty Hex"}");
                 
                 SweepForDeaths();
+                RefreshEnemyIntents();
 
                 var currentUnit = _flowController.GetCurrentUnit();
                 _flowController.MarkUnitActed(currentUnit);

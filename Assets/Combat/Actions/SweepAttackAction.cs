@@ -10,6 +10,7 @@ namespace Game.Combat.Actions
         private HexCoordinates _mainTarget;
         private readonly HexGrid _grid;
         private readonly List<HexCoordinates> _sweepCells = new List<HexCoordinates>();
+        private const int BUMP_DAMAGE = 10;
 
         public SweepAttackAction(Unit actor, HexCoordinates mainTarget, HexGrid grid)
         {
@@ -19,7 +20,6 @@ namespace Game.Combat.Actions
             RecalculateSweep();
         }
 
-        // Dynamically rebuilds an 8-hex (2-depth) frontal cone!
         private void RecalculateSweep()
         {
             _sweepCells.Clear();
@@ -28,7 +28,6 @@ namespace Game.Combat.Actions
             List<HexCoordinates> layer1 = new List<HexCoordinates>();
 
             // LAYER 1: The inner 3-hex arc
-            // Any cell that is exactly distance 1 from the Actor AND distance <= 1 from the Target
             foreach (var cell in _grid.GetAllCells())
             {
                 if (_grid.GetDistance(Actor.Coordinates, cell.Coordinates) == 1 &&
@@ -40,7 +39,6 @@ namespace Game.Combat.Actions
             }
 
             // LAYER 2: The outer 5-hex arc
-            // Any cell that is distance 2 from the Actor, but touches the inner arc
             foreach (var cell in _grid.GetAllCells())
             {
                 if (_grid.GetDistance(Actor.Coordinates, cell.Coordinates) == 2)
@@ -50,10 +48,8 @@ namespace Game.Combat.Actions
                         if (_grid.GetDistance(innerCell, cell.Coordinates) == 1)
                         {
                             if (!_sweepCells.Contains(cell.Coordinates))
-                            {
                                 _sweepCells.Add(cell.Coordinates);
-                            }
-                            break; // Move to the next grid cell once added to avoid duplicates
+                            break; 
                         }
                     }
                 }
@@ -65,21 +61,41 @@ namespace Game.Combat.Actions
         public bool IsValid(HexGrid grid)
         {
             if (Actor == null || !Actor.IsAlive) return false;
-            return grid.GetDistance(Actor.Coordinates, _mainTarget) == 1; // Anchor must be adjacent
+            return grid.GetDistance(Actor.Coordinates, _mainTarget) == 1; 
         }
 
         public void Execute(HexGrid grid)
         {
+            ActionResolver resolver = CombatManager.Instance.GetActionResolver();
+
             foreach (var cell in grid.GetAllCells())
             {
                 if (cell != null && cell.Occupant != null && cell.Occupant.IsAlive)
                 {
-                    foreach (var sweepCoord in _sweepCells)
+                    if (_sweepCells.Contains(cell.Occupant.Coordinates))
                     {
-                        if (grid.GetDistance(sweepCoord, cell.Occupant.Coordinates) == 0)
+                        var targetUnit = cell.Occupant;
+                        
+                        // 1. Initial Damage
+                        targetUnit.TakeDamage(Actor.Stats.attackPower);
+
+                        // 2. Physics: 1-hex push directly away from the attacker
+                        HexCoordinates finalPos = resolver.ResolveLinearPush(targetUnit, Actor.Coordinates, 1, out Unit bumpedUnit);
+
+                        if (finalPos != targetUnit.Coordinates)
                         {
-                            cell.Occupant.TakeDamage(Actor.Stats.attackPower);
-                            break;
+                            grid.MoveUnit(targetUnit, finalPos);
+                            
+                            // Broadcast displacement so the shoved enemy's intents shift
+                            HexCoordinates offset = new HexCoordinates(finalPos.q - targetUnit.Coordinates.q, finalPos.r - targetUnit.Coordinates.r);
+                            CombatManager.Instance.ShiftUnitIntent(targetUnit, offset);
+                        }
+
+                        // 3. Collision Damage
+                        if (bumpedUnit != null && bumpedUnit.IsAlive)
+                        {
+                            targetUnit.TakeDamage(BUMP_DAMAGE);
+                            bumpedUnit.TakeDamage(BUMP_DAMAGE);
                         }
                     }
                 }
@@ -88,7 +104,6 @@ namespace Game.Combat.Actions
 
         public void ApplyDisplacement(HexCoordinates offset)
         {
-            // Shift the center, then dynamically redraw the 8-hex cone
             _mainTarget = new HexCoordinates(_mainTarget.q + offset.q, _mainTarget.r + offset.r);
             RecalculateSweep();
         }
