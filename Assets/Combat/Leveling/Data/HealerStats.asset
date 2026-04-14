@@ -15,6 +15,6 @@ MonoBehaviour:
   availableActions: 02000000
   maxHealth: 80
   attackPower: 5
-  healPower: 7
+  healPower: 10
   movementRange: 4
-  attackRange: 2
+  attackRange: 4
