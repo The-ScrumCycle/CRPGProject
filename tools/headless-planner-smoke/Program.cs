@@ -6,38 +6,111 @@ using Game.Combat.Grid;
 using Game.Combat.Units;
 using Game.Core.Party;
 
-var grid = new HexGrid(4, 4);
-var resolver = new ActionResolver(grid);
-var planner = new EnemyDecisionService(grid, resolver);
+RunSingleEnemySmoke();
+Console.WriteLine();
+RunTwoEnemySmoke();
 
-var skeleton = new Unit(
-    id: "sk_melee",
-    displayName: "Skeleton Melee",
-    role: UnitRole.Enemy,
-    stats: new UnitStats(maxHealth: 12, attackPower: 4, movementRange: 2, attackRange: 1),
-    aiBehavior: AIBehavior.SkeletonMelee);
-
-var player = new Unit(
-    id: "player_1",
-    displayName: "Captain",
-    role: UnitRole.Player,
-    stats: new UnitStats(maxHealth: 20, attackPower: 5, movementRange: 3, attackRange: 1));
-
-grid.PlaceUnit(skeleton, new HexCoordinates(1, 1));
-grid.PlaceUnit(player, new HexCoordinates(1, 2));
-
-var allUnits = new List<Unit> { skeleton, player };
-var intent = planner.GenerateIntentForEnemy(skeleton, allUnits);
-
-if (intent == null)
+static void RunSingleEnemySmoke()
 {
-    Console.WriteLine("No intent generated.");
-    return;
+    Console.WriteLine("== Single Enemy Smoke ==");
+
+    var grid = new HexGrid(4, 4);
+    var resolver = new ActionResolver(grid);
+    var planner = new EnemyDecisionService(grid, resolver);
+
+    var skeleton = MakeEnemy(
+        id: "sk_melee",
+        displayName: "Skeleton Melee",
+        stats: new UnitStats(maxHealth: 12, attackPower: 4, movementRange: 2, attackRange: 1),
+        aiBehavior: AIBehavior.SkeletonMelee);
+
+    var player = MakePlayer(
+        id: "player_1",
+        displayName: "Captain",
+        stats: new UnitStats(maxHealth: 20, attackPower: 5, movementRange: 3, attackRange: 1));
+
+    grid.PlaceUnit(skeleton, new HexCoordinates(1, 1));
+    grid.PlaceUnit(player, new HexCoordinates(1, 2));
+
+    var allUnits = new List<Unit> { skeleton, player };
+    var intent = planner.GenerateIntentForEnemy(skeleton, allUnits);
+
+    PrintIntent(intent);
 }
 
-Console.WriteLine($"Actor: {intent.Actor.DisplayName}");
-Console.WriteLine($"Action: {intent.Action.GetType().Name}");
-Console.WriteLine($"Target: {intent.TargetUnit?.DisplayName ?? "<none>"}");
-Console.WriteLine($"PredictedDamage: {intent.PredictedDamage}");
-Console.WriteLine($"TargetCells: {string.Join(", ", intent.TargetCells)}");
-Console.WriteLine($"PushDestination: {(intent.PushDestination.HasValue ? intent.PushDestination.Value.ToString() : "<none>")}");
+static void RunTwoEnemySmoke()
+{
+    Console.WriteLine("== Two Enemy Smoke ==");
+
+    var grid = new HexGrid(5, 5);
+    var resolver = new ActionResolver(grid);
+    var planner = new EnemyDecisionService(grid, resolver);
+    var state = new CombatRuntimeState();
+
+    var melee = MakeEnemy(
+        id: "sk_melee",
+        displayName: "Skeleton Melee",
+        stats: new UnitStats(maxHealth: 12, attackPower: 4, movementRange: 2, attackRange: 1),
+        aiBehavior: AIBehavior.SkeletonMelee);
+
+    var ranged = MakeEnemy(
+        id: "sk_ranged",
+        displayName: "Skeleton Ranged",
+        stats: new UnitStats(maxHealth: 10, attackPower: 3, movementRange: 2, attackRange: 3),
+        aiBehavior: AIBehavior.SkeletonRanged,
+        actions: new List<CombatActionType> { CombatActionType.SplashAttack });
+
+    var playerA = MakePlayer(
+        id: "player_1",
+        displayName: "Captain",
+        stats: new UnitStats(maxHealth: 20, attackPower: 5, movementRange: 3, attackRange: 1));
+
+    var playerB = MakePlayer(
+        id: "player_2",
+        displayName: "Warrior",
+        stats: new UnitStats(maxHealth: 22, attackPower: 6, movementRange: 3, attackRange: 1));
+
+    grid.PlaceUnit(melee, new HexCoordinates(1, 1));
+    grid.PlaceUnit(ranged, new HexCoordinates(0, 0));
+    grid.PlaceUnit(playerA, new HexCoordinates(1, 2));
+    grid.PlaceUnit(playerB, new HexCoordinates(2, 2));
+
+    state.RegisterUnit(melee, null);
+    state.RegisterUnit(ranged, null);
+    state.RegisterUnit(playerA, null);
+    state.RegisterUnit(playerB, null);
+
+    planner.GenerateAllIntents(state);
+
+    foreach (var intent in state.GetIntents())
+    {
+        PrintIntent(intent);
+    }
+}
+
+static Unit MakeEnemy(string id, string displayName, UnitStats stats, AIBehavior aiBehavior, List<CombatActionType> actions = null)
+{
+    return new Unit(id, displayName, UnitRole.Enemy, stats, aiBehavior, actions);
+}
+
+static Unit MakePlayer(string id, string displayName, UnitStats stats)
+{
+    return new Unit(id, displayName, UnitRole.Player, stats);
+}
+
+static void PrintIntent(ActionIntent intent)
+{
+    if (intent == null)
+    {
+        Console.WriteLine("No intent generated.");
+        return;
+    }
+
+    Console.WriteLine($"Actor: {intent.Actor.DisplayName}");
+    Console.WriteLine($"Action: {intent.Action.GetType().Name}");
+    Console.WriteLine($"Target: {intent.TargetUnit?.DisplayName ?? "<none>"}");
+    Console.WriteLine($"PredictedDamage: {intent.PredictedDamage}");
+    Console.WriteLine($"TargetCells: {string.Join(", ", intent.TargetCells)}");
+    Console.WriteLine($"PushDestination: {(intent.PushDestination.HasValue ? intent.PushDestination.Value.ToString() : "<none>")}");
+    Console.WriteLine();
+}
