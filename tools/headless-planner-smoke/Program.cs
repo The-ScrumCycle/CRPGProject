@@ -15,6 +15,8 @@ RunSweepAttackSmoke();
 Console.WriteLine();
 RunHealerSupportSmoke();
 Console.WriteLine();
+RunHealerInitiatesHealSmoke();
+Console.WriteLine();
 RunHydraGrappleSmoke();
 Console.WriteLine();
 RunRetreatToHealerSmoke();
@@ -196,6 +198,50 @@ static void RunHealerSupportSmoke()
         heal.Target == frontline;
 
     PrintCheck("healer prefers healing frontline ally", choseFrontlineHeal);
+    Console.WriteLine();
+}
+
+static void RunHealerInitiatesHealSmoke()
+{
+    Console.WriteLine("== Healer Initiates Heal Smoke ==");
+
+    var grid = new HexGrid(7, 5);
+    var resolver = new ActionResolver(grid);
+
+    var healer = MakeEnemy(
+        id: "healer",
+        displayName: "Healer",
+        stats: new UnitStats(maxHealth: 10, attackPower: 2, movementRange: 2, attackRange: 3, healPower: 4),
+        aiBehavior: AIBehavior.Healer);
+
+    var frontline = MakeEnemy(
+        id: "sk_front",
+        displayName: "Skeleton Melee",
+        stats: new UnitStats(maxHealth: 12, attackPower: 4, movementRange: 2, attackRange: 1),
+        aiBehavior: AIBehavior.SkeletonMelee);
+
+    var player = MakePlayer(
+        id: "player_1",
+        displayName: "Captain",
+        stats: new UnitStats(maxHealth: 20, attackPower: 5, movementRange: 3, attackRange: 1));
+
+    SetHealth(frontline, 6);
+
+    PlaceUnits(
+        grid,
+        (healer, new HexCoordinates(0, 0)),
+        (frontline, new HexCoordinates(4, 0)),
+        (player, new HexCoordinates(5, 0)));
+
+    var allUnits = new List<Unit> { healer, frontline, player };
+    var intent = ExplainPlan(new List<Unit> { healer }, allUnits, grid, resolver)[0].ChosenIntent;
+
+    bool choseSupportMove =
+        intent?.Action is MoveAction move &&
+        grid.GetDistance(move.Destination, frontline.Coordinates) <= healer.Stats.attackRange &&
+        grid.GetDistance(move.Destination, frontline.Coordinates) >= 1;
+
+    PrintCheck("healer moves into heal range for damaged ally", choseSupportMove);
     Console.WriteLine();
 }
 

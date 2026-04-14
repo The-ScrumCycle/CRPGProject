@@ -734,8 +734,8 @@ MonoBehaviour:
   unitFactory: {fileID: 1945263018}
   playerDeploymentHexes: []
   enemyDeploymentHexes: []
-  debugPlayerRoster: 000000000100000002000000
-  debugEnemyRoster: 040000000400000004000000
+  debugPlayerRoster: 0000000000000000
+  debugEnemyRoster: 0300000006000000
   shoveArrowPrefab: {fileID: 7037963474226427388, guid: 7b10fdea16de67c4daa8b9648839db5f,
     type: 3}
   victoryExperience: 100
