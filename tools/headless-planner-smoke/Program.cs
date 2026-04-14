@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Combat;
+using Game.Combat.AI;
 using Game.Combat.Actions;
 using Game.Combat.Grid;
 using Game.Combat.Units;
@@ -33,7 +34,10 @@ static void RunSingleEnemySmoke()
     grid.PlaceUnit(player, new HexCoordinates(1, 2));
 
     var allUnits = new List<Unit> { skeleton, player };
+    PrintCandidates(skeleton, PreviewCandidatesForEnemy(skeleton, allUnits, grid, resolver));
+
     var intent = planner.GenerateIntentForEnemy(skeleton, allUnits);
+    Console.WriteLine("Chosen Intent:");
 
     PrintIntent(intent);
 }
@@ -80,7 +84,12 @@ static void RunTwoEnemySmoke()
     state.RegisterUnit(playerA, null);
     state.RegisterUnit(playerB, null);
 
+    var allUnits = state.AllUnits;
+    PrintCandidates(melee, PreviewCandidatesForEnemy(melee, allUnits, grid, resolver));
+    PrintCandidates(ranged, PreviewCandidatesForEnemy(ranged, allUnits, grid, resolver));
+
     planner.GenerateAllIntents(state);
+    Console.WriteLine("Chosen Intents:");
 
     foreach (var intent in state.GetIntents())
     {
@@ -96,6 +105,76 @@ static Unit MakeEnemy(string id, string displayName, UnitStats stats, AIBehavior
 static Unit MakePlayer(string id, string displayName, UnitStats stats)
 {
     return new Unit(id, displayName, UnitRole.Player, stats);
+}
+
+static List<ActionIntent> PreviewCandidatesForEnemy(Unit enemy, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
+{
+    var candidates = new List<ActionIntent>();
+    var brain = BrainFactory.GetBrain(enemy.AIBehavior);
+    if (brain == null)
+    {
+        return candidates;
+    }
+
+    var seenSignatures = new HashSet<string>();
+
+    foreach (var action in brain.GenerateCandidateActions(enemy, allUnits, grid, resolver))
+    {
+        var intent = resolver.Preview(action);
+        if (intent == null)
+        {
+            continue;
+        }
+
+        if (seenSignatures.Add(BuildIntentSignature(intent)))
+        {
+            candidates.Add(intent);
+        }
+    }
+
+    return candidates;
+}
+
+static string BuildIntentSignature(ActionIntent intent)
+{
+    var signature = intent.Action.GetType().Name;
+
+    if (intent.Action is MoveAction move)
+    {
+        return $"{signature}|move:{move.Destination.q},{move.Destination.r}";
+    }
+
+    foreach (var cell in intent.TargetCells)
+    {
+        signature += $"|{cell.q},{cell.r}";
+    }
+
+    if (intent.TargetUnit != null)
+    {
+        signature += $"|target:{intent.TargetUnit.Id}";
+    }
+
+    return signature;
+}
+
+static void PrintCandidates(Unit enemy, IReadOnlyList<ActionIntent> candidates)
+{
+    Console.WriteLine($"Candidates for {enemy.DisplayName}:");
+
+    if (candidates.Count == 0)
+    {
+        Console.WriteLine("  <none>");
+        Console.WriteLine();
+        return;
+    }
+
+    for (int i = 0; i < candidates.Count; i++)
+    {
+        var intent = candidates[i];
+        Console.WriteLine($"  {i + 1}. {intent.Action.GetType().Name} -> {intent.TargetUnit?.DisplayName ?? "<none>"} | dmg {intent.PredictedDamage}");
+    }
+
+    Console.WriteLine();
 }
 
 static void PrintIntent(ActionIntent intent)
