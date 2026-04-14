@@ -32,10 +32,10 @@ namespace Game.Combat.AI
 
             if (retreatTarget != null)
             {
-                var retreat = BrainHelpers.MoveAwayFromPlayers(enemyUnit, allUnits, grid, resolver, retreatTarget);
-                if (retreat != null)
+                var supportMove = BrainHelpers.MoveToHealingPosition(enemyUnit, retreatTarget, allUnits, grid, resolver);
+                if (supportMove != null)
                 {
-                    yield return retreat;
+                    yield return supportMove;
                 }
             }
 
