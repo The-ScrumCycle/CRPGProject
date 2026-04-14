@@ -7,13 +7,17 @@ namespace Game.Combat.AI
 {
     public class SkeletonMeleeBrain : IEnemyBrain
     {
-        public ICombatAction DecideAction(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
+        public IEnumerable<ICombatAction> GenerateCandidateActions(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
         {
-            // Priority 0: Retreat to healer if badly wounded and we're the most damaged
             if (BrainHelpers.ShouldRetreatToHealer(enemyUnit, allUnits, out Unit healer))
-                return BrainHelpers.MoveToward(enemyUnit, healer, grid, resolver);
+            {
+                var retreat = BrainHelpers.MoveToward(enemyUnit, healer, grid, resolver);
+                if (retreat != null)
+                {
+                    yield return retreat;
+                }
+            }
 
-            // Priority 1: Attack any adjacent player unit immediately
             foreach (var unit in allUnits)
             {
                 if (!unit.IsAlive || !unit.IsPlayerControlled) continue;
@@ -22,19 +26,39 @@ namespace Game.Combat.AI
                     if (enemyUnit.AvailableActions.Contains(CombatActionType.SweepAttack))
                     {
                         var sweep = resolver.CreateSweepAttack(enemyUnit, grid.GetCell(unit.Coordinates));
-                        if (resolver.Validate(sweep)) return sweep;
+                        if (resolver.Validate(sweep))
+                        {
+                            yield return sweep;
+                        }
                     }
-                    
-                    // Fallback to standard Melee if Sweep isn't equipped or is invalid
-                    return resolver.CreateMeleeAttack(enemyUnit, grid.GetCell(unit.Coordinates));
+
+                    yield return resolver.CreateMeleeAttack(enemyUnit, grid.GetCell(unit.Coordinates));
                 }
             }
 
-            // Priority 2: Chase the lowest-HP player unit
             Unit huntTarget = FindLowestHpPlayer(allUnits);
-            if (huntTarget == null) return null;
+            if (huntTarget != null)
+            {
+                var huntMove = BrainHelpers.MoveToward(enemyUnit, huntTarget, grid, resolver);
+                if (huntMove != null)
+                {
+                    yield return huntMove;
+                }
+            }
 
-            return MoveToward(enemyUnit, huntTarget, grid, resolver);
+            foreach (var unit in allUnits)
+            {
+                if (!unit.IsAlive || !unit.IsPlayerControlled || unit == huntTarget)
+                {
+                    continue;
+                }
+
+                var chaseMove = BrainHelpers.MoveToward(enemyUnit, unit, grid, resolver);
+                if (chaseMove != null)
+                {
+                    yield return chaseMove;
+                }
+            }
         }
 
         private Unit FindLowestHpPlayer(IReadOnlyList<Unit> allUnits)
@@ -52,32 +76,6 @@ namespace Game.Combat.AI
                 }
             }
             return lowest;
-        }
-
-        // FIXED: Now correctly returns ICombatAction instead of MoveAction
-        private ICombatAction MoveToward(Unit mover, Unit target, HexGrid grid, ActionResolver resolver)
-        {
-            var validMoves = resolver.GetValidMoveDestinations(mover);
-            if (validMoves.Count == 0) return null;
-
-            HexCoordinates bestCell = validMoves[0];
-            int bestDist = grid.GetDistance(validMoves[0], target.Coordinates);
-
-            for (int i = 1; i < validMoves.Count; i++)
-            {
-                int dist = grid.GetDistance(validMoves[i], target.Coordinates);
-                if (dist < bestDist)
-                {
-                    bestDist = dist;
-                    bestCell = validMoves[i];
-                }
-            }
-
-            // Only move if it actually gets us closer
-            if (bestDist >= grid.GetDistance(mover.Coordinates, target.Coordinates))
-                return null;
-
-            return resolver.CreateMoveAction(mover, bestCell);
         }
     }
 }

@@ -7,61 +7,37 @@ namespace Game.Combat.AI
 {
     public class HydraGrapplerBrain : IEnemyBrain
     {
-        public ICombatAction DecideAction(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
+        public IEnumerable<ICombatAction> GenerateCandidateActions(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
         {
-            // Priority 0: Retreat to healer if badly wounded and we're the most damaged
             if (BrainHelpers.ShouldRetreatToHealer(enemyUnit, allUnits, out Unit healer))
-                return BrainHelpers.MoveToward(enemyUnit, healer, grid, resolver);
+            {
+                var retreat = BrainHelpers.MoveToward(enemyUnit, healer, grid, resolver);
+                if (retreat != null)
+                {
+                    yield return retreat;
+                }
+            }
 
-            Unit bestTarget = null;
-            int closestDist = int.MaxValue;
-
-            // Find closest player
             foreach (var unit in allUnits)
             {
-                if (unit.IsPlayerControlled && unit.IsAlive && !unit.IsGrappled) // Don't grapple already grappled units
+                if (!unit.IsPlayerControlled || !unit.IsAlive || unit.IsGrappled)
                 {
-                    int dist = grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates);
-                    if (dist < closestDist)
-                    {
-                        closestDist = dist;
-                        bestTarget = unit;
-                    }
+                    continue;
+                }
+
+                int distance = grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates);
+                if (distance == 1)
+                {
+                    var grapple = resolver.CreateGrappleAction(enemyUnit, grid.GetCell(unit.Coordinates));
+                    if (resolver.Validate(grapple)) yield return grapple;
+                }
+
+                var chaseMove = BrainHelpers.MoveToward(enemyUnit, unit, grid, resolver);
+                if (chaseMove != null)
+                {
+                    yield return chaseMove;
                 }
             }
-
-            if (bestTarget != null)
-            {
-                if (closestDist == 1) 
-                {
-                    // In range use the Grapple Action
-                    return new GrappleAction(enemyUnit, bestTarget.Coordinates);
-                }
-                else
-                {
-                    // Move toward target — pick cell that minimizes distance
-                    var validMoves = resolver.GetValidMoveDestinations(enemyUnit);
-                    if (validMoves.Count > 0)
-                    {
-                        HexCoordinates bestCell = validMoves[0];
-                        int bestMoveDist = grid.GetDistance(validMoves[0], bestTarget.Coordinates);
-
-                        for (int i = 1; i < validMoves.Count; i++)
-                        {
-                            int dist = grid.GetDistance(validMoves[i], bestTarget.Coordinates);
-                            if (dist < bestMoveDist)
-                            {
-                                bestMoveDist = dist;
-                                bestCell = validMoves[i];
-                            }
-                        }
-
-                        if (bestMoveDist < closestDist)
-                            return resolver.CreateMoveAction(enemyUnit, bestCell);
-                    }
-                }
-            }
-            return null;
         }
     }
 }

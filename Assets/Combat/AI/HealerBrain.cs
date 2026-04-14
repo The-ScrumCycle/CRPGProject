@@ -7,36 +7,47 @@ namespace Game.Combat.AI
 {
     public class HealerBrain : IEnemyBrain
     {
-        public ICombatAction DecideAction(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
+        public IEnumerable<ICombatAction> GenerateCandidateActions(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
         {
-            Unit damagedAlly = BrainHelpers.FindMostDamagedAlly(enemyUnit, allUnits);
+            Unit retreatTarget = BrainHelpers.FindMostDamagedAlly(enemyUnit, allUnits);
 
-            if (damagedAlly != null)
+            foreach (var unit in allUnits)
             {
-                int distance = grid.GetDistance(enemyUnit.Coordinates, damagedAlly.Coordinates);
-
-                // Priority 1: Heal if adjacent/in range
-                if (distance >= 1 && distance <= enemyUnit.Stats.attackRange)
+                if (!unit.IsAlive || unit.IsPlayerControlled || unit == enemyUnit)
                 {
-                    var healAction = resolver.CreateRangedHeal(enemyUnit, grid.GetCell(damagedAlly.Coordinates));
-                    if (resolver.Validate(healAction)) return healAction;
+                    continue;
                 }
 
-                // Priority 2: Retreat away from players (the injured ally will come to us)
-                var retreat = BrainHelpers.MoveAwayFromPlayers(enemyUnit, allUnits, grid, resolver);
-                if (retreat != null) return retreat;
+                if (unit.Stats.currentHealth >= unit.Stats.maxHealth)
+                {
+                    continue;
+                }
+
+                int distance = grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates);
+                if (distance >= 1 && distance <= enemyUnit.Stats.attackRange)
+                {
+                    var healAction = resolver.CreateRangedHeal(enemyUnit, grid.GetCell(unit.Coordinates));
+                    if (resolver.Validate(healAction)) yield return healAction;
+                }
             }
 
-            // Nobody hurt — desperation melee if adjacent
+            if (retreatTarget != null)
+            {
+                var retreat = BrainHelpers.MoveAwayFromPlayers(enemyUnit, allUnits, grid, resolver, retreatTarget);
+                if (retreat != null)
+                {
+                    yield return retreat;
+                }
+            }
+
             foreach (var unit in allUnits)
             {
                 if (!unit.IsAlive || !unit.IsPlayerControlled) continue;
                 if (grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates) == 1)
-                    return resolver.CreateMeleeAttack(enemyUnit, grid.GetCell(unit.Coordinates));
+                {
+                    yield return resolver.CreateMeleeAttack(enemyUnit, grid.GetCell(unit.Coordinates));
+                }
             }
-
-            // Nobody hurt, nobody adjacent — idle
-            return null;
         }
     }
 }
