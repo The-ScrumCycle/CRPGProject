@@ -27,16 +27,16 @@ TagManager:
   - skeleton_melee
   - healer
   - Ogre
-  - Pedestal
-  - Board
-  - HexGrid
   - PartyManager
   - ManagerScene
+  - Board
+  - HexGrid
+  - Pedestal
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - ReceiveOutline
   - Water
   - UI
   - 

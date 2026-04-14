@@ -74,6 +74,7 @@ namespace Game.Combat.Actions
         public void Execute(HexGrid grid)
         {
             grid.MoveUnit(Actor, Destination);
+            Actor.Visual.LookAtCell(Destination);
         }
     }
 }

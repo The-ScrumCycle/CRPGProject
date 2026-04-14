@@ -31,6 +31,7 @@ namespace Game.Combat
         {
             AllUnits.Add(unit);
             UnitVisuals[unit] = visual;
+            unit.Visual = visual;
         }
 
         public void RemoveUnitVisual(Unit unit)

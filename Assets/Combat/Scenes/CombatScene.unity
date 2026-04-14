@@ -728,6 +728,7 @@ MonoBehaviour:
   environments:
   - {fileID: 11400000, guid: 62cbf618ff2a93449b9d3d21e6eb4a56, type: 2}
   - {fileID: 11400000, guid: cc8ae593d8190734ba060c97a2a58fd5, type: 2}
+  - {fileID: 11400000, guid: f5de2b31e324f2348a28c1f8eb3c7acd, type: 2}
   boardRenderer: {fileID: 1103557953}
   backgroundMat: {fileID: 2100000, guid: 761a2d273314bc34e95afcfa7181a347, type: 2}
   globalVolume: {fileID: 2071716725}
@@ -736,7 +737,7 @@ MonoBehaviour:
   enemyDeploymentHexes: []
   debugPlayerRoster: 000000000100000002000000
   debugEnemyRoster: 040000000400000004000000
-  shoveArrowPrefab: {fileID: 700429023681575523, guid: 3ce9f9edb54c21648bad9acccbba054c,
+  shoveArrowPrefab: {fileID: 7037963474226427388, guid: 7b10fdea16de67c4daa8b9648839db5f,
     type: 3}
   victoryExperience: 100
 --- !u!4 &780205444

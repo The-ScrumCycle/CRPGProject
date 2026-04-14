@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Game.Core;
@@ -71,6 +72,8 @@ namespace Game.Combat
         private HexCoordinates? _lastHoveredHex = null;
         private ActionIntent _currentHoverIntent = null;
 
+        private List<Unit> outlinedUnits;
+
         int currentEnv = 0;
 
         #region Unity Lifecycle
@@ -94,8 +97,12 @@ namespace Game.Combat
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-                currentEnv = 1-currentEnv;
+                currentEnv = (currentEnv+1)%environments.Length;
                 SetEnvironment(environments[currentEnv]);
+            }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                _intentRenderer._renderArrows = false;
             }
 
             if (_state.CurrentState == CombatState.PlayerTurn)
@@ -113,6 +120,8 @@ namespace Game.Combat
         private void InitializeCombat()
         {
             Debug.Log("[CombatManager] Initializing combat...");
+
+            outlinedUnits = new List<Unit>();
 
             _grid = new HexGrid(gridWidth, gridHeight);
 
@@ -341,6 +350,8 @@ namespace Game.Combat
             gridRenderer.ClearHighlights();
             var currentUnit = _flowController.GetCurrentUnit();
 
+            ClearOutlines();
+
             // Layer 1: Player highlights
             if (currentUnit != null && currentUnit.IsPlayerControlled)
             {
@@ -357,10 +368,13 @@ namespace Game.Combat
                 }
                 else if (_currentActionMode == PlayerActionMode.Attack)
                 {
-                    var validTargets = _flowController.GetValidAttackTargets(currentUnit);
+                    var validTargets = _flowController.GetCellsInAttackRange(currentUnit);
                     foreach (var coord in validTargets)
                         gridRenderer.AddHighlight(coord, HighlightType.PlayerAttack);
                 }
+
+                _state.GetVisual(currentUnit).SetHighlight(true);
+                outlinedUnits.Add(currentUnit);
             }
 
             // Layer 2: AI intents (Always draw these)
@@ -368,7 +382,13 @@ namespace Game.Combat
             var allIntentsToRender = new List<ActionIntent>(_state.GetIntents());
             if (hoverIntent != null) allIntentsToRender.Add(hoverIntent); // Generate "Phantom" action intent for showing enemy health bar
 
-            _intentRenderer.RenderAll(allIntentsToRender);
+            Dictionary<ActionIntent, UnitVisual> intentsWithVisuals = new Dictionary<ActionIntent, UnitVisual>();
+            foreach (ActionIntent intent in allIntentsToRender)
+            {
+                intentsWithVisuals.Add(intent, _state.GetVisual(intent.Actor));
+            }
+
+            _intentRenderer.RenderAll(intentsWithVisuals);
             foreach (var kvp in _intentRenderer.GetHighlights())
             {
                 gridRenderer.AddHighlight(kvp.Key, kvp.Value);
@@ -376,7 +396,16 @@ namespace Game.Combat
 
             // Layer 3: Damage indicators and Shove arrow indicator
             UpdateUnitWorldUIs(hoverIntent);
-        } 
+        }
+
+        private void ClearOutlines()
+        {
+            foreach (Unit unit in outlinedUnits)
+            {
+                _state.GetVisual(unit).SetHighlight(false);
+            }
+            outlinedUnits.Clear();
+        }
 
         #endregion
 
@@ -753,7 +782,10 @@ namespace Game.Combat
                     Debug.Log($"[AI Blocked] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} failed validation — target out of range");
             }
 
-            // 3. Force visual refresh so any shoved units physically slide to their new hex
+            // 3. Handle update of unit visual based on action
+
+
+            // 4. Force visual refresh so any shoved units physically slide to their new hex
             foreach (var unit in _state.AllUnits)
             {
                 _state.GetVisual(unit)?.RefreshPosition();
@@ -777,7 +809,7 @@ namespace Game.Combat
             var visual = _state.GetVisual(unit);
             if (visual != null)
             {
-                Destroy(visual.gameObject);
+                visual.Die();
                 _state.RemoveUnitVisual(unit);
             }
         }

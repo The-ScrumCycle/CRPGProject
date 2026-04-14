@@ -134,6 +134,16 @@ namespace Game.Combat.Grid
             return new HexCoordinates(a.q - b.q, a.r - b.r);
         }
 
+        public static HexCoordinates operator /(HexCoordinates a, HexCoordinates b)
+        {
+            return new HexCoordinates(a.q/b.q, a.r/b.r);
+        }
+
+        public static HexCoordinates operator /(HexCoordinates a, int b)
+        {
+            return new HexCoordinates(a.q/b, a.r/b);
+        }
+
         public static bool operator ==(HexCoordinates a, HexCoordinates b)
         {
             return a.q == b.q && a.r == b.r;

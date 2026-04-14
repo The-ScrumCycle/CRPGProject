@@ -25,9 +25,9 @@ namespace Game.Combat.UI
 
         void Update()
         {
-            transform.localRotation = Quaternion.RotateTowards(
-                transform.localRotation,
-                Quaternion.LookRotation(Camera.main.transform.forward, Vector3.up),
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                Quaternion.LookRotation(Camera.main.transform.forward, Camera.main.transform.up),
                 rotateSpeed * Time.deltaTime);
         }
 

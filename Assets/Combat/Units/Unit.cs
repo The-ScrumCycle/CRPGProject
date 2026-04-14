@@ -18,6 +18,7 @@ namespace Game.Combat.Units
         public UnitStats Stats { get; private set; }
         public HexCell CurrentCell { get; set; }
         public AIBehavior AIBehavior { get; }
+        public UnitVisual Visual { get; set; }
 
         public Unit grappler { get; set; }
         public bool IsAlive => Stats.currentHealth > 0;
@@ -37,6 +38,18 @@ namespace Game.Combat.Units
             AvailableActions = availableActions ?? new List<CombatActionType>();
         }
 
+        public Unit(string id, string displayName, UnitRole role, UnitStats stats, UnitVisual visual, AIBehavior aiBehavior = AIBehavior.Aggressive, List<CombatActionType> availableActions = null)
+        {
+            Id = id;
+            DisplayName = displayName;
+            Role = role;
+            Stats = stats;
+            Visual = visual;
+            AIBehavior = aiBehavior;
+            // Assign a unit's valid actions or fallback to empty of none provided
+            AvailableActions = availableActions ?? new List<CombatActionType>();
+        }
+
         // Update the unit's position. Called by HexGrid.
         internal void SetPosition(HexCoordinates coords, HexCell cell)
         {
@@ -47,12 +60,14 @@ namespace Game.Combat.Units
         public void TakeDamage(int damage)
         {
             Stats.TakeDamage(damage);
+            if (Visual != null) Visual.Flash();
             Debug.Log($"{DisplayName} took {damage} damage. Remaining HP: {Stats.currentHealth}/{Stats.maxHealth}");
         }
 
         public void Heal(int amount)
         {
             Stats.Heal(amount);
+            if (Visual != null) Visual.HealEffect();
         }
 
         public override string ToString()

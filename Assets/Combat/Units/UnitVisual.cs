@@ -1,5 +1,6 @@
 using UnityEngine;
 using Game.Combat.Grid;
+using System.Collections;
 
 namespace Game.Combat.Units
 {
@@ -11,11 +12,20 @@ namespace Game.Combat.Units
     {
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 5f;
+        [SerializeField] private float rotateSpeed = 400f;
+        [SerializeField] private Color flashColor = Color.red;
+        [SerializeField] private int numFlashes = 4;
+        [SerializeField] private float flashDuration = 0.1f;
+        [SerializeField] private float deathTime = 1.0f;
 
         private Unit _unit;
         private HexGridRenderer _gridRenderer;
         private Vector3 _targetPosition;
+        private Quaternion _targetRotation;
+        private Material _mat;
+        private int _standardLayer;
         private bool _isMoving;
+        private bool _isRotating;
         private float positionOffset = 0.0f;
 
         public Unit Unit => _unit;
@@ -25,17 +35,17 @@ namespace Game.Combat.Units
         {
             _unit = unit;
             _gridRenderer = gridRenderer;
+            _mat = GetComponentInChildren<SkinnedMeshRenderer>().material;
+            _standardLayer = gameObject.layer;
 
             // Get Position Offset Safely
             GameObject offsetObj = gameObject;
-            bool foundPedestal = false;
 
             foreach (Transform child in transform)
             {
                 if (child.CompareTag("Pedestal"))
                 {
                     offsetObj = child.gameObject;
-                    foundPedestal = true;
                     break;
                 }
             }
@@ -55,8 +65,11 @@ namespace Game.Combat.Units
             }
 
             // Set initial position
-            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up * positionOffset;
+            _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up*positionOffset;
+            _targetRotation = Quaternion.Euler(0.0f, Quaternion.LookRotation(Vector3.zero - _targetPosition).eulerAngles.y, 0.0f) 
+            * Quaternion.Euler(0.0f, Random.Range(0.0f, 80.0f), 0.0f);
             transform.position = _targetPosition;
+            transform.rotation = _targetRotation;
         } 
 
         void Update()
@@ -80,12 +93,33 @@ namespace Game.Combat.Units
                     _isMoving = false;
                 }
             }
+
+            if (_isRotating)
+            {
+                transform.rotation = Quaternion.RotateTowards(
+                    transform.rotation,
+                    _targetRotation,
+                    rotateSpeed * Time.deltaTime
+                );
+
+                if (Quaternion.Angle(transform.rotation, _targetRotation) < 0.01f)
+                {
+                    transform.rotation = _targetRotation;
+                    _isRotating = false;
+                }
+            }
         }
 
         // Trigger visual movement to unit's current logical position.
         public void RefreshPosition()
         {
             _isMoving = true;
+        }
+
+        public void LookAtCell(HexCoordinates cell)
+        {
+            _targetRotation = Quaternion.Euler(0.0f, Quaternion.LookRotation(_gridRenderer.HexToWorld(cell) - transform.position).eulerAngles.y, 0.0f);
+            _isRotating = true;
         }
 
         // Move to unit's current logical position.
@@ -96,6 +130,80 @@ namespace Game.Combat.Units
                 _targetPosition = _gridRenderer.HexToWorld(_unit.Coordinates) + Vector3.up*positionOffset;
                 transform.position = _targetPosition;
                 _isMoving = false;
+            }
+        }
+
+        public void SetHighlight(bool highlight)
+        {
+            int intendedLayer = _standardLayer;
+            if (highlight) intendedLayer = LayerMask.NameToLayer("ReceiveOutline");
+
+            gameObject.layer = intendedLayer;
+            foreach (Transform child in transform)
+            {
+                child.gameObject.layer = intendedLayer;
+            }
+        }
+
+        public void Flash()
+        {
+            StartCoroutine(FlashRoutine());
+        }
+
+        private IEnumerator FlashRoutine()
+        {
+            _mat.SetColor("_BaseColor", flashColor);
+            yield return new WaitForSeconds(flashDuration*0.8f);
+            _mat.SetColor("_BaseColor", Color.white);
+
+            for (int i = 0; i < numFlashes; i++)
+            {
+                SetVisibility(false);
+                yield return new WaitForSeconds(flashDuration);
+                SetVisibility(true);
+                yield return new WaitForSeconds(flashDuration);
+            }
+        }
+
+        public void Die()
+        {
+            StartCoroutine(DeathRoutine());
+        }
+
+        private IEnumerator DeathRoutine()
+        {
+            float timeElapsed = 0.0f;
+            while (timeElapsed < deathTime)
+            {
+                timeElapsed += Time.deltaTime;
+
+                _mat.color = Color.Lerp(_mat.color, Color.black, Time.deltaTime);
+                transform.position -= new Vector3(0.0f, Time.deltaTime, 0.0f);
+
+                yield return null;
+            }
+            Destroy(gameObject);
+        }
+
+        public void HealEffect()
+        {
+            StartCoroutine(HealRoutine());
+        }
+
+        private IEnumerator HealRoutine()
+        {
+           yield return null; 
+        }
+
+        public void SetVisibility(bool visible)
+        {
+            foreach(MeshRenderer renderer in GetComponentsInChildren<MeshRenderer>())
+            {
+                renderer.enabled = visible;
+            }
+            foreach(SkinnedMeshRenderer renderer in GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                renderer.enabled = visible;
             }
         }
     }

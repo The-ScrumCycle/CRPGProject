@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Game.Combat.Grid;
+using Game.Combat.Units;
 
 namespace Game.Combat.Actions
 {
@@ -13,6 +14,7 @@ namespace Game.Combat.Actions
         private GameObject _arrowPrefab;
         private List<GameObject> _activeArrows;
         private HexGridRenderer _gridRenderer;
+        public bool _renderArrows {get; set;}
         private readonly Dictionary<HexCoordinates, HighlightType> _highlights;
 
         public CombatIntentRenderer(GameObject arrowPrefab)
@@ -21,13 +23,24 @@ namespace Game.Combat.Actions
             _arrowPrefab = arrowPrefab;
             _activeArrows = new List<GameObject>();
             _gridRenderer = UnityEngine.Object.FindObjectOfType<HexGridRenderer>();
+            _renderArrows = true;
+        }
+
+        private void RenderArrow(Vector3 startPos, Vector3 endPos, Color color)
+        {
+            if (!_renderArrows) return;
+
+            // The trajectory from start to end natively points towards the caster.
+            GameObject arrow = Object.Instantiate(_arrowPrefab);
+            arrow.GetComponent<ArrowRenderer>().Render(startPos, endPos, new Color(color.r, color.g, color.b, 0.5f), 0.1f);
+            _activeArrows.Add(arrow);
         }
 
         // Render a single intent into highlight data.
         // Our higlights currently are movement cells, AoE and regular attack cells, push direction arrow.
-        public void Render(ActionIntent intent)
+        public void Render(ActionIntent intent, UnitVisual visual)
         {
-            if (intent == null || !intent.IsValid) return;
+            if (intent == null || visual == null || !intent.IsValid) return;
 
             HighlightType type = MapVisualType(intent.VisualType);
             if (type == HighlightType.None) return;
@@ -42,23 +55,48 @@ namespace Game.Combat.Actions
                         AddWithPriority(coords, HighlightType.AI_Move);
                     }
                 }
+
+                RenderArrow(
+                    _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
+                    _gridRenderer.HexToWorld(intent.MovementPath[^1]),
+                    _gridRenderer.GetGridColor(type)
+                );
+                visual.LookAtCell(intent.MovementPath[^1]);
             }
 
             // 2. HIGHLIGHT ALL AOE TARGET CELLS
             var targetCells = intent.Action.GetTargetCells();
-            if (targetCells != null)
+            if (targetCells != null && !(intent.VisualType == ActionVisualType.MeleeAttack))
             {
+                Vector3 averagePos = Vector3.zero;
+                int count = 0;
                 foreach (var cellCoords in targetCells)
                 {
                     AddWithPriority(cellCoords, type);
+                    averagePos += _gridRenderer.HexToWorld(cellCoords);
+                    count++;
                 }
+                averagePos /= count;
+
+                if (intent.Actor.Role == UnitRole.Enemy)
+                {
+                    RenderArrow(
+                        _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
+                        _gridRenderer.HexToWorld(_gridRenderer.WorldToHex(averagePos)),
+                        _gridRenderer.GetGridColor(type)
+                    );
+                }
+
+                visual.LookAtCell(_gridRenderer.WorldToHex(averagePos));
             }
 
             // 3. RENDER PUSH / PULL ARROW
             if (intent.PushDestination.HasValue || intent.VisualType == ActionVisualType.Pull)
             {
+                // OUR NULL-SAFETY CHECK
                 if (intent.TargetUnit != null) 
                 {
+                    // OUR DYNAMIC MATH
                     HexCoordinates startHex = intent.TargetUnit.Coordinates;
                     
                     HexCoordinates endHex = intent.SecondaryBumpTarget != null ? 
@@ -67,37 +105,27 @@ namespace Game.Combat.Actions
 
                     if (startHex != endHex) // Only draw if displacement occurs
                     {
-                        Vector3 startWorldPos = _gridRenderer.HexToWorld(startHex);
-                        Vector3 endWorldPos = _gridRenderer.HexToWorld(endHex);
-
-                        // The trajectory from start to end natively points towards the caster.
-                        GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab);
+                        // Arrow VISUAL RENDERER
+                        RenderArrow(
+                            _gridRenderer.HexToWorld(startHex), 
+                            _gridRenderer.HexToWorld(endHex),
+                            _gridRenderer.GetGridColor(HighlightType.PlayerAttack)
+                        );
                         
-                        arrow.transform.position = (startWorldPos + endWorldPos) / 2f;
-                        arrow.transform.position += Vector3.up * 0.5f; 
-
-                        Vector3 direction = (endWorldPos - startWorldPos).normalized;
-                        if (direction != Vector3.zero)
-                        {
-                            arrow.transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
-                        }
-
-                        float distance = Vector3.Distance(startWorldPos, endWorldPos);
-                        arrow.transform.localScale = new Vector3(1f, 1f, distance * 0.5f);
-
-                        _activeArrows.Add(arrow);
+                        // THEIR NEW CHARACTER FACING LOGIC
+                        visual.LookAtCell(endHex);
                     }
                 }
             } 
-        } 
+        }
 
         // Render all intents from a list into highlight data
         // NOTE: Call Clear() first if you want a fresh pass
-        public void RenderAll(IReadOnlyList<ActionIntent> intents)
+        public void RenderAll(IReadOnlyDictionary<ActionIntent, UnitVisual> intents)
         {
-            for (int i = 0; i < intents.Count; i++)
+            foreach (var (intent, visual) in intents)
             {
-                Render(intents[i]);
+                Render(intent, visual);
             }
         }
 
@@ -131,6 +159,10 @@ namespace Game.Combat.Actions
                     return HighlightType.AI_Attack;
                 case ActionVisualType.Heal:
                     return HighlightType.AI_Move;
+                case ActionVisualType.Push:
+                    return HighlightType.PlayerAttack;
+                case ActionVisualType.Pull:
+                    return HighlightType.PlayerAttack;
                 default:
                     return HighlightType.None;
             }
