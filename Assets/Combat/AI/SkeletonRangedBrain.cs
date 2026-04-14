@@ -9,47 +9,62 @@ namespace Game.Combat.AI
 {
     public class SkeletonRangedBrain : IEnemyBrain
     {
-        public ICombatAction DecideAction(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
+        public IEnumerable<ICombatAction> GenerateCandidateActions(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
         {
-            // Priority 0: Retreat to healer if badly wounded and we're the most damaged
             if (BrainHelpers.ShouldRetreatToHealer(enemyUnit, allUnits, out Unit healer))
-                return BrainHelpers.MoveToward(enemyUnit, healer, grid, resolver);
-
-            Unit target = FindNearestPlayer(enemyUnit, allUnits, grid);
-            if (target == null) return null;
-
-            int distanceToTarget = grid.GetDistance(enemyUnit.Coordinates, target.Coordinates);
-
-            // Priority 1: Already at optimal position — ranged attack if in range
-            if (distanceToTarget <= enemyUnit.Stats.attackRange)
             {
-                if (enemyUnit.AvailableActions.Contains(CombatActionType.SplashAttack))
+                var retreat = BrainHelpers.MoveToward(enemyUnit, healer, grid, resolver);
+                if (retreat != null)
                 {
-                    var splash = resolver.CreateSplashAttack(enemyUnit, grid.GetCell(target.Coordinates));
-                    if (resolver.Validate(splash)) return splash; 
-                }
-                
-                if (distanceToTarget > 1) // Standard Ranged needs distance
-                {
-                    var ranged = resolver.CreateRangedAttack(enemyUnit, target);
-                    if (resolver.Validate(ranged)) return ranged;
+                    yield return retreat;
                 }
             }
 
-            // Priority 2: Reposition to ideal range (attackRange distance)
-            var reposition = MoveToOptimalRange(enemyUnit, target, grid, resolver);
-            if (reposition != null) return reposition;
-            
-            // Priority 3: Cornered at distance 1 — desperation melee
-            if (distanceToTarget == 1)
-                return resolver.CreateMeleeAttack(enemyUnit, target);
+            foreach (var unit in allUnits)
+            {
+                if (!unit.IsAlive || !unit.IsPlayerControlled)
+                {
+                    continue;
+                }
 
-            return null;
+                int distanceToTarget = grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates);
+
+                if (distanceToTarget <= enemyUnit.Stats.attackRange)
+                {
+                    if (enemyUnit.AvailableActions.Contains(CombatActionType.SplashAttack))
+                    {
+                        var splash = resolver.CreateSplashAttack(enemyUnit, grid.GetCell(unit.Coordinates));
+                        if (resolver.Validate(splash))
+                        {
+                            yield return splash;
+                        }
+                    }
+
+                    if (distanceToTarget > 1)
+                    {
+                        var ranged = resolver.CreateRangedAttack(enemyUnit, unit);
+                        if (resolver.Validate(ranged))
+                        {
+                            yield return ranged;
+                        }
+                    }
+                }
+
+                if (distanceToTarget == 1)
+                {
+                    yield return resolver.CreateMeleeAttack(enemyUnit, unit);
+                }
+
+                var reposition = MoveToOptimalRange(enemyUnit, unit, grid, resolver);
+                if (reposition != null)
+                {
+                    yield return reposition;
+                }
+            }
         }
 
         private MoveAction MoveToOptimalRange(Unit mover, Unit target, HexGrid grid, ActionResolver resolver)
         {
-            // Baseline: score of staying put
             int currentDist = grid.GetDistance(mover.Coordinates, target.Coordinates);
             int bestScore = Mathf.Abs(currentDist - mover.Stats.attackRange);
             HexCoordinates bestCell = mover.Coordinates;
@@ -61,7 +76,6 @@ namespace Game.Combat.AI
                 int distToTarget = grid.GetDistance(cell, target.Coordinates);
                 int score = Mathf.Abs(distToTarget - mover.Stats.attackRange);
 
-                // Prefer strictly better score, or same score but farther (stay at max range)
                 if (score < bestScore || (score == bestScore && distToTarget > grid.GetDistance(bestCell, target.Coordinates)))
                 {
                     bestScore = score;
@@ -69,7 +83,7 @@ namespace Game.Combat.AI
                 }
             }
 
-            if (bestCell == mover.Coordinates) return null; // Already optimal
+            if (bestCell == mover.Coordinates) return null;
             return resolver.CreateMoveAction(mover, bestCell);
         }
 
