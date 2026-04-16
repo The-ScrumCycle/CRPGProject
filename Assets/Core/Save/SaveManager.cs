@@ -4,8 +4,6 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System.Collections;
-using State;
-using System;
 
 public class SaveManager : MonoBehaviour
 {
@@ -17,8 +15,6 @@ public class SaveManager : MonoBehaviour
     private int pendingLoadSlot;
 
     private MusicController musicController;
-
-    public event Action OnLoadComplete;
 
 
 
@@ -83,12 +79,6 @@ public class SaveManager : MonoBehaviour
         //serialized object into JSON save data
         saveData.saveDateTime = System.DateTime.Now.ToString("dd MMM yyyy  HH:mm");
         //Application.OpenURL(Application.persistentDataPath);
-
-        Texture2D screenshot = ScreenCapture.CaptureScreenshotAsTexture();
-        byte[] screenshotBytes = screenshot.EncodeToPNG();
-        Destroy(screenshot);
-
-        saveData.screenshotData = screenshotBytes;
         StartCoroutine(SaveScreenshot(saveData));
     }
 
@@ -137,34 +127,16 @@ public class SaveManager : MonoBehaviour
     //before being loaded
     public void RequestLoad(int slot)
     {
-        if (SceneManager.GetActiveScene().name == "Exploration")
+        if (CleanUpController.Instance != null) //removed exploration, so load can be called from menus
         {
             CleanUpController.Instance.CleanUp();
         }
 
         saveables = new List<ISaveable>();
         pendingLoadSlot = slot;
-        //SceneManager.sceneLoaded += OnSceneLoaded;  // subscribe BEFORE loading
-        StartCoroutine(LoadSceneInBackground("Exploration"));
-        //SceneManager.LoadScene("Exploration"); 
+        SceneManager.sceneLoaded += OnSceneLoaded;  // subscribe BEFORE loading
+        SceneManager.LoadScene("Exploration"); 
 
-    }
-
-    private void OnSceneReady(AsyncOperation asyncload)
-    {
-        asyncload.allowSceneActivation = true;
-        StartCoroutine(LoadAfterFrame());
-    }
-
-    private IEnumerator LoadSceneInBackground(string scene)
-    {
-        AsyncOperation asyncload = SceneManager.LoadSceneAsync(scene);
-        asyncload.allowSceneActivation=false;
-        while (asyncload.progress < 0.9f) //wait till load
-        {
-            yield return null;
-        }
-        OnSceneReady(asyncload);
     }
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -184,7 +156,6 @@ public class SaveManager : MonoBehaviour
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null) cam.SetTarget(player.transform);
         }
-        OnLoadComplete?.Invoke();
     }
 
    
