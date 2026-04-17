@@ -51,7 +51,7 @@ namespace Game.Combat.Units
             }
 
             var unit = new Unit(
-                    id: $"player_{_unitIdCounter++}",
+                    id: _unitIdCounter++,
                     displayName: unitId,
                     role: UnitRole.Player,
                     stats: stats,
@@ -93,7 +93,7 @@ namespace Game.Combat.Units
             UnitStats stats = ennemyStats != null ? ennemyStats.GetStatsForLevel(level) : new UnitStats(50, 15, 2, 1);
 
             var unit = new Unit(
-                id: $"enemy_{_unitIdCounter++}",
+                id: _unitIdCounter++,
                 displayName: fallbackName,
                 role: UnitRole.Enemy,
                 stats: stats,

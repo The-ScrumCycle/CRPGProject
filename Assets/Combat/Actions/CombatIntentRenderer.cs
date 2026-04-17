@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using Game.Combat.Grid;
 using Game.Combat.Units;
+using Game.Combat.UI;
 
 namespace Game.Combat.Actions
 {
@@ -32,7 +33,7 @@ namespace Game.Combat.Actions
 
             // The trajectory from start to end natively points towards the caster.
             GameObject arrow = Object.Instantiate(_arrowPrefab);
-            arrow.GetComponent<ArrowRenderer>().Render(startPos, endPos, new Color(color.r, color.g, color.b, 0.5f), 0.1f);
+            arrow.GetComponent<ArrowRenderer>().Render(startPos, endPos, new Color(color.r, color.g, color.b, 0.5f), 0.1f + Random.Range(0.0f, 0.001f));
             _activeArrows.Add(arrow);
         }
 
@@ -44,6 +45,10 @@ namespace Game.Combat.Actions
 
             HighlightType type = MapVisualType(intent.VisualType);
             if (type == HighlightType.None) return;
+
+            // We randomly offset the height of the arrows to prevent z-fighting
+            // We want this to look consistent frame-to-frame so we set the random seed by the unit's id
+            Random.InitState(intent.Actor.Id);
 
             // 1. HIGHLIGHT MOVEMENT PATH
             if (intent.MovementPath != null && intent.MovementPath.Count > 0)

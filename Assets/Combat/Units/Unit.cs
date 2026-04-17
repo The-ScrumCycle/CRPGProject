@@ -12,7 +12,7 @@ namespace Game.Combat.Units
     /// </summary>
     public class Unit
     {
-        public string Id { get; }
+        public int Id { get; }
         public string DisplayName { get; }
         public UnitRole Role { get; }
         public UnitStats Stats { get; private set; }
@@ -27,7 +27,7 @@ namespace Game.Combat.Units
         public bool IsGrappled => grappler != null; 
         public List<CombatActionType> AvailableActions { get; } // actions a unit has avail
 
-        public Unit(string id, string displayName, UnitRole role, UnitStats stats, AIBehavior aiBehavior = AIBehavior.Aggressive, List<CombatActionType> availableActions = null)
+        public Unit(int id, string displayName, UnitRole role, UnitStats stats, AIBehavior aiBehavior = AIBehavior.Aggressive, List<CombatActionType> availableActions = null)
         {
             Id = id;
             DisplayName = displayName;
@@ -38,7 +38,7 @@ namespace Game.Combat.Units
             AvailableActions = availableActions ?? new List<CombatActionType>();
         }
 
-        public Unit(string id, string displayName, UnitRole role, UnitStats stats, UnitVisual visual, AIBehavior aiBehavior = AIBehavior.Aggressive, List<CombatActionType> availableActions = null)
+        public Unit(int id, string displayName, UnitRole role, UnitStats stats, UnitVisual visual, AIBehavior aiBehavior = AIBehavior.Aggressive, List<CombatActionType> availableActions = null)
         {
             Id = id;
             DisplayName = displayName;

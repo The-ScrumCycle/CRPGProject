@@ -102,7 +102,7 @@ namespace Game.Combat
             }
             if (Input.GetKeyDown(KeyCode.R))
             {
-                _intentRenderer._renderArrows = false;
+                _intentRenderer._renderArrows = !_intentRenderer._renderArrows;
             }
 
             if (_state.CurrentState == CombatState.PlayerTurn)
