@@ -7,6 +7,7 @@ namespace Game.Combat.Actions
     public class SweepAttackAction : ICombatAction
     {
         public Unit Actor { get; }
+        public HexCoordinates MainTarget => _mainTarget;
         private readonly HexCoordinates _mainTarget;
         private readonly List<HexCoordinates> _sweepCells;
 
