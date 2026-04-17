@@ -1,5 +1,7 @@
 using UnityEngine;
 using Game.Core;
+using System.Data.Common;
+using Game.Core.Transitions;
 
 public class CleanUpController : MonoBehaviour
 {
@@ -14,6 +16,7 @@ public class CleanUpController : MonoBehaviour
         }
 
         Instance = this;
+        DontDestroyOnLoad(gameObject); //so we dont get stale singletons in non exploration scenes
     }
 
     // destroy player, sceneManager, PartyManager and music controller.
@@ -30,6 +33,9 @@ public class CleanUpController : MonoBehaviour
 
         if (MusicController.Instance != null)
             Destroy(MusicController.Instance.gameObject);
+
+        if (CombatTransitionData.Instance != null)
+            Destroy(CombatTransitionData.Instance.gameObject);
     }
 
    
