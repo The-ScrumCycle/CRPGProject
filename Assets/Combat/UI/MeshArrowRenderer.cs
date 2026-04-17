@@ -88,13 +88,19 @@ namespace Game.Combat.UI
             arrowMat.color = color;
         }
 
-        public override void Render(Vector3 startPos, Vector3 endPos, Color color, float offset, float bodyWidth, float headWidth, float headHeight)
+        public override void SetOutlineColor(Color pColor)
+        {
+            outlineColor = pColor;
+        }
+
+        public override void Render(Vector3 startPos, Vector3 endPos, Color color, Color outlineColor, float offset, float bodyWidth, float headWidth, float headHeight)
         {
             float distance = (endPos - startPos).magnitude;
+            
             BuildArrow(bodyWidth, distance-headHeight, headWidth, headHeight, arrowMesh);
-
-            SetColor(color);
             PositionArrow(startPos, endPos);
+            SetColor(color);
+            SetOutlineColor(outlineColor);
 
             transform.position = new Vector3(
                 transform.position.x,
@@ -103,9 +109,9 @@ namespace Game.Combat.UI
             );
         }
 
-        public override void Render(Vector3 startPos, Vector3 endPos, Color color, float offset)
+        public override void Render(Vector3 startPos, Vector3 endPos, Color color, Color outlineColor, float offset)
         {
-            Render(startPos, endPos, color, offset, bodyWidth, headWidth, headHeight);
+            Render(startPos, endPos, color, outlineColor, offset, bodyWidth, headWidth, headHeight);
         }
     }
 

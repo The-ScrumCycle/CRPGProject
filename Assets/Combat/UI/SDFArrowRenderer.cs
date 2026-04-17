@@ -34,7 +34,7 @@ namespace Game.Combat.UI
         {
             if (startPoint != null && endPoint != null)
             {
-                Render(startPoint.position, endPoint.position, Color.red, 0.0f);
+                Render(startPoint.position, endPoint.position, Color.red, Color.black, 0.0f);
             }
         }
 
@@ -105,18 +105,19 @@ namespace Game.Combat.UI
             color = pColor;
         }
 
-        public void SetOutlineColor(Color pColor)
+        public override void SetOutlineColor(Color pColor)
         {
             outlineColor = pColor;
         }
 
-        public override void Render(Vector3 startPos, Vector3 endPos, Color color, float offset, float bodyWidth, float headWidth, float headHeight)
+        public override void Render(Vector3 startPos, Vector3 endPos, Color color, Color outlineColor, float offset, float bodyWidth, float headWidth, float headHeight)
         {
             float distance = (endPos - startPos).magnitude;
 
             BuildArrow(bodyWidth, distance-headHeight, headWidth, headHeight);
             PositionArrow(startPos, endPos);
             SetColor(color);
+            SetOutlineColor(outlineColor);
 
             // We want the plane to always be slightly larger than the width/height of the arrow
             // Must be big enough to contain both the arrow and its outline
@@ -136,9 +137,9 @@ namespace Game.Combat.UI
             RefreshShaderParams();
         }
 
-        public override void Render(Vector3 startPos, Vector3 endPos, Color color, float offset)
+        public override void Render(Vector3 startPos, Vector3 endPos, Color color, Color outlineColor, float offset)
         {
-            Render(startPos, endPos, color, offset, bodyWidth, headWidth, headHeight);
+            Render(startPos, endPos, color, outlineColor, offset, bodyWidth, headWidth, headHeight);
         }
     }
 

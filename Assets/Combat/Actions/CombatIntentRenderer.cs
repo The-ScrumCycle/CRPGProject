@@ -27,13 +27,13 @@ namespace Game.Combat.Actions
           _renderArrows = true;
       }
 
-      private void RenderArrow(Vector3 startPos, Vector3 endPos, Color color)
+      private void RenderArrow(Vector3 startPos, Vector3 endPos, Color color, Color outlineColor)
       {
           if (!_renderArrows) return;
 
           // The trajectory from start to end natively points towards the caster.
           GameObject arrow = Object.Instantiate(_arrowPrefab);
-          arrow.GetComponent<ArrowRenderer>().Render(startPos, endPos, new Color(color.r, color.g, color.b, 0.5f), 0.1f + Random.Range(0.0f, 0.001f));
+          arrow.GetComponent<ArrowRenderer>().Render(startPos, endPos, color, outlineColor, 0.1f + Random.Range(0.0f, 0.001f));
           _activeArrows.Add(arrow);
       }
 
@@ -41,79 +41,91 @@ namespace Game.Combat.Actions
       // Our higlights currently are movement cells, AoE and regular attack cells, push direction arrow.
       public void Render(ActionIntent intent, UnitVisual visual)
       {
-          if (intent == null || visual == null || !intent.IsValid) return;
+            if (intent == null || visual == null || !intent.IsValid) return;
 
-          HighlightType type = MapVisualType(intent.VisualType);
-          if (type == HighlightType.None) return;
+            HighlightType type = MapVisualType(intent.VisualType);
+            if (type == HighlightType.None) return;
 
-          // We randomly offset the height of the arrows to prevent z-fighting
-          // We want this to look consistent frame-to-frame so we set the random seed by the unit's id
-          Random.InitState(intent.Actor.Id);
+            // We randomly offset the height of the arrows to prevent z-fighting
+            // We want this to look consistent frame-to-frame so we set the random seed by the unit's id
+            Random.InitState(intent.Actor.Id);
 
-          // 1. HIGHLIGHT MOVEMENT PATH
-          if (intent.MovementPath != null && intent.MovementPath.Count > 0)
-          {
-              foreach (var coords in intent.MovementPath)
-              {
-                  if (coords != intent.Actor.Coordinates) 
-                  {
-                      AddWithPriority(coords, HighlightType.AI_Move);
-                  }
-              }
+            Color arrowColor = _gridRenderer.GetGridColor(type);
+            arrowColor.a = 0.5f;
 
-              RenderArrow(
-                  _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
-                  _gridRenderer.HexToWorld(intent.MovementPath[^1]),
-                  _gridRenderer.GetGridColor(type)
-              );
-              visual.LookAtCell(intent.MovementPath[^1]);
-          }
+            Color arrowColorPlayer = _gridRenderer.GetGridColor(HighlightType.PlayerAttack);
+            arrowColorPlayer.a = 0.5f;
 
-          // 2. HIGHLIGHT ALL AOE TARGET CELLS
-          var targetCells = intent.Action.GetTargetCells();
-          if (targetCells != null && !(intent.VisualType == ActionVisualType.MeleeAttack))
-          {
-              Vector3 averagePos = Vector3.zero;
-              int count = 0;
-              foreach (var cellCoords in targetCells)
-              {
-                  AddWithPriority(cellCoords, type);
-                  averagePos += _gridRenderer.HexToWorld(cellCoords);
-                  count++;
-              }
-              averagePos /= count;
+            Color outlineColor = Color.black;
+            if (intent.Actor.Coordinates == _gridRenderer.GetHoveredHex()) outlineColor = Color.white;
 
-              if (intent.Actor.Role == UnitRole.Enemy)
-              {
-                  RenderArrow(
-                      _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
-                      _gridRenderer.HexToWorld(_gridRenderer.WorldToHex(averagePos)),
-                      _gridRenderer.GetGridColor(type)
-                  );
-              }
+            // 1. HIGHLIGHT MOVEMENT PATH
+            if (intent.MovementPath != null && intent.MovementPath.Count > 0)
+            {
+                foreach (var coords in intent.MovementPath)
+                {
+                    if (coords != intent.Actor.Coordinates) 
+                    {
+                        AddWithPriority(coords, HighlightType.AI_Move);
+                    }
+                }
 
-              visual.LookAtCell(_gridRenderer.WorldToHex(averagePos));
-          }
+                RenderArrow(
+                    _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
+                    _gridRenderer.HexToWorld(intent.MovementPath[^1]),
+                    arrowColor,
+                    outlineColor
+                );
+                visual.LookAtCell(intent.MovementPath[^1]);
+            }
 
-          // 3. RENDER PUSH / PULL ARROW
-          if (intent.PushDestination.HasValue || intent.VisualType == ActionVisualType.Pull)
-          {
-              HexCoordinates startHex = intent.TargetUnit.Coordinates;
-              
-              HexCoordinates endHex = intent.SecondaryBumpTarget != null ? 
-                                      intent.SecondaryBumpTarget.Coordinates : 
-                                      (intent.PushDestination.HasValue ? intent.PushDestination.Value : startHex);
+            // 2. HIGHLIGHT ALL AOE TARGET CELLS
+            var targetCells = intent.Action.GetTargetCells();
+            if (targetCells != null && !(intent.VisualType == ActionVisualType.MeleeAttack))
+            {
+                Vector3 averagePos = Vector3.zero;
+                int count = 0;
+                foreach (var cellCoords in targetCells)
+                {
+                    AddWithPriority(cellCoords, type);
+                    averagePos += _gridRenderer.HexToWorld(cellCoords);
+                    count++;
+                }
+                averagePos /= count;
 
-              if (startHex != endHex) // Only draw if displacement occurs
-              {
-                  RenderArrow(
-                      _gridRenderer.HexToWorld(startHex), 
-                      _gridRenderer.HexToWorld(endHex),
-                      _gridRenderer.GetGridColor(HighlightType.PlayerAttack)
-                  );
-                  visual.LookAtCell(endHex);
-              }
-          } 
+                if (intent.Actor.Role == UnitRole.Enemy)
+                {
+                    RenderArrow(
+                        _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
+                        _gridRenderer.HexToWorld(_gridRenderer.WorldToHex(averagePos)),
+                        arrowColor,
+                        outlineColor
+                    );
+                }
+
+                visual.LookAtCell(_gridRenderer.WorldToHex(averagePos));
+            }
+
+            // 3. RENDER PUSH / PULL ARROW
+            if (intent.PushDestination.HasValue || intent.VisualType == ActionVisualType.Pull)
+            {
+                HexCoordinates startHex = intent.TargetUnit.Coordinates;
+                
+                HexCoordinates endHex = intent.SecondaryBumpTarget != null ? 
+                                        intent.SecondaryBumpTarget.Coordinates : 
+                                        (intent.PushDestination.HasValue ? intent.PushDestination.Value : startHex);
+
+                if (startHex != endHex) // Only draw if displacement occurs
+                {
+                    RenderArrow(
+                        _gridRenderer.HexToWorld(startHex), 
+                        _gridRenderer.HexToWorld(endHex),
+                        arrowColorPlayer,
+                        outlineColor
+                    );
+                    visual.LookAtCell(endHex);
+                }
+            }
       } 
 
       // Render all intents from a list into highlight data
