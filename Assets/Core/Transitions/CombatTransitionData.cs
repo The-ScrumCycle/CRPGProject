@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Game.Core.Transitions
 {
-    public enum EnvironmentType { Default, Desert, Forest }
+    public enum EnvironmentType { Default, Desert, Forest, Castle }
 
     /// <summary>
     /// Stores data needed to transition between Exploration and Combat.
@@ -84,7 +84,7 @@ namespace Game.Core.Transitions
                 XPGiven     = monster.GetXPGiven();
             } 
 
-            EnvironmentType = EnvironmentType.Default;
+            EnvironmentType = enemy.GetComponent<MonsterController>()?.GetEnvironmentType() ?? EnvironmentType.Default;
 
             // Manage active party
             ActiveCompanions.Clear();

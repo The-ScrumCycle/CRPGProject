@@ -153,7 +153,21 @@ namespace Game.Combat
         {
             try
             {
-                SetEnvironment(environments[currentEnv]);
+                int envIndex = 0;
+                if (CombatTransitionData.Instance != null)
+                {
+                    envIndex = (int)CombatTransitionData.Instance.EnvironmentType;
+                }
+                if (environments != null && environments.Length > envIndex)
+                {
+                    currentEnv = envIndex;
+                    SetEnvironment(environments[currentEnv]);
+                }
+                else if (environments != null && environments.Length > 0)
+                {
+                    currentEnv = 0;
+                    SetEnvironment(environments[currentEnv]);
+                }
             }
             catch (Exception e)
             {

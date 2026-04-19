@@ -158,5 +158,10 @@ public class SaveManager : MonoBehaviour
         }
     }
 
-   
+    public int GetLatestSlotIndex()
+    {
+        return GetSlotCount() - 1;
+    }
+
+
 }

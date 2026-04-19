@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Game.Core;
 using Game.Combat;
+using Game.Core.Transitions;
 
 public class MonsterController : MonoBehaviour
 {
@@ -31,8 +32,11 @@ public class MonsterController : MonoBehaviour
     private bool isChasing = false;
 
     [Header("Ennemy Level and XP")]
-    [SerializeField]  int enemyLevel = 12;
+    [SerializeField] int enemyLevel = 12;
     [SerializeField] int xpGiven = 400;//xp dropped by monster
+
+    [Header("Ennemy Location")]
+    [SerializeField] EnvironmentType environmentType = EnvironmentType.Default;
 
 
     private NavMeshAgent agent;
@@ -67,6 +71,13 @@ public class MonsterController : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    public EnvironmentType GetEnvironmentType()
+    {
+        return environmentType;
+    }
+
+
 
     //finding the player
     private void GetPlayer()

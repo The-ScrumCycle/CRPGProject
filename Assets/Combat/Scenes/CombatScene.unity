@@ -762,6 +762,7 @@ MonoBehaviour:
   gridHeight: 13
   environments:
   - {fileID: 11400000, guid: 62cbf618ff2a93449b9d3d21e6eb4a56, type: 2}
+  - {fileID: 11400000, guid: 62cbf618ff2a93449b9d3d21e6eb4a56, type: 2}
   - {fileID: 11400000, guid: cc8ae593d8190734ba060c97a2a58fd5, type: 2}
   - {fileID: 11400000, guid: f5de2b31e324f2348a28c1f8eb3c7acd, type: 2}
   boardRenderer: {fileID: 1103557953}
@@ -1896,7 +1897,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9652038949555ad4988bfca6dd6201e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Grid.HexGridRenderer
-  environmentTextures: []
+  environmentTextures:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   gridWidth: 13
   gridHeight: 13
   hexScale: 13
