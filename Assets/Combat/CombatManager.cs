@@ -31,8 +31,8 @@ namespace Game.Combat
 
         [Header("Grid Configuration")]
         [SerializeField] private HexGridRenderer gridRenderer;
-        [SerializeField] private int gridWidth = 8;
-        [SerializeField] private int gridHeight = 8;
+        [SerializeField] private int gridWidth = 9;
+        [SerializeField] private int gridHeight = 9;
 
         [Header("Environments")]
         [SerializeField] private CombatEnvironment[] environments;
@@ -179,19 +179,7 @@ namespace Game.Combat
         {
             var transitionData = Game.Core.Transitions.CombatTransitionData.Instance;
 
-            // --- SAFETY FALLBACKS FOR DEPLOYMENT ZONES ---
-            if (playerDeploymentHexes == null || playerDeploymentHexes.Count == 0)
-            {
-                playerDeploymentHexes = new System.Collections.Generic.List<HexCoordinates> 
-                { new HexCoordinates(1, 1), new HexCoordinates(1, 2), new HexCoordinates(2, 1) };
-            }
-            if (enemyDeploymentHexes == null || enemyDeploymentHexes.Count == 0)
-            {
-                enemyDeploymentHexes = new System.Collections.Generic.List<HexCoordinates> 
-                { new HexCoordinates(6, 6), new HexCoordinates(6, 5), new HexCoordinates(5, 6), new HexCoordinates(5, 5) };
-            }
-
-            // --- SPAWN PLAYERS (we use sandbox config if no transition data avail) ---
+            // --- SPAWN PLAYERS ---
             List<string> playersToSpawn = new List<string>();
             if (transitionData != null && transitionData.ActiveCompanions.Count > 0)
             {
@@ -199,19 +187,21 @@ namespace Game.Combat
             }
             else
             {
-                // Convert Enum to String for the Sandbox
                 foreach (var id in debugPlayerRoster) playersToSpawn.Add(id.ToString());
             } 
 
-            for (int i = 0; i < playersToSpawn.Count; i++)
+            foreach (var playerId in playersToSpawn)
             {
-                if (i >= playerDeploymentHexes.Count) break;
-
-                var (playerUnit, playerVisual) = unitFactory.CreatePlayerUnit(playersToSpawn[i]);
-                RegisterUnit(playerUnit, playerVisual, playerDeploymentHexes[i]);
+                var result = unitFactory.CreatePlayerUnit(playerId);
+                if (result.unit != null)
+                {
+                    // VISUAL BOTTOM-LEFT
+                    HexCoordinates coords = GetEmptyCellInBounds(0, (gridWidth / 2) - 1, 0, (gridHeight / 2) - 1);
+                    RegisterUnit(result.unit, result.visual, coords);
+                }
             }
 
-            // --- SPAWN ENEMIES (we use sandbox config if no transition data avail) ---
+            // --- SPAWN ENEMIES & CRYSTALS ---
             List<string> enemiesToSpawn = new List<string>();
             if (transitionData != null && transitionData.EncounterEnemies.Count > 0)
             {
@@ -219,22 +209,89 @@ namespace Game.Combat
             }
             else
             {
-                // Convert Enum to String for the Sandbox!
                 foreach (var id in debugEnemyRoster) enemiesToSpawn.Add(id.ToString());
             } 
 
             int enemyLevel = transitionData != null ? transitionData.ennemyLevel : 1;
+            int crystalCount = 0;
 
-            for (int i = 0; i < enemiesToSpawn.Count; i++)
+            foreach (var enemyTag in enemiesToSpawn)
             {
-                if (i >= enemyDeploymentHexes.Count) break;
+                string fallbackName = enemyTag.Replace("_", " ").ToUpper();
+                var result = unitFactory.CreateEnemyUnit(enemyTag, enemyLevel, fallbackName);
+                
+                if (result.unit != null)
+                {
+                    HexCoordinates coords;
 
-                string tag = enemiesToSpawn[i];
-                string fallbackName = tag.Replace("_", " ").ToUpper();
+                    if (result.unit.AIBehavior == AIBehavior.Crystal)
+                    {
+                        // Spontaneous Crystal Spawning exactly mapped to your visual camera
+                        coords = crystalCount switch
+                        {
+                            // 0. Visual Top-Left
+                            0 => GetEmptyCellInBounds(0, (gridWidth / 3) - 1, gridHeight * 2 / 3, gridHeight - 1), 
+                            
+                            // 1. Visual Bottom-Right
+                            1 => GetEmptyCellInBounds(gridWidth * 2 / 3, gridWidth - 1, 0, (gridHeight / 3) - 1), 
+                            
+                            // 2. Visual Bottom-Left
+                            2 => GetEmptyCellInBounds(0, (gridWidth / 3) - 1, 0, (gridHeight / 3) - 1), 
+                            
+                            // 3. Visual Top-Right / Center-Right
+                            3 => GetEmptyCellInBounds(gridWidth / 3, gridWidth - 1, gridHeight / 3, gridHeight - 1), 
+                            
+                            // Fallback
+                            _ => GetAnyEmptyCell() 
+                        };
+                        crystalCount++;
+                    }
+                    else
+                    {
+                        // Enemies -> VISUAL TOP-RIGHT
+                        coords = GetEmptyCellInBounds(gridWidth / 2, gridWidth - 1, gridHeight / 2, gridHeight - 1);
+                    }
 
-                var (enemyUnit, enemyVisual) = unitFactory.CreateEnemyUnit(tag, enemyLevel, fallbackName);
-                RegisterUnit(enemyUnit, enemyVisual, enemyDeploymentHexes[i]);
+                    RegisterUnit(result.unit, result.visual, coords);
+                }
             }
+        } 
+
+        // Finds a random empty cell within a specific coordinate boundary (Quadrant)
+        private HexCoordinates GetEmptyCellInBounds(int minQ, int maxQ, int minR, int maxR)
+        {
+            List<HexCoordinates> validCells = new List<HexCoordinates>();
+            
+            for (int q = Mathf.Max(0, minQ); q <= Mathf.Min(gridWidth - 1, maxQ); q++)
+            {
+                for (int r = Mathf.Max(0, minR); r <= Mathf.Min(gridHeight - 1, maxR); r++)
+                {
+                    var hex = new HexCoordinates(q, r);
+                    var cell = _grid.GetCell(hex);
+                    
+                    // Crucial check: ensures units NEVER spawn on top of each other
+                    if (cell != null && cell.Occupant == null)
+                    {
+                        validCells.Add(hex);
+                    }
+                }
+            }
+
+            if (validCells.Count > 0)
+                return validCells[UnityEngine.Random.Range(0, validCells.Count)];
+
+            // Fallback if the quadrant is completely full
+            return GetAnyEmptyCell();
+        }
+
+        // Absolute fallback to guarantee the unit gets placed somewhere on the board
+        private HexCoordinates GetAnyEmptyCell()
+        {
+            foreach (var cell in _grid.GetAllCells())
+            {
+                if (cell.Occupant == null) return cell.Coordinates;
+            }
+            return new HexCoordinates(0, 0); 
         } 
 
         private void RegisterUnit(Unit unit, UnitVisual visual, HexCoordinates startPosition)

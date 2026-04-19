@@ -130,7 +130,7 @@ namespace Game.Combat.Units
                 case "healer":
                     return HealerStats;
                 case "Ogre":
-                    return CloseRangeSkletonStats; // TODO: Implement the Ogre Enemey
+                    return CloseRangeSkletonStats; 
                 case "malakor":
                     return MalakorStats;
                 case "crystal":
@@ -157,6 +157,8 @@ namespace Game.Combat.Units
                         return AIBehavior.HydraGrappler;
                 case "malakor":
                         return AIBehavior.Malakor;
+                case "ogre":
+                        return AIBehavior.Malakor; 
                 case "crystal":
                         return AIBehavior.Crystal;
                 default:
