@@ -126,13 +126,6 @@ public class SaveSlotPanelController : MonoBehaviour
 
     public void OnSlotSelected(int slot)
     {
-        SaveManager.Instance.OnLoadComplete += OnLoadComplete; //once we finish loading in the background --> we will invoke OnLoadComplete
         SaveManager.Instance.RequestLoad(slot);
-    }
-
-    private void OnLoadComplete()
-    {
-        SaveManager.Instance.OnLoadComplete -= OnLoadComplete;
-        if (this != null) Close();
     }
 }
