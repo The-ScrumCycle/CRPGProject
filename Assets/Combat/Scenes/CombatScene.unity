@@ -758,8 +758,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.CombatManager
   gridRenderer: {fileID: 1781251604}
-  gridWidth: 13
-  gridHeight: 13
+  gridWidth: 9
+  gridHeight: 9
   environments:
   - {fileID: 11400000, guid: 62cbf618ff2a93449b9d3d21e6eb4a56, type: 2}
   - {fileID: 11400000, guid: 62cbf618ff2a93449b9d3d21e6eb4a56, type: 2}
@@ -772,7 +772,7 @@ MonoBehaviour:
   playerDeploymentHexes: []
   enemyDeploymentHexes: []
   debugPlayerRoster: 000000000200000001000000
-  debugEnemyRoster: 0300000006000000040000000400000003000000
+  debugEnemyRoster: 0800000009000000
   shoveArrowPrefab: {fileID: 7037963474226427388, guid: 7b10fdea16de67c4daa8b9648839db5f,
     type: 3}
   victoryExperience: 100
@@ -1521,6 +1521,7 @@ MonoBehaviour:
   - {fileID: 145884, guid: eca0c1ae7c2128944a004b705c72754d, type: 3}
   - {fileID: 1666678542618180, guid: f5585b48989050840b64026b6c3a8a00, type: 3}
   - {fileID: 1293356793197548, guid: 7864fb6d119a9d140a154516262da18c, type: 3}
+  - {fileID: 5360125738897828599, guid: 08bcf38066a34a348a0f30fa92ddf2c8, type: 3}
 --- !u!4 &1462715937
 Transform:
   m_ObjectHideFlags: 0
@@ -1956,6 +1957,7 @@ MonoBehaviour:
   CloseRangeSkletonStats: {fileID: 11400000, guid: 25de41f82a1748a499f7c45b469d4b95,
     type: 2}
   MalakorStats: {fileID: 11400000, guid: 1c045a2c1af31a74188d84ac13c0aa72, type: 2}
+  CrystalStats: {fileID: 0}
   RangedSkeletonStats: {fileID: 11400000, guid: 17c678253da3048fea41cbfe95ef2946,
     type: 2}
   HealerStats: {fileID: 11400000, guid: 60c56e72fa2064ebda47d77f835f4024, type: 2}

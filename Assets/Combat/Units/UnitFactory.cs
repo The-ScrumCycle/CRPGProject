@@ -24,6 +24,7 @@ namespace Game.Combat.Units
         [SerializeField] private UnitStatsConfig HydraStats;
         [SerializeField] private UnitStatsConfig CloseRangeSkletonStats;
         [SerializeField] private UnitStatsConfig MalakorStats;
+        [SerializeField] private UnitStatsConfig CrystalStats;
         [SerializeField] private UnitStatsConfig RangedSkeletonStats;
         [SerializeField] private UnitStatsConfig HealerStats;
         [SerializeField] private GameObject fallbackEnemyPrefab;
@@ -132,6 +133,8 @@ namespace Game.Combat.Units
                     return CloseRangeSkletonStats; // TODO: Implement the Ogre Enemey
                 case "malakor":
                     return MalakorStats;
+                case "crystal":
+                    return CrystalStats;
                 default:
                     Debug.LogWarning($"[UnitFactory] No stats config found for tag '{enemyTag}', using default stats");
                     return defaultEnemyStats; 
@@ -152,6 +155,10 @@ namespace Game.Combat.Units
                         return AIBehavior.Healer;
                 case "hydra":
                         return AIBehavior.HydraGrappler;
+                case "malakor":
+                        return AIBehavior.Malakor;
+                case "crystal":
+                        return AIBehavior.Crystal;
                 default:
                     return AIBehavior.Aggressive;
             }

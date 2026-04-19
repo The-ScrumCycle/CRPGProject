@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5f351d1e35a53a46bdcae505dc98856, type: 3}
   m_Name: MalakorStats
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitStatsConfig
-  availableActions: 
+  availableActions: 04000000
   maxHealth: 300
   attackPower: 30
+  healPower: 0
   movementRange: 6
   attackRange: 3

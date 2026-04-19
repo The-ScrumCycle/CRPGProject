@@ -835,6 +835,20 @@ namespace Game.Combat
             Invoke(nameof(EndTurn), 0.5f);
         } 
 
+        // Checks the runtime state to see if any Crystals are still alive
+        public bool AreCrystalsAlive()
+        {
+            if (_state == null) return false;
+            foreach (var unit in _state.AllUnits)
+            {
+                if (unit.IsAlive && unit.AIBehavior == AIBehavior.Crystal)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         #endregion
 
         #region Combat Resolution

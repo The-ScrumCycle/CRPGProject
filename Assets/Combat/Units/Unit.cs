@@ -59,6 +59,13 @@ namespace Game.Combat.Units
         // Apply damage to this unit.
         public void TakeDamage(int damage)
         {
+            // --- BOSS INVULNERABILITY LOGIC ---
+            if (AIBehavior == AIBehavior.Malakor && CombatManager.Instance.AreCrystalsAlive())
+            {
+                Debug.Log($"{DisplayName} is INVULNERABLE! Crystals weren't destroyed.");
+                // NOTE: We could add an Invulnerability pop-up here in the UI for the player to have feedback.
+                return;
+            }
             Stats.TakeDamage(damage);
             if (Visual != null) Visual.Flash();
             Debug.Log($"{DisplayName} took {damage} damage. Remaining HP: {Stats.currentHealth}/{Stats.maxHealth}");
