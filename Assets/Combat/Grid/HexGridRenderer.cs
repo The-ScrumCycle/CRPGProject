@@ -16,9 +16,9 @@ namespace Game.Combat.Grid
         [SerializeField] private Texture2D[] environmentTextures; 
         
         [Header("Grid Configuration")]
-        [SerializeField] private int gridWidth = 13;
-        [SerializeField] private int gridHeight = 13;
-        [SerializeField][Min(1)] private int hexScale = 13;
+        [SerializeField] private int gridWidth = 9;
+        [SerializeField] private int gridHeight = 9;
+        [SerializeField][Min(1)] private int hexScale = 9;
 
 	    // All the movement, attack and highlighting coloring for the visual telegraphing
         [Header("Hex Rendering")]
