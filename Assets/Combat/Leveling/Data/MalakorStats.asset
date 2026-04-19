@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitStatsConfig
   availableActions: 04000000
   maxHealth: 300
-  attackPower: 30
+  attackPower: 90
   healPower: 0
   movementRange: 6
   attackRange: 3
