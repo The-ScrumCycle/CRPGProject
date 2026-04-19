@@ -8,9 +8,12 @@ public class EscapeMenuController : MonoBehaviour
     [SerializeField] private GameObject escapeMenuRoot;        // main escape menu
     [SerializeField] private GameObject confirmExitModalRoot;  // confirmation popup
     [SerializeField] private GameObject loadGameModalRoot;    // load game menu (reused from game over screen)
+    [SerializeField] private GameObject ControlsMenuRoot;     // controls menu
 
     [Header("State")]
     [SerializeField] private bool hasSaved = false; // flag for now (later tie to real save system)
+    [SerializeField] private bool IsInLoadMenu = false; 
+    [SerializeField] private bool IsInControlsMenu = false; 
 
     private bool isMenuOpen;
     private bool isConfirmOpen;
@@ -30,15 +33,26 @@ public class EscapeMenuController : MonoBehaviour
 
     void Update()
     {
-        if (CharacterMenuController.IsMenuOpen) return; // prevent escape menu from opening if character menu is open (can only have one open at a time)
-        if (CharacterMenuController.LastEscapeConsumedFrame == Time.frameCount) return; // prevent escape menu from reacting to the same escape press that just closed the character menu
-        if (playerController != null && playerController.GetInDialogue()) return; // prevent escape menu from opening during dialogue
-        if (!Keyboard.current.escapeKey.wasPressedThisFrame) return; // only toggle menu on escape key press
+        if (CharacterMenuController.IsMenuOpen) return;
+        if (CharacterMenuController.LastEscapeConsumedFrame == Time.frameCount) return;
+        if (playerController != null && playerController.GetInDialogue()) return;
+        if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
 
-        // close confirm modal if open, otherwise toggle menu
         if (isConfirmOpen)
         {
             CloseConfirmExitModal();
+            return;
+        }
+
+        if (IsInControlsMenu)
+        {
+            CloseControlsMenu();
+            return;
+        }
+
+        if (IsInLoadMenu)
+        {
+            CloseLoadGameMenu();
             return;
         }
 
@@ -104,8 +118,39 @@ public class EscapeMenuController : MonoBehaviour
             return;
         }
 
+        IsInLoadMenu = true;
+        IsInControlsMenu = false;
         loadGameModalRoot.SetActive(true);
     }
+
+
+    public void ControlsMenu()
+    {
+        if (ControlsMenuRoot == null)
+        {
+            Debug.LogWarning("loadGameModalRoot is not assigned in editor");
+            return;
+        } 
+
+        IsInControlsMenu = true;
+        IsInLoadMenu = false;
+        ControlsMenuRoot.SetActive(true);
+    }
+
+    public void CloseControlsMenu()
+    {
+        IsInControlsMenu = false;
+        if (ControlsMenuRoot != null)
+            ControlsMenuRoot.SetActive(false);
+    }
+
+    public void CloseLoadGameMenu()
+    {
+        IsInLoadMenu = false;
+        if (loadGameModalRoot != null)
+            loadGameModalRoot.SetActive(false);
+    }
+
 
     //button handlers (escape menu)
     public void SaveGame()
