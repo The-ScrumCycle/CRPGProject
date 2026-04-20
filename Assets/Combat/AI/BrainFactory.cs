@@ -17,7 +17,7 @@ namespace Game.Combat.AI
                 case AIBehavior.Healer:           return new HealerBrain();
                 case AIBehavior.HydraGrappler:    return new HydraGrapplerBrain();
                 case AIBehavior.Crystal:          return null; // passes turn automatically
-                default:                          return null;
+                default:                          return new SkeletonMeleeBrain(); // fallback prefab for the game
             }
         }
     }
