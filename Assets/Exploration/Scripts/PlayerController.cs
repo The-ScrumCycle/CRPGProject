@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour, ISaveable
     public NavMeshAgent agent;
 
     public static PlayerController Instance { get; private set; }
-
+    private NavMeshPath _cachedPath;
 
 
     void Awake()
@@ -45,6 +45,8 @@ public class PlayerController : MonoBehaviour, ISaveable
         DontDestroyOnLoad(gameObject);
         cam = Camera.main;
 
+        //_cachedPath = new NavMeshPath();
+
     }
 
     void Start()
@@ -53,6 +55,8 @@ public class PlayerController : MonoBehaviour, ISaveable
         SaveManager.Instance.Register(this);
         int water = UnityEngine.AI.NavMesh.GetAreaFromName("Water");
         agent.areaMask &= ~(1 << water);
+
+        updatePlayerSpeed();
     }
 
     // Update is called once per frame
@@ -65,27 +69,44 @@ public class PlayerController : MonoBehaviour, ISaveable
         // player movimentation 
         HandleClickMove();
         UpdateAnimator();
-        updatePlayerSpeed();
-
+ 
     }
 
-    // player movimentation 
     private void HandleClickMove()
     {
-        // if we don't have a camera or agent, return
         if (agent == null || cam == null) return;
+        if (!agent.isOnNavMesh) return;
 
-        // if left mouse button is pressed, move the player to the clicked position
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
+
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, groundMask, QueryTriggerInteraction.Ignore))
             {
-                if(hit.collider.CompareTag("Water"))
-                {
+                if (hit.collider.CompareTag("Water"))
                     return;
+
+                if (!NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, 10f, agent.areaMask))
+                    return;
+
+                if (Vector3.Distance(agent.nextPosition, navHit.position) < 0.15f)
+                    return;
+
+                NavMeshPath path = new NavMeshPath();
+
+                bool foundPath = NavMesh.CalculatePath(
+                    agent.nextPosition,
+                    navHit.position,
+                    agent.areaMask,
+                    path
+                );
+
+                if (foundPath && path.status != NavMeshPathStatus.PathInvalid)
+                {
+                    agent.isStopped = false;
+                    agent.ResetPath();
+                    agent.SetPath(path);
                 }
-                agent.SetDestination(hit.point);
             }
         }
     }
