@@ -17,4 +17,4 @@ MonoBehaviour:
   attackPower: 20
   healPower: 0
   movementRange: 3
-  attackRange: 1
+  attackRange: 5
