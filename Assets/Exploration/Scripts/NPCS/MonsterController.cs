@@ -121,7 +121,8 @@ public class MonsterController : MonoBehaviour
             agent.SetDestination(playerCharacter.position);
 
             //Basically if the ennemy touches the player
-            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f)
+            float actualDistanceToPlayer = Vector3.Distance(transform.position, playerCharacter.position);
+            if (!agent.pathPending && actualDistanceToPlayer <= stoppingDistance + 0.5f)
             {
                 Debug.Log("Enemy attacked you!");
                 GameStateManager.Instance.TransitionToCombat(gameObject);
