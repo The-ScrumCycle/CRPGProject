@@ -1522,6 +1522,7 @@ MonoBehaviour:
   - {fileID: 1666678542618180, guid: f5585b48989050840b64026b6c3a8a00, type: 3}
   - {fileID: 1293356793197548, guid: 7864fb6d119a9d140a154516262da18c, type: 3}
   - {fileID: 5360125738897828599, guid: 08bcf38066a34a348a0f30fa92ddf2c8, type: 3}
+  fallbackPrefab: {fileID: 177072, guid: 6ff15eda21767db4988080a9497a5deb, type: 3}
 --- !u!4 &1462715937
 Transform:
   m_ObjectHideFlags: 0
