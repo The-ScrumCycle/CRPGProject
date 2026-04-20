@@ -988,7 +988,8 @@ namespace Game.Combat
             if (_flowController.HasUnitActed(unit)) return; // can't select exhausted units
 
             _flowController.SelectPlayerUnit(unit);
-            SetActionMode(PlayerActionMode.Move);
+
+            RefreshActionStateForCurrentUnit();
             
             // Force visuals to update immediately for new selected unit
             RefreshPlayerHighlights();

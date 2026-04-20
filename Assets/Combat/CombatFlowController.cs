@@ -115,7 +115,10 @@ namespace Game.Combat
 
         public bool HasUnitActed(Unit unit) { return _state.ActedUnits.Contains(unit); }
 
-        public bool HasUnitMoved(Unit unit) { return _state.MovedUnits.Contains(unit); }
+        public bool HasUnitMoved(Unit unit) 
+        { 
+            return _state.MovedUnits.Contains(unit) || unit.IsGrappled; 
+        }
 
         public bool HaveAllPlayerUnitsActed()
         {
