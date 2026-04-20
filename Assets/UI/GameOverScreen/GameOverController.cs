@@ -29,15 +29,27 @@ public class GameOverController : MonoBehaviour
     #endif
     }
 
-    void Start()
+    void Update()
     {
-        // if not in exploration scene , player and other persistant objects should not exist 
-        if(SceneManager.GetActiveScene().name == "GameOverScene")
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // CleanupSceneForGameOver();
+            ReturnToMainGameOverMenu();
         }
     }
 
-  
+    private void ReturnToMainGameOverMenu()
+    {
+        if (loadGameModalRoot != null && loadGameModalRoot.activeSelf)
+        {
+            loadGameModalRoot.SetActive(false);
+        }
+
+        if (exitGameButton != null)
+        {
+            exitGameButton.SetActive(true);
+        }
+    }
+
+
 
 }
