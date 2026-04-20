@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b5f351d1e35a53a46bdcae505dc98856, type: 3}
-  m_Name: OgreStats
+  m_Name: CrystalStats
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitStatsConfig
-  availableActions: 04000000
-  maxHealth: 300
-  attackPower: 45
+  availableActions: 
+  maxHealth: 20
+  attackPower: 0
   healPower: 0
-  movementRange: 4
-  attackRange: 3
+  movementRange: 0
+  attackRange: 0

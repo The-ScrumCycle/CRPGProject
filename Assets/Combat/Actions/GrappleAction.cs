@@ -39,11 +39,13 @@ namespace Game.Combat.Actions
             var targetUnit = grid.GetCell(TargetPos)?.Occupant;
             if (targetUnit != null && targetUnit.IsAlive)
             {
-                // Implement grapple pull/stun logic here
+                // CRITICAL FIX: Actually set the player's grappler to this Hydra!
+                targetUnit.grappler = Actor; 
+
                 targetUnit.TakeDamage(Actor.Stats.attackPower);
                 Debug.Log($"[Grapple] {Actor.DisplayName} grappled {targetUnit.DisplayName}!");
             }
-        }
+        } 
 
         public void ApplyDisplacement(HexCoordinates offset)
         {

@@ -13,6 +13,8 @@ namespace Game.Combat
     skeleton_ranged,
     Hydra,
     healer,
-    Malakor
+    Ogre,
+    Malakor,
+    Crystal
   }
 }

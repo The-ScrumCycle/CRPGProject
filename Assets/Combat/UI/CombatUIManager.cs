@@ -37,7 +37,27 @@ namespace Game.Combat.UI
             {
                 bool canUnitWait = isPlayerTurn && currentUnit != null && currentUnit.IsPlayerControlled && !CombatManager.Instance.HasUnitActed(currentUnit);
                 endUnitTurnButton.SetActive(canUnitWait);
-            }
+
+                if (canUnitWait && unitRosterUI != null)
+                {
+                    RectTransform lastCard = unitRosterUI.GetLastActiveCard();
+                    if (lastCard != null)
+                    {
+                        RectTransform btnRect = endUnitTurnButton.GetComponent<RectTransform>();
+                        
+                        // Get the absolute screen position of the last active card
+                        // corners[0] is the bottom-left corner, corners[1] is top-left, etc.
+                        Vector3[] cardCorners = new Vector3[4];
+                        lastCard.GetWorldCorners(cardCorners);
+                        
+                        // Calculate offset based on the button's pivot so its top edge sits cleanly below the card
+                        float pivotOffset = btnRect.pivot.y * btnRect.rect.height * btnRect.lossyScale.y;
+                        float padding = 15f; // The pixel gap between the card and the button
+                        
+                        btnRect.position = new Vector3(btnRect.position.x, cardCorners[0].y - pivotOffset - padding, btnRect.position.z);
+                    }
+                }
+            } 
             
             // Push state down to view layer
             if (unitRosterUI != null)

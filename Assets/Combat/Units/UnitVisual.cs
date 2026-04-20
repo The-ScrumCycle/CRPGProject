@@ -19,10 +19,11 @@ namespace Game.Combat.Units
         [SerializeField] private float deathTime = 1.0f;
 
         private Unit _unit;
+        private Renderer[] _renderers;
+        private Color[] _originalColors;
         private HexGridRenderer _gridRenderer;
         private Vector3 _targetPosition;
         private Quaternion _targetRotation;
-        private Material _mat;
         private int _standardLayer;
         private bool _isMoving;
         private bool _isRotating;
@@ -30,12 +31,25 @@ namespace Game.Combat.Units
 
         public Unit Unit => _unit;
 
+        public void Awake()
+        {
+            // Store exact colors for all mesh parts
+            _renderers = GetComponentsInChildren<Renderer>();
+            _originalColors = new Color[_renderers.Length];
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i].material.HasProperty("_BaseColor"))
+                    _originalColors[i] = _renderers[i].material.GetColor("_BaseColor");
+                else
+                    _originalColors[i] = _renderers[i].material.color;
+            }
+        }
+
         // Initialize this visual with a logical unit.
         public void Initialize(Unit unit, HexGridRenderer gridRenderer)
         {
             _unit = unit;
             _gridRenderer = gridRenderer;
-            _mat = GetComponentInChildren<SkinnedMeshRenderer>().material;
             _standardLayer = gameObject.layer;
 
             // Get Position Offset Safely
@@ -152,9 +166,20 @@ namespace Game.Combat.Units
 
         private IEnumerator FlashRoutine()
         {
-            _mat.SetColor("_BaseColor", flashColor);
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i].material.HasProperty("_BaseColor")) _renderers[i].material.SetColor("_BaseColor", flashColor);
+                else _renderers[i].material.color = flashColor;
+            }
+            
             yield return new WaitForSeconds(flashDuration*0.8f);
-            _mat.SetColor("_BaseColor", Color.white);
+            
+            // Returns unit back to its native colors
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i].material.HasProperty("_BaseColor")) _renderers[i].material.SetColor("_BaseColor", _originalColors[i]);
+                else _renderers[i].material.color = _originalColors[i];
+            }
 
             for (int i = 0; i < numFlashes; i++)
             {
@@ -177,9 +202,12 @@ namespace Game.Combat.Units
             {
                 timeElapsed += Time.deltaTime;
 
-                _mat.color = Color.Lerp(_mat.color, Color.black, Time.deltaTime);
+                for (int i = 0; i < _renderers.Length; i++)
+                {
+                    _renderers[i].material.color = Color.Lerp(_renderers[i].material.color, Color.black, Time.deltaTime);
+                }
+                
                 transform.position -= new Vector3(0.0f, Time.deltaTime, 0.0f);
-
                 yield return null;
             }
             Destroy(gameObject);

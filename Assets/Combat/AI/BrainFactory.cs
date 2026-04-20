@@ -11,13 +11,13 @@ namespace Game.Combat.AI
         {
             switch (behavior)
             {
-                case AIBehavior.Aggressive:
+                case AIBehavior.Malakor:          return new MalakorBrain();
                 case AIBehavior.SkeletonMelee:    return new SkeletonMeleeBrain();
-                case AIBehavior.Defensive:
                 case AIBehavior.SkeletonRanged:   return new SkeletonRangedBrain();
                 case AIBehavior.Healer:           return new HealerBrain();
                 case AIBehavior.HydraGrappler:    return new HydraGrapplerBrain();
-                default: return null;
+                case AIBehavior.Crystal:          return null; // passes turn automatically
+                default:                          return null;
             }
         }
     }
