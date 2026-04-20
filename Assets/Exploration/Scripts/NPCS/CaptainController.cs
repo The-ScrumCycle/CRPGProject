@@ -77,6 +77,11 @@ public class CaptainController : MonoBehaviour, ISaveable
 
     private void OnDestroy()
     {
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.Unregister(this);
+        }
+
         // unsubscribe to avoid duplicate callbacks after domain reloads
         if (uiRunner == null)
         {

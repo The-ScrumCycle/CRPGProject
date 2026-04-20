@@ -39,6 +39,11 @@ public class SaveManager : MonoBehaviour
         Debug.Log($"[SaveManager] Registered: {saveable}. Total: {saveables.Count}");
     }
 
+    public void Unregister(ISaveable saveable)
+    {
+        saveables.Remove(saveable);
+    }
+
     public void SetSlot(int index)
     {
         slot_index = index;

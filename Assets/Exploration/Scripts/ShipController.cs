@@ -37,6 +37,14 @@ public class ShipController : MonoBehaviour, ISaveable
         }
     }
 
+    void OnDestroy()
+    {
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.Unregister(this);
+        }
+    }
+
     public bool IsControllable()
     {
         return isControllable;
