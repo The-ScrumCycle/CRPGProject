@@ -1771,6 +1771,7 @@ MonoBehaviour:
   rosterCardPrefab: {fileID: 3014181930675689475, guid: 95a2c74faa6212b46b43d60864f018aa,
     type: 3}
   rosterContainer: {fileID: 1701550146}
+  endTurnButton: {fileID: 0}
 --- !u!1 &1781251598
 GameObject:
   m_ObjectHideFlags: 0
@@ -1902,9 +1903,9 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  gridWidth: 13
-  gridHeight: 13
-  hexScale: 13
+  gridWidth: 9
+  gridHeight: 9
+  hexScale: 9
   baseColor: {r: 0.3660378, g: 0.3660378, b: 0.3660378, a: 0.39215687}
   hexColor: {r: 1, g: 0.62466854, b: 0.3226415, a: 0.39215687}
   playerMoveColor: {r: 0, g: 0.5471698, b: 0.13679245, a: 0.5882353}

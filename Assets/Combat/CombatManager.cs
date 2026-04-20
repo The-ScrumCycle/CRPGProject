@@ -485,10 +485,15 @@ namespace Game.Combat
         {
             foreach (Unit unit in outlinedUnits)
             {
-                _state.GetVisual(unit).SetHighlight(false);
+                // Safely fetch the visual. If the unit died, it will be null and safely skipped.
+                var visual = _state.GetVisual(unit);
+                if (visual != null)
+                {
+                    visual.SetHighlight(false);
+                }
             }
             outlinedUnits.Clear();
-        }
+        } 
 
         #endregion
 
