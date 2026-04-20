@@ -296,7 +296,7 @@ public class NPCDialogue : MonoBehaviour
             }
             else if (curAction == ogreBossDestroyed)
             {
-                this.state.setFlag("ogreBossDestroyed");
+                // nothing for now 
             }
 
             else if (curAction == clarissaSpeaking)
