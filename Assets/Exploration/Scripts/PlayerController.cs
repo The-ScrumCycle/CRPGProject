@@ -53,8 +53,8 @@ public class PlayerController : MonoBehaviour, ISaveable
     {
         // water is not walkable 
         SaveManager.Instance.Register(this);
-        int water = UnityEngine.AI.NavMesh.GetAreaFromName("Water");
-        agent.areaMask &= ~(1 << water);
+        //int water = UnityEngine.AI.NavMesh.GetAreaFromName("Water");
+        //agent.areaMask &= ~(1 << water);
 
         updatePlayerSpeed();
     }
