@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Game.Core;
@@ -8,6 +9,8 @@ using Game.Combat.Turn;
 using Game.Combat.Units;
 using Game.Combat.Actions;
 using Game.Combat.UI;
+using System;
+using UnityEngine.Rendering;
 
 namespace Game.Combat
 {
@@ -15,7 +18,8 @@ namespace Game.Combat
     public enum PlayerActionMode
     {
         Move,
-        Attack
+        Attack,
+        SecondaryAction
     }
     /// <summary>
     /// Main orchestrator for the combat system.
@@ -27,8 +31,14 @@ namespace Game.Combat
 
         [Header("Grid Configuration")]
         [SerializeField] private HexGridRenderer gridRenderer;
-        [SerializeField] private int gridWidth = 8;
-        [SerializeField] private int gridHeight = 8;
+        [SerializeField] private int gridWidth = 9;
+        [SerializeField] private int gridHeight = 9;
+
+        [Header("Environments")]
+        [SerializeField] private CombatEnvironment[] environments;
+        [SerializeField] private BoardRenderer boardRenderer;
+        [SerializeField] private Material backgroundMat;
+        [SerializeField] private Volume globalVolume;
 
         [Header("Unit Spawning")]
         [SerializeField] private UnitFactory unitFactory;
@@ -36,6 +46,10 @@ namespace Game.Combat
         [Header("Deployment Zones")]
         [SerializeField] private System.Collections.Generic.List<HexCoordinates> playerDeploymentHexes;
         [SerializeField] private System.Collections.Generic.List<HexCoordinates> enemyDeploymentHexes;
+
+        [Header("Sandbox Testing (Direct Scene Boot)")] // allows us to test combat scenarios inside the combat scene
+        [SerializeField] private System.Collections.Generic.List<SandboxUnitID> debugPlayerRoster = new System.Collections.Generic.List<SandboxUnitID> { SandboxUnitID.Captain, SandboxUnitID.Warrior, SandboxUnitID.Cleric };
+        [SerializeField] private System.Collections.Generic.List<SandboxUnitID> debugEnemyRoster = new System.Collections.Generic.List<SandboxUnitID> { SandboxUnitID.skeleton_ranged, SandboxUnitID.skeleton_melee, SandboxUnitID.Hydra };
 
         [Header("Prefabs")]
         [SerializeField] private GameObject shoveArrowPrefab;
@@ -58,6 +72,10 @@ namespace Game.Combat
         private HexCoordinates? _lastHoveredHex = null;
         private ActionIntent _currentHoverIntent = null;
 
+        private List<Unit> outlinedUnits;
+
+        int currentEnv = 0;
+
         #region Unity Lifecycle
 
         void Awake()
@@ -77,6 +95,16 @@ namespace Game.Combat
 
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                currentEnv = (currentEnv+1)%environments.Length;
+                SetEnvironment(environments[currentEnv]);
+            }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                _intentRenderer._renderArrows = false;
+            }
+
             if (_state.CurrentState == CombatState.PlayerTurn)
             {
                 // The only two current player "input types" we can handle e.g an actual input and a hover
@@ -93,12 +121,16 @@ namespace Game.Combat
         {
             Debug.Log("[CombatManager] Initializing combat...");
 
+            outlinedUnits = new List<Unit>();
+
             _grid = new HexGrid(gridWidth, gridHeight);
 
             if (gridRenderer != null)
             {
                 gridRenderer.Initialize(_grid);
             }
+
+            InitializeEnvironment();
 
             _actionResolver = new ActionResolver(_grid);
             _turnSystem = new TurnSystem();
@@ -117,59 +149,149 @@ namespace Game.Combat
             Debug.Log($"[CombatManager] Combat initialized with {_state.AllUnits.Count} units");
         }
 
+        private void InitializeEnvironment()
+        {
+            try
+            {
+                int envIndex = 0;
+                if (CombatTransitionData.Instance != null)
+                {
+                    envIndex = (int)CombatTransitionData.Instance.EnvironmentType;
+                }
+                if (environments != null && environments.Length > envIndex)
+                {
+                    currentEnv = envIndex;
+                    SetEnvironment(environments[currentEnv]);
+                }
+                else if (environments != null && environments.Length > 0)
+                {
+                    currentEnv = 0;
+                    SetEnvironment(environments[currentEnv]);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Failed to load environment: " + e.Message);
+            }
+        }
+
         private void SpawnUnits()
         {
-            var transitionData = CombatTransitionData.Instance;
-            
-            // fallback if editor has no grids written
-            if (playerDeploymentHexes == null || playerDeploymentHexes.Count == 0)
-            {
-                Debug.LogWarning("[CombatManager] No Player Deployment Hexes assigned in Inspector! Using fallbacks.");
-                playerDeploymentHexes = new System.Collections.Generic.List<HexCoordinates> 
-                { 
-                    new HexCoordinates(1, 1), new HexCoordinates(1, 2), new HexCoordinates(2, 1) 
-                };
-            }
-
-            if (enemyDeploymentHexes == null || enemyDeploymentHexes.Count == 0)
-            {
-                Debug.LogWarning("[CombatManager] No Enemy Deployment Hexes assigned in Inspector! Using fallbacks.");
-                enemyDeploymentHexes = new System.Collections.Generic.List<HexCoordinates> 
-                { 
-                    new HexCoordinates(6, 6), new HexCoordinates(6, 5), new HexCoordinates(5, 6) 
-                };
-            }
+            var transitionData = Game.Core.Transitions.CombatTransitionData.Instance;
 
             // --- SPAWN PLAYERS ---
-            List<string> playersToSpawn = transitionData != null && transitionData.ActiveCompanions.Count > 0 
-                ? transitionData.ActiveCompanions 
-                : new List<string> { "Captain" }; // NOTE: Fallback for pure combat scene testing
-
-            for (int i = 0; i < playersToSpawn.Count; i++)
+            List<string> playersToSpawn = new List<string>();
+            if (transitionData != null && transitionData.ActiveCompanions.Count > 0)
             {
-                if (i >= playerDeploymentHexes.Count) break; // Don't spawn if we run out of hexes
+                playersToSpawn = transitionData.ActiveCompanions;
+            }
+            else
+            {
+                foreach (var id in debugPlayerRoster) playersToSpawn.Add(id.ToString());
+            } 
 
-                var (playerUnit, playerVisual) = unitFactory.CreatePlayerUnit(playersToSpawn[i]);
-                RegisterUnit(playerUnit, playerVisual, playerDeploymentHexes[i]);
+            foreach (var playerId in playersToSpawn)
+            {
+                var result = unitFactory.CreatePlayerUnit(playerId);
+                if (result.unit != null)
+                {
+                    // VISUAL BOTTOM-LEFT
+                    HexCoordinates coords = GetEmptyCellInBounds(0, (gridWidth / 2) - 1, 0, (gridHeight / 2) - 1);
+                    RegisterUnit(result.unit, result.visual, coords);
+                }
             }
 
-            // --- SPAWN ENEMIES ---
-            List<string> enemiesToSpawn = transitionData != null && transitionData.EncounterEnemies.Count > 0 
-                ? transitionData.EncounterEnemies 
-                : new List<string> { "Enemy" }; // Fallback
+            // --- SPAWN ENEMIES & CRYSTALS ---
+            List<string> enemiesToSpawn = new List<string>();
+            if (transitionData != null && transitionData.EncounterEnemies.Count > 0)
+            {
+                enemiesToSpawn = transitionData.EncounterEnemies;
+            }
+            else
+            {
+                foreach (var id in debugEnemyRoster) enemiesToSpawn.Add(id.ToString());
+            } 
 
             int enemyLevel = transitionData != null ? transitionData.ennemyLevel : 1;
+            int crystalCount = 0;
 
-            for (int i = 0; i < enemiesToSpawn.Count; i++)
+            foreach (var enemyTag in enemiesToSpawn)
             {
-                if (i >= enemyDeploymentHexes.Count) break;
+                string fallbackName = enemyTag.Replace("_", " ").ToUpper();
+                var result = unitFactory.CreateEnemyUnit(enemyTag, enemyLevel, fallbackName);
+                
+                if (result.unit != null)
+                {
+                    HexCoordinates coords;
 
-                string tag = enemiesToSpawn[i];
-                string fallbackName = tag.Replace("_", " ").ToUpper(); // Just makes names like "skeleton_ranged" look nicer
+                    if (result.unit.AIBehavior == AIBehavior.Crystal)
+                    {
+                        // Spontaneous Crystal Spawning exactly mapped to your visual camera
+                        coords = crystalCount switch
+                        {
+                            // 0. Visual Top-Left
+                            0 => GetEmptyCellInBounds(0, (gridWidth / 3) - 1, gridHeight * 2 / 3, gridHeight - 1), 
+                            
+                            // 1. Visual Bottom-Right
+                            1 => GetEmptyCellInBounds(gridWidth * 2 / 3, gridWidth - 1, 0, (gridHeight / 3) - 1), 
+                            
+                            // 2. Visual Bottom-Left
+                            2 => GetEmptyCellInBounds(0, (gridWidth / 3) - 1, 0, (gridHeight / 3) - 1), 
+                            
+                            // 3. Visual Top-Right / Center-Right
+                            3 => GetEmptyCellInBounds(gridWidth / 3, gridWidth - 1, gridHeight / 3, gridHeight - 1), 
+                            
+                            // Fallback
+                            _ => GetAnyEmptyCell() 
+                        };
+                        crystalCount++;
+                    }
+                    else
+                    {
+                        // Enemies -> VISUAL TOP-RIGHT
+                        coords = GetEmptyCellInBounds(gridWidth / 2, gridWidth - 1, gridHeight / 2, gridHeight - 1);
+                    }
 
-                var (enemyUnit, enemyVisual) = unitFactory.CreateEnemyUnit(tag, enemyLevel, fallbackName);
-                RegisterUnit(enemyUnit, enemyVisual, enemyDeploymentHexes[i]);
+                    RegisterUnit(result.unit, result.visual, coords);
+                }
             }
+        } 
+
+        // Finds a random empty cell within a specific coordinate boundary (Quadrant)
+        private HexCoordinates GetEmptyCellInBounds(int minQ, int maxQ, int minR, int maxR)
+        {
+            List<HexCoordinates> validCells = new List<HexCoordinates>();
+            
+            for (int q = Mathf.Max(0, minQ); q <= Mathf.Min(gridWidth - 1, maxQ); q++)
+            {
+                for (int r = Mathf.Max(0, minR); r <= Mathf.Min(gridHeight - 1, maxR); r++)
+                {
+                    var hex = new HexCoordinates(q, r);
+                    var cell = _grid.GetCell(hex);
+                    
+                    // Crucial check: ensures units NEVER spawn on top of each other
+                    if (cell != null && cell.Occupant == null)
+                    {
+                        validCells.Add(hex);
+                    }
+                }
+            }
+
+            if (validCells.Count > 0)
+                return validCells[UnityEngine.Random.Range(0, validCells.Count)];
+
+            // Fallback if the quadrant is completely full
+            return GetAnyEmptyCell();
+        }
+
+        // Absolute fallback to guarantee the unit gets placed somewhere on the board
+        private HexCoordinates GetAnyEmptyCell()
+        {
+            foreach (var cell in _grid.GetAllCells())
+            {
+                if (cell.Occupant == null) return cell.Coordinates;
+            }
+            return new HexCoordinates(0, 0); 
         } 
 
         private void RegisterUnit(Unit unit, UnitVisual visual, HexCoordinates startPosition)
@@ -190,30 +312,79 @@ namespace Game.Combat
 
         #endregion
 
+        #region Environment Management
+
+        private void SetEnvironment(CombatEnvironment env)
+        {
+            if (boardRenderer != null)
+            {
+                boardRenderer.SetBoard(env._boardMat);
+                boardRenderer.SetBorder(env._borderMat);
+            }
+
+            if (gridRenderer != null)
+            {
+                
+            }
+
+            if (backgroundMat != null) RenderSettings.skybox = env._backgroundMat;
+
+            if (globalVolume != null) globalVolume.profile = env._postProcessingProfile;
+        }
+
+        #endregion
+
         #region Highlight Management
         private void UpdateUnitWorldUIs(ActionIntent hoverIntent = null)
         {
-            var intents = new List<ActionIntent>(_state.GetIntents());
+            var intents = new List<ActionIntent>();
+            if (_state != null) intents.AddRange(_state.GetIntents());
             if (hoverIntent != null) intents.Add(hoverIntent);
 
-            // Get current hovered unit for UI visibility rules
             var hoveredHex = gridRenderer.GetHoveredHex();
             var hoveredCell = _grid.GetCell(hoveredHex);
             Unit hoveredUnit = hoveredCell?.Occupant;
 
             foreach (var unit in _state.AllUnits)
             {
+                if (unit == null || !unit.IsAlive) continue;
+
                 var visual = _state.GetVisual(unit);
-                if (visual == null) continue;
+                if (visual == null) continue; 
 
                 var worldUI = visual.GetComponentInChildren<UI.UnitWorldUI>();
                 if (worldUI == null) continue;
 
                 int incomingDamage = 0;
-                bool isSecondaryTarget = false; // flag so we track secondary bump damage
+                bool isSecondaryTarget = false; 
+
                 foreach (var intent in intents)
                 {
-                    if (intent.TargetUnit == unit) incomingDamage += intent.PredictedDamage;
+                    // --- Damage Preview Layer for AOE Attacks ---
+                    bool isTargetedByAction = false;
+                    
+                    if (intent.TargetCells != null && intent.TargetCells.Count > 0)
+                    {
+                        // Safely loop through the target cells instead of relying on missing LINQ extensions
+                        foreach (var cellCoord in intent.TargetCells)
+                        {
+                            if (cellCoord == unit.Coordinates)
+                            {
+                                isTargetedByAction = true;
+                                break;
+                            }
+                        }
+                    } 
+                    else
+                    {
+                        isTargetedByAction = intent.TargetUnit == unit;
+                    }
+
+                    if (isTargetedByAction)
+                    {
+                        incomingDamage += intent.PredictedDamage;
+                    }
+
                     if (intent.SecondaryBumpTarget == unit) 
                     {
                         incomingDamage += 10; // BUMP_DAMAGE
@@ -221,8 +392,7 @@ namespace Game.Combat
                     }
                 }
 
-                // Pass the unified state to the UI, we show the damage both the hovered unit and the secondary bump target will take
-                bool isHovered = (unit == hoveredUnit) || isSecondaryTarget;
+                bool isHovered = (unit == hoveredUnit) || isSecondaryTarget || (incomingDamage > 0);
                 worldUI.UpdateState(unit.Stats.currentHealth, unit.Stats.maxHealth, incomingDamage, isHovered, unit.IsPlayerControlled);
             }
         } 
@@ -240,12 +410,30 @@ namespace Game.Combat
             RefreshPlayerHighlights(); // Pass no intent, clears the screen until mouse updates
         }
 
+        private void RefreshEnemyIntents()
+        {
+            if (_state == null) return;
+            var currentIntents = new List<ActionIntent>(_state.GetIntents());
+            
+            _state.ClearIntents(); 
+            foreach (var intent in currentIntents)
+            {
+                if (intent.Actor != null && intent.Actor.IsAlive)
+                {
+                    var freshIntent = _actionResolver.Preview(intent.Action);
+                    _state.AddIntent(freshIntent);
+                }
+            }
+        }
+
         // Build and push all active highlights to the renderer.
         // Player move highlights first, then AI intents layered on top via priority of the action intents.
         private void RefreshPlayerHighlights(ActionIntent hoverIntent = null)
         {
             gridRenderer.ClearHighlights();
             var currentUnit = _flowController.GetCurrentUnit();
+
+            ClearOutlines();
 
             // Layer 1: Player highlights
             if (currentUnit != null && currentUnit.IsPlayerControlled)
@@ -255,13 +443,21 @@ namespace Game.Combat
                     var validMoves = _flowController.GetValidMoves(currentUnit);
                     foreach (var coord in validMoves)
                         gridRenderer.AddHighlight(coord, HighlightType.PlayerMove);
+
+                    // Also show attackable enemies so the player knows they're already in range
+                    var attackableNow = _flowController.GetValidAttackTargets(currentUnit);
+                    foreach (var coord in attackableNow)
+                        gridRenderer.AddHighlight(coord, HighlightType.PlayerAttack);
                 }
                 else if (_currentActionMode == PlayerActionMode.Attack)
                 {
-                    var validTargets = _flowController.GetValidAttackTargets(currentUnit);
+                    var validTargets = _flowController.GetCellsInAttackRange(currentUnit);
                     foreach (var coord in validTargets)
                         gridRenderer.AddHighlight(coord, HighlightType.PlayerAttack);
                 }
+
+                _state.GetVisual(currentUnit).SetHighlight(true);
+                outlinedUnits.Add(currentUnit);
             }
 
             // Layer 2: AI intents (Always draw these)
@@ -269,7 +465,13 @@ namespace Game.Combat
             var allIntentsToRender = new List<ActionIntent>(_state.GetIntents());
             if (hoverIntent != null) allIntentsToRender.Add(hoverIntent); // Generate "Phantom" action intent for showing enemy health bar
 
-            _intentRenderer.RenderAll(allIntentsToRender);
+            Dictionary<ActionIntent, UnitVisual> intentsWithVisuals = new Dictionary<ActionIntent, UnitVisual>();
+            foreach (ActionIntent intent in allIntentsToRender)
+            {
+                intentsWithVisuals.Add(intent, _state.GetVisual(intent.Actor));
+            }
+
+            _intentRenderer.RenderAll(intentsWithVisuals);
             foreach (var kvp in _intentRenderer.GetHighlights())
             {
                 gridRenderer.AddHighlight(kvp.Key, kvp.Value);
@@ -277,6 +479,20 @@ namespace Game.Combat
 
             // Layer 3: Damage indicators and Shove arrow indicator
             UpdateUnitWorldUIs(hoverIntent);
+        }
+
+        private void ClearOutlines()
+        {
+            foreach (Unit unit in outlinedUnits)
+            {
+                // Safely fetch the visual. If the unit died, it will be null and safely skipped.
+                var visual = _state.GetVisual(unit);
+                if (visual != null)
+                {
+                    visual.SetHighlight(false);
+                }
+            }
+            outlinedUnits.Clear();
         } 
 
         #endregion
@@ -341,15 +557,12 @@ namespace Game.Combat
             if (currentUnit == null || !currentUnit.IsPlayerControlled || _flowController.HasUnitActed(currentUnit)) return;
 
             // Mode switching
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                SetActionMode(PlayerActionMode.Move);
-            }
-
-            if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                SetActionMode(PlayerActionMode.Attack);
-            }
+            if (Input.GetKeyDown(KeyCode.Alpha1) && !_flowController.HasUnitMoved(currentUnit)) SetActionMode(PlayerActionMode.Move); 
+            if (Input.GetKeyDown(KeyCode.Alpha2)) SetActionMode(PlayerActionMode.Attack);
+            // Optional 3rd action player units can have
+            if (Input.GetKeyDown(KeyCode.Alpha3)) SetActionMode(PlayerActionMode.SecondaryAction);
+            // Button to end unit's own turn manually
+            if (Input.GetKeyDown(KeyCode.X)) SkipCurrentUnitTurn();
 
             // Action execution based on current mode
             if (Input.GetMouseButtonDown(0))
@@ -362,15 +575,28 @@ namespace Game.Combat
                 var clickedCell = _grid.GetCell(clickedHex);
                 if (clickedCell == null) return;
 
-                // Swap unit when player clicks on a unit on grid
-                if (clickedCell.Occupant != null && clickedCell.Occupant.IsPlayerControlled && clickedCell.Occupant.IsAlive)
+                // Prevent Heal/Friendly Spells from swapping characters
+                bool isExecutingFriendlyAction = false;
+                if (_currentActionMode == PlayerActionMode.SecondaryAction && currentUnit.AvailableActions.Count > 1)
+                {
+                    var action = CreateActionFromType(currentUnit.AvailableActions[1], currentUnit, clickedCell);
+                    if (action != null && action.IsValid(_grid)) isExecutingFriendlyAction = true;
+                }
+                else if (_currentActionMode == PlayerActionMode.Attack && currentUnit.AvailableActions.Count > 0)
+                {
+                    var action = CreateActionFromType(currentUnit.AvailableActions[0], currentUnit, clickedCell);
+                    if (action != null && action.IsValid(_grid)) isExecutingFriendlyAction = true;
+                }
+
+                // Swap unit when player clicks on a unit on grid (Bypassed if aiming a valid heal)
+                if (!isExecutingFriendlyAction && clickedCell.Occupant != null && clickedCell.Occupant.IsPlayerControlled && clickedCell.Occupant.IsAlive)
                 {
                     if (!_flowController.HasUnitActed(clickedCell.Occupant))
                     {
                         _flowController.SelectPlayerUnit(clickedCell.Occupant);
-                        SetActionMode(PlayerActionMode.Move);
-                        return; // Successfully swapped, abort action execution
-                    }
+                        RefreshActionStateForCurrentUnit(); // Set them to Move or Attack appropriately
+                        return; 
+                    } 
                 }
 
                 if (_currentActionMode == PlayerActionMode.Move)
@@ -380,12 +606,9 @@ namespace Game.Combat
                         TryPlayerMove(currentUnit, clickedHex);
                     }
                 }
-                else if (_currentActionMode == PlayerActionMode.Attack)
+                else if (_currentActionMode == PlayerActionMode.Attack || _currentActionMode == PlayerActionMode.SecondaryAction)
                 {
-                    if (clickedCell.Occupant != null && clickedCell.Occupant.Role == UnitRole.Enemy)
-                    {
-                        TryPlayerAttack(currentUnit, clickedCell.Occupant);
-                    }
+                    TryPlayerAbility(currentUnit, clickedCell);
                 }
             }
 
@@ -418,42 +641,87 @@ namespace Game.Combat
             {
                 var cell = _grid.GetCell(currentHex);
                 
-                // Create a "Phantom" Intent for the UI to read
-                if (cell != null && _currentActionMode == PlayerActionMode.Attack && cell.Occupant != null && cell.Occupant.Role == UnitRole.Enemy)
+                // Create a dynamic Intent based on the active loadout slot
+                if (cell != null && (_currentActionMode == PlayerActionMode.Attack || _currentActionMode == PlayerActionMode.SecondaryAction))
                 {
-                    int distance = _grid.GetDistance(currentUnit.Coordinates, currentHex);
-                    ICombatAction mockAction = null;
+                    int actionIndex = _currentActionMode == PlayerActionMode.Attack ? 0 : 1;
                     
-                    if (distance == 1) mockAction = _actionResolver.CreateMeleeAttack(currentUnit, cell.Occupant);
-                    else if (distance <= currentUnit.Stats.attackRange) mockAction = _actionResolver.CreateRangedAttack(currentUnit, cell.Occupant);
-
-                    if (mockAction != null && _actionResolver.Validate(mockAction))
+                    if (actionIndex < currentUnit.AvailableActions.Count)
                     {
-                        _currentHoverIntent = _actionResolver.Preview(mockAction);
+                        CombatActionType abilityType = currentUnit.AvailableActions[actionIndex];
+                        ICombatAction mockAction = CreateActionFromType(abilityType, currentUnit, cell);
+
+                        if (mockAction != null && _actionResolver.Validate(mockAction))
+                        {
+                            _currentHoverIntent = _actionResolver.Preview(mockAction);
+                        }
                     }
                 }
             }
 
-            // Refresh highlights passing in the new phantom intent
             RefreshPlayerHighlights(_currentHoverIntent);
         } 
 
+        /* Unit Pinned State -
+        //  1) If player is in a targeted hex his "move" action becomes "dodge" as they're in pinned state which exhausts the unit's turn
+        //  2) If player is not in a targeted hex the player gets to "move" and then play a secondary/thirdary action e.g attack.
+        */
+        public bool IsUnitPinned(Unit unit)
+        {
+            if (unit == null) return false;
+
+            foreach (var intent in _state.GetIntents())
+            {
+                // Check direct targeting
+                if (intent.TargetUnit == unit) return true;
+                
+                // Check AoE Danger Zones
+                if (intent.TargetCells != null)
+                {
+                    foreach (var cell in intent.TargetCells)
+                    {
+                        if (cell == unit.Coordinates) return true;
+                    }
+                }
+
+                // Check physical collision bump paths
+                if (intent.SecondaryBumpTarget == unit) return true;
+            }
+            return false;
+        }
+
         private void TryPlayerMove(Unit unit, HexCoordinates destination)
         {
+            // CHECK PINNED STATUS BEFORE THEY MOVE (refer to function IsUnitPinned)
+            bool wasPinned = IsUnitPinned(unit); 
+
             var moveAction = _actionResolver.CreateMoveAction(unit, destination);
             if (_actionResolver.Execute(moveAction))
             {
-                var currentUnit = _flowController.GetCurrentUnit();
-                _flowController.MarkUnitActed(currentUnit);
+                SweepForDeaths();
+                RefreshEnemyIntents();
+
+                if (wasPinned)
+                {
+                    // DODGE: Consumes the Unit's entire turn to move
+                    _flowController.MarkUnitActed(unit);
+                    Debug.Log($"[CombatManager] {unit.DisplayName} Dodged! Turn ended.");
+                }
+                else
+                {
+                    // FREE REPOSITION: Consumes move, leaves attack actions intact
+                    _flowController.MarkUnitMoved(unit);
+                    SetActionMode(PlayerActionMode.Attack);
+                    Debug.Log($"[CombatManager] {unit.DisplayName} repositioned. Can still act.");
+                }
                 
-                // Clear UI and Highlights immediately as player action is done
+                // Handle visual and intent layer
                 _currentHoverIntent = null;
                 _intentRenderer.Clear();
                 gridRenderer.ClearHighlights();
                 UpdateUnitWorldUIs();
                 RefreshAllUnitVisuals();
                 
-                // End turn if player played all unit turns OR go to next unit
                 if (_flowController.HaveAllPlayerUnitsActed())
                 {
                     Invoke(nameof(EndTurn), 0.3f);
@@ -463,52 +731,74 @@ namespace Game.Combat
                     var nextUnit = _flowController.GetNextAvailablePlayerUnit();
                     if (nextUnit != null) _flowController.SelectPlayerUnit(nextUnit);
                     
-                    // Delay the UI refresh slightly so visual slide finishes before drawing new grids
-                    Invoke(nameof(ResetModeToMove), 0.3f); 
+                    Invoke(nameof(RefreshActionStateForCurrentUnit), 0.3f);
                 }
             }
         } 
 
-        private void TryPlayerAttack(Unit attacker, Unit target)
+        // Allow player's to deliberately skip their unit's turn
+        public void SkipCurrentUnitTurn()
         {
-            ICombatAction attackAction;
+            var unit = _flowController.GetCurrentUnit();
+            if (unit == null || !unit.IsPlayerControlled || _flowController.HasUnitActed(unit)) return;
 
-            int distance = _grid.GetDistance(attacker.Coordinates, target.Coordinates);
+            Debug.Log($"[CombatManager] {unit.DisplayName} waits. Turn ended.");
+            
+            // Exhaust their turn
+            _flowController.MarkUnitActed(unit);
+            
+            // Clean up the UI intent layer
+            _currentHoverIntent = null;
+            _intentRenderer.Clear();
+            gridRenderer.ClearHighlights();
+            UpdateUnitWorldUIs();
+            RefreshAllUnitVisuals();
 
-            if (distance == 1)
+            // Advance the combat flow
+            if (_flowController.HaveAllPlayerUnitsActed())
             {
-                attackAction = _actionResolver.CreateMeleeAttack(attacker, target);
-            }
-            else if (distance <= attacker.Stats.attackRange)
-            {
-                attackAction = _actionResolver.CreateRangedAttack(attacker, target);
+                Invoke(nameof(EndTurn), 0.3f);
             }
             else
             {
-                Debug.Log("[CombatManager] Target out of range");
+                var nextUnit = _flowController.GetNextAvailablePlayerUnit();
+                if (nextUnit != null) _flowController.SelectPlayerUnit(nextUnit);
+                
+                Invoke(nameof(RefreshActionStateForCurrentUnit), 0.3f); 
+            }
+        }
+        
+        private void TryPlayerAbility(Unit caster, HexCell targetCell)
+        {
+            int actionIndex = _currentActionMode == PlayerActionMode.Attack ? 0 : 1;
+            if (actionIndex >= caster.AvailableActions.Count) return;
+
+            CombatActionType abilityType = caster.AvailableActions[actionIndex];
+            ICombatAction action = CreateActionFromType(abilityType, caster, targetCell);
+
+            // If the factory failed to build it, or the action's specific IsValid checks fail, abort
+            if (action == null || !_actionResolver.Validate(action)) 
+            {
+                Debug.Log($"[CombatManager] Invalid target for {abilityType}");
                 return;
             }
 
-            if (_actionResolver.Execute(attackAction))
+            if (_actionResolver.Execute(action))
             {
-                Debug.Log($"[CombatManager] {attacker.DisplayName} attacked {target.DisplayName} for {attacker.Stats.attackPower} damage");
-                Debug.Log($"[CombatManager] {target.DisplayName} HP: {target.Stats.currentHealth}/{target.Stats.maxHealth}");
+                Debug.Log($"[CombatManager] {caster.DisplayName} used {abilityType} on {targetCell.Occupant?.DisplayName ?? "Empty Hex"}");
                 
                 SweepForDeaths();
+                RefreshEnemyIntents();
 
                 var currentUnit = _flowController.GetCurrentUnit();
                 _flowController.MarkUnitActed(currentUnit);
                 
-                // Clear UI and Highlights immediately
                 _currentHoverIntent = null;
                 _intentRenderer.Clear();
                 gridRenderer.ClearHighlights();
                 UpdateUnitWorldUIs();
-
-                // updating enemy position (shove)
                 RefreshAllUnitVisuals();
 
-                // End turn if player played all unit turns OR go to next unit
                 if (_flowController.HaveAllPlayerUnitsActed())
                 {
                     Invoke(nameof(EndTurn), 0.3f);
@@ -518,16 +808,42 @@ namespace Game.Combat
                     var nextUnit = _flowController.GetNextAvailablePlayerUnit();
                     if (nextUnit != null) _flowController.SelectPlayerUnit(nextUnit);
                     
-                    // Delay the UI refresh slightly so visual slide finishes before drawing new grids
-                    Invoke(nameof(ResetModeToMove), 0.3f); 
+                    Invoke(nameof(RefreshActionStateForCurrentUnit), 0.3f);
                 }
             }
         }
 
-        private void ResetModeToMove()
+        private ICombatAction CreateActionFromType(CombatActionType type, Unit actor, HexCell targetCell)
         {
-            SetActionMode(PlayerActionMode.Move);
+            // Most actions currently require an occupant to target, except specific AoEs
+            if (targetCell.Occupant == null && type != CombatActionType.SplashAttack && type != CombatActionType.SweepAttack) 
+                return null; 
+
+            switch (type)
+            {
+                case CombatActionType.MeleeAttack:
+                    return _actionResolver.CreateMeleeAttack(actor, targetCell);
+                case CombatActionType.RangedAttack:
+                    return _actionResolver.CreateRangedAttack(actor, targetCell);
+                case CombatActionType.HeavyMeleeAttack:
+                    return _actionResolver.CreateHeavyMeleeAttack(actor, targetCell);
+                case CombatActionType.PullAlly:
+                    return _actionResolver.CreatePull(actor, targetCell);
+                case CombatActionType.RangedHeal:
+                    return _actionResolver.CreateRangedHeal(actor, targetCell);
+                default:
+                    return null;
+            }
         }
+
+        private void RefreshActionStateForCurrentUnit()
+        {
+            var unit = _flowController.GetCurrentUnit();
+            if (unit != null && !_flowController.HasUnitMoved(unit))
+                SetActionMode(PlayerActionMode.Move);
+            else if (unit != null)
+                SetActionMode(PlayerActionMode.Attack);
+        } 
         #endregion
 
         #region Enemy AI
@@ -551,40 +867,28 @@ namespace Game.Combat
                 }
             }
 
-            // 2. Execute the locked intent IF it is still valid, e.g don't move into a hexagon that contains a unit now (through shoving or player move)
-            bool targetStillInHex = true;
-            if (lockedIntent != null && lockedIntent.TargetUnit != null)
-            {
-                if (lockedIntent != null && lockedIntent.TargetUnit != null && lockedIntent.TargetCells.Count > 0)
-                {
-                    // We check against TargetCells[0] because single-target attacks yield exactly one hex, in the future if we add AOE we need to totally refactor
-                    if (lockedIntent.TargetUnit.Coordinates != lockedIntent.TargetCells[0])
-                    {
-                        targetStillInHex = false; // Player dodged attack
-                    }
-                }
-            }
-
-            // Execute the locked intent IF it is valid AND the player didn't doge the attack e.g move away
-            if (lockedIntent != null && targetStillInHex && _actionResolver.Validate(lockedIntent.Action))
+            // 2. Execute the locked intent. (The old 'targetStillInHex' abort has been eradicated).
+            // The action will always hit the locked hex if the player dodged, it hits empty space.
+            if (lockedIntent != null && _actionResolver.Validate(lockedIntent.Action))
             {
                 if (_actionResolver.Execute(lockedIntent.Action))
                 {
-                    bool isAttack = lockedIntent.Action is MeleeAttackAction || lockedIntent.Action is RangedAttackAction;
-                    if (isAttack)
-                    {
-                        Debug.Log($"[CombatManager] {enemyUnit.DisplayName} executed telegraphed attack!");
-                        SweepForDeaths(); 
-                    }
+                    Debug.Log($"[CombatManager] {enemyUnit.DisplayName} executed telegraphed action: {lockedIntent.Action.GetType().Name}");
+                    SweepForDeaths(); 
                 }
             }
             else
             {
-                // AI action failed e.g player outmanuvered the AI
-                Debug.Log($"[CombatManager] {enemyUnit.DisplayName}'s action failed (target moved or invalid)!");
+                if (lockedIntent == null)
+                    Debug.Log($"[AI Skip] {enemyUnit.DisplayName} ({enemyUnit.AIBehavior}) has nothing to do — no action planned");
+                else
+                    Debug.Log($"[AI Blocked] {enemyUnit.DisplayName}'s {lockedIntent.Action.GetType().Name} failed validation — target out of range");
             }
 
-            // 3. Force visual refresh so any shoved units physically slide to their new hex
+            // 3. Handle update of unit visual based on action
+
+
+            // 4. Force visual refresh so any shoved units physically slide to their new hex
             foreach (var unit in _state.AllUnits)
             {
                 _state.GetVisual(unit)?.RefreshPosition();
@@ -592,6 +896,20 @@ namespace Game.Combat
 
             Invoke(nameof(EndTurn), 0.5f);
         } 
+
+        // Checks the runtime state to see if any Crystals are still alive
+        public bool AreCrystalsAlive()
+        {
+            if (_state == null) return false;
+            foreach (var unit in _state.AllUnits)
+            {
+                if (unit.IsAlive && unit.AIBehavior == AIBehavior.Crystal)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         #endregion
 
@@ -608,7 +926,7 @@ namespace Game.Combat
             var visual = _state.GetVisual(unit);
             if (visual != null)
             {
-                Destroy(visual.gameObject);
+                visual.Die();
                 _state.RemoveUnitVisual(unit);
             }
         }
@@ -648,7 +966,16 @@ namespace Game.Combat
                 enemyName: transitionData?.enemyName ?? "Unknown"
             );
 
-            GameStateManager.Instance.TransitionToExploration(result);
+            if(victory)
+            {
+                GameStateManager.Instance.TransitionToExploration(result);
+            }
+
+
+            else
+            {
+                GameStateManager.Instance.TransitionToGameOver();
+            }
         }
 
         #endregion
@@ -666,7 +993,8 @@ namespace Game.Combat
             if (_flowController.HasUnitActed(unit)) return; // can't select exhausted units
 
             _flowController.SelectPlayerUnit(unit);
-            SetActionMode(PlayerActionMode.Move);
+
+            RefreshActionStateForCurrentUnit();
             
             // Force visuals to update immediately for new selected unit
             RefreshPlayerHighlights();
@@ -692,8 +1020,26 @@ namespace Game.Combat
             return _state.GetIntents();
         }
 
-        // Check if the player has acted this turn
+        // Shift enemy AI's attack intent per unit offset 
+        public void ShiftUnitIntent(Unit unit, HexCoordinates offset)
+        {
+            if (unit == null || (offset.q == 0 && offset.r == 0)) return;
+
+            foreach (var intent in _state.GetIntents())
+            {
+                // If the unit that was pushed has a locked-in attack, shift it.
+                if (intent.Actor == unit)
+                {
+                    intent.Shift(offset, _grid);
+                    Debug.Log($"[Physics] Shifted {unit.DisplayName}'s telegraphed aim by {offset.q}, {offset.r}");
+                    break;
+                }
+            }
+        }
+
+        // Check if the player has acted / moved this turn
         public bool HasUnitActed(Unit unit) => _flowController != null && _flowController.HasUnitActed(unit);
+        public bool HasUnitMoved(Unit unit) => _flowController != null && _flowController.HasUnitMoved(unit);
 
         public bool IsPlayerTurn => _state != null && _state.CurrentState == CombatState.PlayerTurn;
         #endregion

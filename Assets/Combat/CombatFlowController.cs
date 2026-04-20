@@ -73,6 +73,22 @@ namespace Game.Combat
                 _state.ClearActedUnits(); // Clear enemies/players on new round
                 _enemyAI.GenerateAllIntents(_state);
             }
+
+            // Fast-forward past any remaining players if the shared player phase is complete
+            while (_turnSystem.GetCurrentUnit() != null &&
+                   _turnSystem.GetCurrentUnit().IsPlayerControlled &&
+                   HaveAllPlayerUnitsActed())
+            {
+                int currentRound = _turnSystem.RoundNumber;
+                _turnSystem.AdvanceTurn();
+                
+                // Catch round end inside the fast-forward
+                if (_turnSystem.RoundNumber > currentRound)
+                {
+                    _state.ClearActedUnits();
+                    _enemyAI.GenerateAllIntents(_state);
+                }
+            }
         }
 
         public Unit GetCurrentUnit()
@@ -86,8 +102,23 @@ namespace Game.Combat
             return currentUnit != null && currentUnit.IsPlayerControlled;
         }
 
-        public void MarkUnitActed(Unit unit) { _state.ActedUnits.Add(unit); }
+        public void MarkUnitActed(Unit unit) 
+        { 
+            _state.ActedUnits.Add(unit); 
+            _state.MovedUnits.Add(unit); // Acting also exhausts movement e.g ends unit's turn
+        }
+        
+        public void MarkUnitMoved(Unit unit) 
+        { 
+            _state.MovedUnits.Add(unit); 
+        }
+
         public bool HasUnitActed(Unit unit) { return _state.ActedUnits.Contains(unit); }
+
+        public bool HasUnitMoved(Unit unit) 
+        { 
+            return _state.MovedUnits.Contains(unit) || unit.IsGrappled; 
+        }
 
         public bool HaveAllPlayerUnitsActed()
         {
@@ -162,6 +193,22 @@ namespace Game.Combat
                 {
                     targets.Add(target.Coordinates);
                 }
+            }
+
+            return targets;
+        }
+
+        // Get all cells in attack range (melee + ranged)
+        public List<HexCoordinates> GetCellsInAttackRange(Unit unit)
+        {
+            var targets = new List<HexCoordinates>();
+
+            foreach (var cell in _grid.GetNeighbors(unit.Coordinates)){
+                targets.Add(cell.Coordinates);
+            }
+
+            foreach (var cell in _grid.GetCellsInRange(unit.Coordinates, unit.Stats.attackRange)){
+                targets.Add(cell.Coordinates);
             }
 
             return targets;

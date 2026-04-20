@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Game.Combat.Units;
 using Game.Combat.Grid;
+using UnityEngine;
 
 namespace Game.Combat.Actions
 {
@@ -11,45 +12,44 @@ namespace Game.Combat.Actions
     public class GrappleAction : ICombatAction
     {
         public Unit Actor { get; }
-        public Unit Target { get; }
+        public HexCoordinates TargetPos { get; private set; }
 
-        public GrappleAction(Unit actor, Unit target)
+        public GrappleAction(Unit actor, HexCoordinates targetPos)
         {
             Actor = actor;
-            Target = target;
+            TargetPos = targetPos;
         }
 
         public IEnumerable<HexCoordinates> GetTargetCells()
         {
-            if (Target != null)
-            {
-                yield return Target.Coordinates;
-            }
+            yield return TargetPos;
         }
 
         public bool IsValid(HexGrid grid)
         {
-            // Can't attack self
-            if (Actor == Target)
-            {
-                return false;
-            }
-
-            // Target must be alive
-            if (Target == null || !Target.IsAlive)
-            {
-                return false;
-            }
-
-            // Check distance is within attack range but not adjacent (ranged = distance > 1)
-            int distance = grid.GetDistance(Actor.Coordinates, Target.Coordinates);
-            return distance == 1;
+            var targetCell = grid.GetCell(TargetPos);
+            if (targetCell == null) return false;
+            
+            int distance = grid.GetDistance(Actor.Coordinates, TargetPos);
+            return distance >= 1 && distance <= 4; // Example grapple range
         }
 
-	    // Execute attack
         public void Execute(HexGrid grid)
         {
-            Target.grappler = Actor;
+            var targetUnit = grid.GetCell(TargetPos)?.Occupant;
+            if (targetUnit != null && targetUnit.IsAlive)
+            {
+                // CRITICAL FIX: Actually set the player's grappler to this Hydra!
+                targetUnit.grappler = Actor; 
+
+                targetUnit.TakeDamage(Actor.Stats.attackPower);
+                Debug.Log($"[Grapple] {Actor.DisplayName} grappled {targetUnit.DisplayName}!");
+            }
+        } 
+
+        public void ApplyDisplacement(HexCoordinates offset)
+        {
+            TargetPos = new HexCoordinates(TargetPos.q + offset.q, TargetPos.r + offset.r);
         }
     }
 }

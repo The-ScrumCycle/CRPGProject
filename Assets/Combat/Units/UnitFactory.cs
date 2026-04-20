@@ -23,8 +23,13 @@ namespace Game.Combat.Units
         [Header("Enemy Configuration")]
         [SerializeField] private UnitStatsConfig HydraStats;
         [SerializeField] private UnitStatsConfig CloseRangeSkletonStats;
+        [SerializeField] private UnitStatsConfig MalakorStats;
+        [SerializeField] private UnitStatsConfig CrystalStats;
+        [SerializeField] private UnitStatsConfig RangedSkeletonStats;
+        [SerializeField] private UnitStatsConfig HealerStats;
         [SerializeField] private GameObject fallbackEnemyPrefab;
         [SerializeField] private UnitStatsConfig defaultEnemyStats;
+        [SerializeField] private UnitStatsConfig OgreStats;
 
         private int _unitIdCounter = 0;
 
@@ -65,6 +70,7 @@ namespace Game.Combat.Units
             }
 
             GameObject prefabInstance = Instantiate(prefabToSpawn);
+            prefabInstance.transform.Rotate(0f, 180f, 0f);
             var visual = prefabInstance.AddComponent<UnitVisual>();
 
             return (unit, visual);
@@ -98,42 +104,63 @@ namespace Game.Combat.Units
                 availableActions: ennemyStats != null ? ennemyStats.availableActions : new System.Collections.Generic.List<CombatActionType> { CombatActionType.MeleeAttack }
             ); 
 
+            if (behavior == AIBehavior.Healer)
+            {
+                Debug.Log($"[Healer Spawn] tag={enemyTag}, statsConfig={(ennemyStats != null ? ennemyStats.name : "null")}, healPower={stats.healPower}, attackRange={stats.attackRange}, maxHealth={stats.maxHealth}");
+            }
+
             GameObject prefabInstance = Instantiate(prefab);
             var visual = prefabInstance.AddComponent<UnitVisual>();
 
             return (unit, visual);
         }
 
-        // get correct UnitStatsConfig for ennemy 
+        // Get correct UnitStatsConfig for enemy, ENSURE that this is correct and matches expected DetermineAIBehavior
+        // NOTE : stats determine the range of movement, attack range, health and damage of a unit which are modifiable in Assets/Combat/Leveling/Data/
         private UnitStatsConfig GetEnemyStatsConfig(string enemyTag)
         {
-            switch (enemyTag)
+            switch (enemyTag.ToLower())
             {
-                case "Hydra":
+                case "hydra":
                     return HydraStats;
-                case "CloseRangeSkeleton":
+                case "skeleton_melee":     
                     return CloseRangeSkletonStats;
-                case "troll":
-                    return defaultEnemyStats;
+                case "skeleton_ranged":    
+                    return RangedSkeletonStats;
+                case "healer":
+                    return HealerStats;
+                case "Ogre":
+                    return CloseRangeSkletonStats; 
+                case "malakor":
+                    return MalakorStats;
+                case "crystal":
+                    return CrystalStats;
                 default:
                     Debug.LogWarning($"[UnitFactory] No stats config found for tag '{enemyTag}', using default stats");
                     return defaultEnemyStats; 
             }
-        }
+        } 
 
         private AIBehavior DetermineAIBehavior(string enemyTag)
         {
-            // Enemy behavior tags, this has to match the tags we put on prefabs in unity
+
             switch (enemyTag.ToLower())
             {
+                // Enemy behavior tags, this has to match the tags we put on prefabs in unity
                 case "skeleton_ranged":
-                    return AIBehavior.SkeletonRanged;
+                            return AIBehavior.SkeletonRanged;
                 case "skeleton_melee":
-                    return AIBehavior.SkeletonMelee;
+                        return AIBehavior.SkeletonMelee;
                 case "healer":
-                    return AIBehavior.Healer;
+                        return AIBehavior.Healer;
                 case "hydra":
-                    return AIBehavior.HydraGrappler;
+                        return AIBehavior.HydraGrappler;
+                case "malakor":
+                        return AIBehavior.Malakor;
+                case "ogre":
+                        return AIBehavior.Malakor; 
+                case "crystal":
+                        return AIBehavior.Crystal;
                 default:
                     return AIBehavior.Aggressive;
             }

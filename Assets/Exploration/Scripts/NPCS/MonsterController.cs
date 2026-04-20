@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Game.Core;
 using Game.Combat;
+using Game.Core.Transitions;
 
 public class MonsterController : MonoBehaviour
 {
@@ -31,8 +32,11 @@ public class MonsterController : MonoBehaviour
     private bool isChasing = false;
 
     [Header("Ennemy Level and XP")]
-    [SerializeField]  int enemyLevel = 1;
-    [SerializeField]  int xpGiven    = 50; //xp dropped by monster
+    [SerializeField] int enemyLevel = 12;
+    [SerializeField] int xpGiven = 400;//xp dropped by monster
+
+    [Header("Ennemy Location")]
+    [SerializeField] EnvironmentType environmentType = EnvironmentType.Default;
 
 
     private NavMeshAgent agent;
@@ -68,6 +72,13 @@ public class MonsterController : MonoBehaviour
         }
     }
 
+    public EnvironmentType GetEnvironmentType()
+    {
+        return environmentType;
+    }
+
+
+
     //finding the player
     private void GetPlayer()
     {
@@ -75,9 +86,15 @@ public class MonsterController : MonoBehaviour
         if (playerController == null)
         {
             //just a safety thing
-            playerCharacter = GameObject.FindGameObjectWithTag("Player").transform;
-        }
+            //playerCharacter = GameObject.FindGameObjectWithTag("Player").transform;
+            //this fix is for load save
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerCharacter = playerObj.transform;
+            }
 
+        }
         if (playerCharacter == null && playerController != null)
         {
             //if both empty, player position = position of object with the script attached to it
@@ -104,7 +121,8 @@ public class MonsterController : MonoBehaviour
             agent.SetDestination(playerCharacter.position);
 
             //Basically if the ennemy touches the player
-            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f)
+            float actualDistanceToPlayer = Vector3.Distance(transform.position, playerCharacter.position);
+            if (!agent.pathPending && actualDistanceToPlayer <= stoppingDistance + 0.5f)
             {
                 Debug.Log("Enemy attacked you!");
                 GameStateManager.Instance.TransitionToCombat(gameObject);

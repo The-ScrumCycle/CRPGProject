@@ -1,38 +1,51 @@
-
 using UnityEngine;
-using System.Collections.Generic;
-
+using System;
 
 public class TagToPrefab : MonoBehaviour
 {
-    [SerializeField] private List<GameObject> prefabs;
     public static TagToPrefab Instance { get; private set; }
 
-    // Function that returns the prefab that is associated with the tag
-    public GameObject GetPrefabForTag(string tag)
-    {
-        foreach (GameObject prefab in prefabs)
-        {
-            Debug.Log(prefab.tag);
-            if (prefab.CompareTag(tag))
-            {
-                return prefab;
-            }
-        }
+    [SerializeField] private GameObject[] prefabs;
+    [SerializeField] private GameObject fallbackPrefab;
 
-        Debug.LogWarning($" Found no Prefab for the selected tag : {tag}");
-        return null;
-    }
-
-    void Awake()
+    private void Awake()
     {
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+    }
+
+    public GameObject GetPrefabForTag(string tag)
+    {
+        if (string.IsNullOrEmpty(tag)) 
+        {
+            Debug.LogWarning("[TagToPrefab] Encounter requested an empty tag. Spawning fallback.");
+            return GetFallback();
+        }
+
+        // 1. Case-Insensitive Search
+        foreach (var prefab in prefabs)
+        {
+            if (prefab.tag.Equals(tag, StringComparison.OrdinalIgnoreCase))
+            {
+                return prefab;
+            }
+        }
+
+        // 2. The Hardened Fallback (Prevents the NullReferenceException crash)
+        Debug.LogWarning($"[TagToPrefab] CRITICAL: No prefab found for tag '{tag}'. Spawning fallback enemy!");
+        return GetFallback();
+    }
+
+    private GameObject GetFallback()
+    {
+        if (fallbackPrefab != null) return fallbackPrefab;
+        if (prefabs != null && prefabs.Length > 0) return prefabs[0]; // fallback
+        
+        Debug.LogError("[TagToPrefab] No fallback available! Game will likely crash.");
+        return null;
     }
 }

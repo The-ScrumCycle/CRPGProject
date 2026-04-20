@@ -11,70 +11,93 @@ namespace Game.Combat.Actions
     public class RangedAttackAction : ICombatAction
     {
         public Unit Actor { get; }
-        public Unit Target { get; }
-        public int Damage => Actor.Stats.attackPower;
+        public HexCoordinates TargetPos { get; private set; } 
 
-        public RangedAttackAction(Unit actor, Unit target)
+        public RangedAttackAction(Unit actor, HexCoordinates targetPos)
         {
             Actor = actor;
-            Target = target;
+            TargetPos = targetPos;
         }
 
         public IEnumerable<HexCoordinates> GetTargetCells()
         {
-            if (Target != null)
-            {
-                yield return Target.Coordinates;
-            }
+            yield return TargetPos;
         }
 
         public bool IsValid(HexGrid grid)
         {
-            // Can't attack self
-            if (Actor == Target)
-            {
-                return false;
-            }
+            if (Actor == null || !Actor.IsAlive) return false;
+            
+            int dist = grid.GetDistance(Actor.Coordinates, TargetPos);
+            
+            if (dist < 1 || dist > Actor.Stats.attackRange) return false;
 
-            // Target must be alive
-            if (Target == null || !Target.IsAlive)
-            {
-                return false;
-            }
+            var targetCell = grid.GetCell(TargetPos);
+            if (targetCell == null || targetCell.Occupant == null || !targetCell.Occupant.IsAlive) return false;
 
-            // Check distance is within attack range but not adjacent (ranged = distance > 1)
-            int distance = grid.GetDistance(Actor.Coordinates, Target.Coordinates);
-            return distance >= 1 && distance <= Actor.Stats.attackRange;
+            return true;
         }
 
-	    // Execute attack
         public void Execute(HexGrid grid)
         {
-            const int BUMP_DAMAGE = 10;
-            int totalDamage = Damage;
-
-            // Get exact push trajectory path
-            HexCoordinates pushDest = Target.Coordinates.GetPushDestination(Actor.Coordinates); 
-            var destCell = grid.GetCell(pushDest); 
-
-            if (destCell == null || !destCell.IsWalkable)
+            var targetCell = grid.GetCell(TargetPos);
+            if (targetCell != null && targetCell.Occupant != null)
             {
-                // Case 2: Edge/Wall/Unwalkable
-                totalDamage += BUMP_DAMAGE;
-            }
-            else if (destCell.IsOccupied)
-            {
-                // Case 3: Occupied by Unit
-                totalDamage += BUMP_DAMAGE;
-                destCell.Occupant.TakeDamage(BUMP_DAMAGE);
-            }
-            else
-            {
-                // Case 1: Empty/Walkable
-                grid.MoveUnit(Target, pushDest);
-            }
+                Unit targetUnit = targetCell.Occupant;
+                targetUnit.TakeDamage(Actor.Stats.attackPower);
 
-            Target.TakeDamage(totalDamage);
-        } 
+                // --- 1-HEX KNOCKBACK PHYSICS ---
+                HexCoordinates pushDest = TargetPos;
+                int maxDist = grid.GetDistance(Actor.Coordinates, TargetPos);
+                
+                // Check all 6 standard hex directions to find the one moving directly away
+                HexCoordinates[] directions = new HexCoordinates[] {
+                    new HexCoordinates(1, 0), new HexCoordinates(1, -1), new HexCoordinates(0, -1),
+                    new HexCoordinates(-1, 0), new HexCoordinates(-1, 1), new HexCoordinates(0, 1)
+                };
+
+                foreach (var dir in directions)
+                {
+                    HexCoordinates neighbor = TargetPos + dir;
+                    int dist = grid.GetDistance(Actor.Coordinates, neighbor);
+                    if (dist > maxDist)
+                    {
+                        maxDist = dist;
+                        pushDest = neighbor;
+                    }
+                }
+
+                // Apply the Shove
+                if (pushDest != TargetPos)
+                {
+                    var destCell = grid.GetCell(pushDest);
+                    if (destCell != null)
+                    {
+                        if (destCell.CanEnter())
+                        {
+                            HexCoordinates offset = pushDest - TargetPos;
+                            grid.MoveUnit(targetUnit, pushDest);
+                            
+                            // Shift their telegraphed attack aim if they were charging one
+                            if (CombatManager.Instance != null)
+                            {
+                                CombatManager.Instance.ShiftUnitIntent(targetUnit, offset);
+                            }
+                        }
+                        else if (destCell.Occupant != null && destCell.Occupant != targetUnit)
+                        {
+                            // Bump Damage
+                            targetUnit.TakeDamage(10);
+                            destCell.Occupant.TakeDamage(10);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void ApplyDisplacement(HexCoordinates offset)
+        {
+            TargetPos = new HexCoordinates(TargetPos.q + offset.q, TargetPos.r + offset.r);
+        }
     }
-}
+} 

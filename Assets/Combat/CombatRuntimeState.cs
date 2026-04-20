@@ -15,17 +15,23 @@ namespace Game.Combat
         public Dictionary<Unit, UnitVisual> UnitVisuals { get; } = new Dictionary<Unit, UnitVisual>();
         public List<ActionIntent> EnemyIntents { get; } = new List<ActionIntent>();
         public CombatState CurrentState { get; set; } = CombatState.Initializing;
-        public HashSet<Unit> ActedUnits { get; } = new HashSet<Unit>();
 
+        // Track unit action states
+        public HashSet<Unit> ActedUnits { get; } = new HashSet<Unit>();
+        public HashSet<Unit> MovedUnits { get; } = new HashSet<Unit>();
+
+        // Clear unit action lists on new round
         public void ClearActedUnits()
         {
             ActedUnits.Clear();
+            MovedUnits.Clear();
         }
 
         public void RegisterUnit(Unit unit, UnitVisual visual)
         {
             AllUnits.Add(unit);
             UnitVisuals[unit] = visual;
+            unit.Visual = visual;
         }
 
         public void RemoveUnitVisual(Unit unit)

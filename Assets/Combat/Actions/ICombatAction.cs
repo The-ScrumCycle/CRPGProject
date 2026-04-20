@@ -16,6 +16,8 @@ namespace Game.Combat.Actions
         // Get all cells affected by this action.
         IEnumerable<HexCoordinates> GetTargetCells();
 
+        void ApplyDisplacement(HexCoordinates offset); // Shift targeting based on physical unit displacement
+
         // Check if this action is valid given the current game state.
         bool IsValid(HexGrid grid);
 

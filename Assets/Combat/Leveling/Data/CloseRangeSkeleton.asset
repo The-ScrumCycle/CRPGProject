@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5f351d1e35a53a46bdcae505dc98856, type: 3}
   m_Name: CloseRangeSkeleton
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitStatsConfig
-  maxHealth: 50
+  availableActions: 04000000
+  maxHealth: 75
   attackPower: 10
+  healPower: 0
   movementRange: 3
   attackRange: 1

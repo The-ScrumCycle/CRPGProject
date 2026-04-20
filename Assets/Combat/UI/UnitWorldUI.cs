@@ -12,6 +12,8 @@ namespace Game.Combat.UI
         [SerializeField] private Image healthFill;
         [SerializeField] private Image damagePreviewFill;
         [SerializeField] private TextMeshProUGUI healthText;
+        [SerializeField] private float rotateSpeed = 400.0f;
+
         private Canvas _canvas;
 
         private void Awake()
@@ -19,6 +21,14 @@ namespace Game.Combat.UI
             _canvas = GetComponent<Canvas>();
             // Force hidden on spawn so they don't clutter the screen before turn 1
             if (_canvas != null) _canvas.enabled = false; 
+        }
+
+        void Update()
+        {
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                Quaternion.LookRotation(Camera.main.transform.forward, Camera.main.transform.up),
+                rotateSpeed * Time.deltaTime);
         }
 
         public void UpdateState(int current, int max, int incomingDamage, bool isHovered, bool isPlayer)
@@ -36,12 +46,12 @@ namespace Game.Combat.UI
             if (isPlayer)
             {
                 // Rule 1: Player health bar ONLY shows if they are about to take damage
-                shouldShow = incomingDamage > 0;
+                shouldShow = (incomingDamage > 0);
             }
             else
             {
                 // Rule 2: Enemy health bar shows if player hovers them, OR if they are taking damage
-                shouldShow = isHovered || incomingDamage > 0;
+                shouldShow = isHovered || (incomingDamage > 0);
             }
             
             if (_canvas != null) _canvas.enabled = shouldShow;

@@ -7,15 +7,17 @@ public class EscapeMenuController : MonoBehaviour
     [Header("Roots")]
     [SerializeField] private GameObject escapeMenuRoot;        // main escape menu
     [SerializeField] private GameObject confirmExitModalRoot;  // confirmation popup
+    [SerializeField] private GameObject loadGameModalRoot;    // load game menu (reused from game over screen)
+    [SerializeField] private GameObject ControlsMenuRoot;     // controls menu
 
     [Header("State")]
     [SerializeField] private bool hasSaved = false; // flag for now (later tie to real save system)
-
+    [SerializeField] private bool IsInLoadMenu = false; 
+    [SerializeField] private bool IsInControlsMenu = false; 
 
     private bool isMenuOpen;
     private bool isConfirmOpen;
     private PlayerController playerController;
-
 
     void Start()
     {
@@ -31,14 +33,26 @@ public class EscapeMenuController : MonoBehaviour
 
     void Update()
     {
-        if (playerController.GetInDialogue()) return;
+        if (CharacterMenuController.IsMenuOpen) return;
+        if (CharacterMenuController.LastEscapeConsumedFrame == Time.frameCount) return;
+        if (playerController != null && playerController.GetInDialogue()) return;
         if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
-       
 
-        // close confirm modal if open, otherwise toggle menu
         if (isConfirmOpen)
         {
             CloseConfirmExitModal();
+            return;
+        }
+
+        if (IsInControlsMenu)
+        {
+            CloseControlsMenu();
+            return;
+        }
+
+        if (IsInLoadMenu)
+        {
+            CloseLoadGameMenu();
             return;
         }
 
@@ -75,7 +89,7 @@ public class EscapeMenuController : MonoBehaviour
         Time.timeScale = open ? 0f : 1f;
     }
 
-    //confirm modla open/close
+    //confirm modal open/close
     private void OpenConfirmExitModal()
     {
         //ensure escape menu is open when showing confirm modal
@@ -96,7 +110,49 @@ public class EscapeMenuController : MonoBehaviour
             confirmExitModalRoot.SetActive(open);
     }
 
-   //button handlers (escape menu)
+    public void LoadGame()
+    {
+        if (loadGameModalRoot == null)
+        {
+            Debug.LogWarning("loadGameModalRoot is not assigned in editor");
+            return;
+        }
+
+        IsInLoadMenu = true;
+        IsInControlsMenu = false;
+        loadGameModalRoot.SetActive(true);
+    }
+
+
+    public void ControlsMenu()
+    {
+        if (ControlsMenuRoot == null)
+        {
+            Debug.LogWarning("loadGameModalRoot is not assigned in editor");
+            return;
+        } 
+
+        IsInControlsMenu = true;
+        IsInLoadMenu = false;
+        ControlsMenuRoot.SetActive(true);
+    }
+
+    public void CloseControlsMenu()
+    {
+        IsInControlsMenu = false;
+        if (ControlsMenuRoot != null)
+            ControlsMenuRoot.SetActive(false);
+    }
+
+    public void CloseLoadGameMenu()
+    {
+        IsInLoadMenu = false;
+        if (loadGameModalRoot != null)
+            loadGameModalRoot.SetActive(false);
+    }
+
+
+    //button handlers (escape menu)
     public void SaveGame()
     {
         SaveManager.Instance.Save();
@@ -121,9 +177,14 @@ public class EscapeMenuController : MonoBehaviour
         }
     }
 
-   // button handlers (confirmation modal)
-    public void ConfirmSaveAndCloseGame()
+    public void exitToStartMainMenu()
+    {
+        hasSaved = true;
+        UnityEngine.SceneManagement.SceneManager.LoadScene("StartMenu");
+    }
 
+    // button handlers (confirmation modal)
+    public void ConfirmSaveAndCloseGame()
     {
         SaveManager.Instance.Save();
         Debug.Log("Confirm: Save & Close Game (placeholder). Setting hasSaved = true then quitting.");
@@ -137,6 +198,7 @@ public class EscapeMenuController : MonoBehaviour
         QuitGame();
     }
 
+ 
     private void QuitGame()
     {
         // prevent editor from staying paused

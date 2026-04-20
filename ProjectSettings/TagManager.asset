@@ -21,16 +21,28 @@ TagManager:
   - Cleric
   - skeleton_ranged
   - melee_skeleton
+  - Shortcut
+  - Ship
+  - Malakor
+  - skeleton_melee
+  - healer
+  - Ogre
+  - PartyManager
+  - ManagerScene
+  - Board
+  - HexGrid
+  - Pedestal
+  - Crystal
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Ground
+  - ReceiveOutline
   - Water
   - UI
-  - Obstacles
-  - Enemy
-  - Player
+  - fewgwgw
+  - 
+  - 
   - 
   - 
   - 
@@ -55,15 +67,14 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Ground
+    uniqueID: 2923682169
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Water
+    uniqueID: 3341634285
+    locked: 0
   m_RenderingLayers:
   - Default
-  - Light Layer 1
-  - Light Layer 2
-  - Light Layer 3
-  - Light Layer 4
-  - Light Layer 5
-  - Light Layer 6
-  - Light Layer 7

@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using Game.Core.Transitions;
 using Game.Combat;
 using UnityEngine.AI;
+using System.Collections.Generic;
 
 namespace Game.Core
 {
@@ -29,6 +30,7 @@ namespace Game.Core
         private PlayerController _playerController;
         private GameObject _player;
         private GameObject _mainCamera;
+        private MusicController musicController;
 
         void Awake()
         {
@@ -51,6 +53,8 @@ namespace Game.Core
         void Start()
         {
             CacheExplorationReferences();
+
+            musicController = MusicController.Instance;
         }
 
         private void CacheExplorationReferences()
@@ -93,6 +97,9 @@ namespace Game.Core
             // Mark enemy for destruction on return
             EnnemiesState.Instance?.SetDeadEnnemy(enemy.GetComponent<EnemyID>().getEnemyID());
 
+            // change music to combat
+            musicController.SetMusic(musicController.GetCombatMusic());
+
             // Load combat scene
             SceneManager.LoadScene(combatSceneName);
         }
@@ -110,12 +117,23 @@ namespace Game.Core
             LastCombatResult = result;
             _isReturningFromCombat = true; // set combat return flag for state management
 
+            // change music back to exploration
+            musicController.SetMusic(musicController.GetExplorationMusic());
+
             SetState(GameStates.Exploration);
             SceneManager.LoadScene(explorationSceneName);
         }
 
+        public void TransitionToGameOver()
+        { 
+            // change music to game over
+            musicController.SetMusic(musicController.GetDeathMusic());
+            // load game over scene
+            SceneManager.LoadScene("GameOverScene");
+        }
+
         // Legacy overload for backward compatibility with previous version of combat transitioning
-	    // Feel free to remove this and refactor legacy code in Exploration to use new systems 
+        // Feel free to remove this and refactor legacy code in Exploration to use new systems 
         public void TransitionToExploration()
         {
             TransitionToExploration(new CombatResultData(true, 0, combatTransitionData.enemyName));
@@ -154,7 +172,7 @@ namespace Game.Core
             }
 
             // restore companion locations
-            GameObject[] followers = GameObject.FindGameObjectsWithTag("Follower");
+            List<GameObject> followers = PartyManager.Instance.GetActiveFollowersObjects();
 
             foreach (GameObject follower in followers)
             {
@@ -169,7 +187,6 @@ namespace Game.Core
 
                 }
             }
-
 
             // Apply xp gain
             if (LastCombatResult != null && LastCombatResult.wasVictory)

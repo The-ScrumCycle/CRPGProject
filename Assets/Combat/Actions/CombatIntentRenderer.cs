@@ -1,18 +1,16 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Game.Combat.Grid;
+using Game.Combat.Units;
 
 namespace Game.Combat.Actions
 {
-    /// <summary>
-    /// Converts ActionIntents into highlight data for HexGridRenderer.
-    /// Does not touch the renderer directly the caller reads GetHighlights() and feeds the renderer with the data from here.
-    /// </summary>
     public class CombatIntentRenderer
     {
         private GameObject _arrowPrefab;
         private List<GameObject> _activeArrows;
         private HexGridRenderer _gridRenderer;
+        public bool _renderArrows { get; set; }
         private readonly Dictionary<HexCoordinates, HighlightType> _highlights;
 
         public CombatIntentRenderer(GameObject arrowPrefab)
@@ -21,52 +19,113 @@ namespace Game.Combat.Actions
             _arrowPrefab = arrowPrefab;
             _activeArrows = new List<GameObject>();
             _gridRenderer = UnityEngine.Object.FindObjectOfType<HexGridRenderer>();
+            _renderArrows = true;
         }
 
-        // Render a single intent into highlight data.
-        // Only stores the destination tile (NOTE: not full movement path, so we can't add like a tank class that damages through movement)
-        public void Render(ActionIntent intent)
+        private void RenderArrow(Vector3 startPos, Vector3 endPos, Color color)
         {
-            if (intent == null || !intent.IsValid) return;
+            if (!_renderArrows) return;
+
+            // The trajectory from start to end natively points towards the caster.
+            GameObject arrow = Object.Instantiate(_arrowPrefab);
+            
+            // Fixed ArrowRenderer signature (added required offset, bodyWidth, headWidth, headHeight parameters)
+            arrow.GetComponent<ArrowRenderer>().Render(startPos, endPos, new Color(color.r, color.g, color.b, 0.5f), 0.1f, 0.4f, 0.8f, 0.8f);
+            
+            _activeArrows.Add(arrow);
+        }
+
+        public void Render(ActionIntent intent, UnitVisual visual)
+        {
+            if (intent == null || visual == null || !intent.IsValid) return;
 
             HighlightType type = MapVisualType(intent.VisualType);
             if (type == HighlightType.None) return;
 
-            foreach (var cell in intent.TargetCells)
+            // 1. HIGHLIGHT MOVEMENT PATH
+            if (intent.MovementPath != null && intent.MovementPath.Count > 0)
             {
-                AddWithPriority(cell, type);
-            }
-
-            // Render a directional push ("attack arrow") 
-            if (intent.PushDestination.HasValue && _arrowPrefab != null && _gridRenderer != null)
-            {
-                Vector3 startPos = _gridRenderer.HexToWorld(intent.TargetCells[0]);
-                Vector3 endPos = _gridRenderer.HexToWorld(intent.PushDestination.Value);
-                
-                // Place the arrow exactly between the two hexes, slightly hovering
-                Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f);
-                float floatHeight = 0.0f; // TODO : float the arrow above the prefabs and hex level, currently this breaks the math...
-
-                GameObject arrow = UnityEngine.Object.Instantiate(_arrowPrefab, midPoint + Vector3.up * floatHeight, Quaternion.identity);
-                
-                // Rotate to point toward destination
-                Vector3 dir = endPos - startPos;
-                if (dir != Vector3.zero)
+                foreach (var coords in intent.MovementPath)
                 {
-                    arrow.transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+                    if (coords != intent.Actor.Coordinates) 
+                    {
+                        AddWithPriority(coords, HighlightType.AI_Move);
+                    }
                 }
-                
-                _activeArrows.Add(arrow);
+
+                RenderArrow(
+                    _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
+                    _gridRenderer.HexToWorld(intent.MovementPath[^1]),
+                    _gridRenderer.GetGridColor(type)
+                );
+                visual.LookAtCell(intent.MovementPath[^1]);
             }
+
+            // 2. HIGHLIGHT ALL AOE TARGET CELLS
+            var targetCells = intent.Action.GetTargetCells();
+            if (targetCells != null && !(intent.VisualType == ActionVisualType.MeleeAttack))
+            {
+                Vector3 averagePos = Vector3.zero;
+                int count = 0;
+                foreach (var cellCoords in targetCells)
+                {
+                    AddWithPriority(cellCoords, type);
+                    averagePos += _gridRenderer.HexToWorld(cellCoords);
+                    count++;
+                }
+
+                if (count > 0)
+                {
+                    averagePos /= count;
+
+                    if (intent.Actor.Role == UnitRole.Enemy)
+                    {
+                        RenderArrow(
+                            _gridRenderer.HexToWorld(intent.Actor.Coordinates), 
+                            _gridRenderer.HexToWorld(_gridRenderer.WorldToHex(averagePos)),
+                            _gridRenderer.GetGridColor(type)
+                        );
+                    }
+
+                    visual.LookAtCell(_gridRenderer.WorldToHex(averagePos));
+                }
+            }
+
+            // 3. RENDER PUSH / PULL ARROW
+            if (intent.PushDestination.HasValue || intent.VisualType == ActionVisualType.Pull)
+            {
+                // OUR NULL-SAFETY CHECK
+                if (intent.TargetUnit != null) 
+                {
+                    // OUR DYNAMIC MATH
+                    HexCoordinates startHex = intent.TargetUnit.Coordinates;
+                    
+                    HexCoordinates endHex = intent.SecondaryBumpTarget != null ? 
+                                            intent.SecondaryBumpTarget.Coordinates : 
+                                            (intent.PushDestination.HasValue ? intent.PushDestination.Value : startHex);
+
+                    if (startHex != endHex) // Only draw if displacement occurs
+                    {
+                        // Arrow VISUAL RENDERER
+                        RenderArrow(
+                            _gridRenderer.HexToWorld(startHex), 
+                            _gridRenderer.HexToWorld(endHex),
+                            _gridRenderer.GetGridColor(HighlightType.PlayerAttack)
+                        );
+                        
+                        visual.LookAtCell(endHex);
+                    }
+                }
+            } 
         }
 
         // Render all intents from a list into highlight data
         // NOTE: Call Clear() first if you want a fresh pass
-        public void RenderAll(IReadOnlyList<ActionIntent> intents)
+        public void RenderAll(IReadOnlyDictionary<ActionIntent, UnitVisual> intents)
         {
-            for (int i = 0; i < intents.Count; i++)
+            foreach (var (intent, visual) in intents)
             {
-                Render(intents[i]);
+                Render(intent, visual);
             }
         }
 
@@ -96,7 +155,14 @@ namespace Game.Combat.Actions
                     return HighlightType.AI_Move;
                 case ActionVisualType.MeleeAttack:
                 case ActionVisualType.RangedAttack:
+                case ActionVisualType.Grapple:
                     return HighlightType.AI_Attack;
+                case ActionVisualType.Heal:
+                    return HighlightType.AI_Move;
+                case ActionVisualType.Push:
+                    return HighlightType.PlayerAttack;
+                case ActionVisualType.Pull:
+                    return HighlightType.PlayerAttack;
                 default:
                     return HighlightType.None;
             }

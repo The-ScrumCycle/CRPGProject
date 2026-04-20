@@ -27,8 +27,8 @@ public class ShipController : MonoBehaviour
     void Start()
     {
         // Only Water is walkable
-        int water = UnityEngine.AI.NavMesh.GetAreaFromName("Water");
-        agent.areaMask = 1 << water;
+        //int water = UnityEngine.AI.NavMesh.GetAreaFromName("Water");
+        //agent.areaMask = 1 << water;
 
     }
 
@@ -48,16 +48,39 @@ public class ShipController : MonoBehaviour
     // ship movimentation 
     private void HandleClickMove()
     {
-        // if we don't have a camera or agent, return
         if (agent == null || cam == null) return;
+        if (!agent.isOnNavMesh) return;
 
-        // if left mouse button is pressed, move the player to the clicked position
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
+            Debug.Log("clicking");
+
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f, waterMask, QueryTriggerInteraction.Ignore))
             {
-                agent.SetDestination(hit.point);
+                Debug.Log("hit water");
+
+                if (!UnityEngine.AI.NavMesh.SamplePosition(hit.point, out UnityEngine.AI.NavMeshHit navHit, 10f, agent.areaMask))
+                    return;
+
+                if (Vector3.Distance(agent.nextPosition, navHit.position) < 0.15f)
+                    return;
+
+                UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+
+                bool foundPath = UnityEngine.AI.NavMesh.CalculatePath(
+                    agent.nextPosition,
+                    navHit.position,
+                    agent.areaMask,
+                    path
+                );
+
+                if (foundPath && path.status != UnityEngine.AI.NavMeshPathStatus.PathInvalid)
+                {
+                    agent.isStopped = false;
+                    agent.ResetPath();
+                    agent.SetPath(path);
+                }
             }
         }
     }

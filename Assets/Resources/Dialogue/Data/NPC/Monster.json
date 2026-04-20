@@ -1,0 +1,45 @@
+{
+  "startNode": "1",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"You reek of the outside world, vermin! Slither back to whatever miserable hole you crawled out of. Get out of the Verge before I crush you myself!\"",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "type": "option",
+      "options": [ "3", "4", "5", "6" ]
+    },
+    {
+      "id": "3",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"Eat dirt, you dusty old fossil.\"",
+      "next": null
+    },
+    {
+      "id": "4",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"Whoa, take it easy! Don't blow a dust cloud yelling like that, grandpa.\"",
+      "next": null
+    },
+    {
+      "id": "5",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"Sorry, can't do that. I've got places to be.\"",
+      "next": null
+    },
+    {
+      "id": "6",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"Yes sir, leaving right away.\"",
+      "next": null
+    }
+  ]
+}

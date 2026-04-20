@@ -10,7 +10,10 @@ public class PartyManager : MonoBehaviour, ISaveable
     [SerializeField] int partyLevel = 1;
     [SerializeField] int partyExperience = 0;
     [SerializeField] int experienceToNextLevel = 100;
-    [SerializeField] int experienceGrowthRate = 50; 
+    [SerializeField] int experienceGrowthRate = 50;
+
+    [SerializeField] GameObject Warrior;
+    [SerializeField] GameObject Cleric;
 
     void Awake()
     {
@@ -29,6 +32,23 @@ public class PartyManager : MonoBehaviour, ISaveable
         SaveManager.Instance.Register(this);
     }
 
+    public List<GameObject> GetActiveFollowersObjects()
+    {
+        List<GameObject> followers = new List<GameObject>();
+        foreach (FollowerID followerID in activeFollowers)
+        {
+            switch (followerID)
+            {
+                case FollowerID.Warrior:
+                    followers.Add(Warrior);
+                    break;
+                case FollowerID.Cleric:
+                    followers.Add(Cleric);
+                    break;
+            }
+        }
+        return followers;
+    }
 
     // adding and removing followers from active list
     public void AddFollowerActive(FollowerID followerID)

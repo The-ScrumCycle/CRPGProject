@@ -4,6 +4,9 @@ using Game.Core;
 using Dialogue.Data;
 using State;
 using UnityEngine.AI;
+using Unity.AI.Navigation;
+using Game.Combat;
+
 
 public class NPCDialogue : MonoBehaviour
 {
@@ -15,11 +18,13 @@ public class NPCDialogue : MonoBehaviour
 
     [Header("NPC/Follower Settings")]
     public Sprite Face;
+    public Sprite Varek;
     public Sprite John;
     public Sprite Clarissa;
     public Sprite Malakor;
     public string characterDialogueID;
     private FollowerController followerController;
+    private MusicController musicController;
 
     [Header("Auto Dialogue Triggers Settings")]
     public bool triggerOnApproach = false;
@@ -37,12 +42,18 @@ public class NPCDialogue : MonoBehaviour
     private NavMeshAgent playerAgent;
     private CameraController camera;
 
+    //varek (mini boss) actions
+    private string varekSpeaking = "varekSpeaking";
+    private string startArenaFight = "startArenaFight";
+    private string arenaKeeperDefeated = "varek_defeated";
+
     // Main boss actions
     private string foundMalakor = "foundMalakor";
     private string startBossFight = "startBossFight";
     private string runAway = "runAway";
     private string malakorSpeaking = "malakorSpeaking";
     private string ranAway = "ranAway";
+    private string defeatedMalakor = "defeatedMalakor";
 
     // john actions
     private string johnInParty = "johnInParty";
@@ -95,6 +106,7 @@ public class NPCDialogue : MonoBehaviour
         camera = FindObjectOfType<CameraController>();
         gameStateManager = GameStateManager.Instance;
 
+        musicController = MusicController.Instance;
     }
 
     private void OnDestroy()
@@ -207,19 +219,24 @@ public class NPCDialogue : MonoBehaviour
             {
 
             }
-
+            // varek actions 
+            else if (curAction == startArenaFight)
+            {
+                this.state.setFlag("startArenaFight");
+                this.state.setFlag("varek_defeated");
+                GameStateManager.Instance.TransitionToCombat(gameObject);
+            }
+         
             // John actions
             else if (curAction == johnInParty)
             {
                 this.state.setFlag("johnInParty");
                 PartyManager.Instance.AddFollowerActive(FollowerID.Warrior);
-                gameObject.tag = "Follower";
             }
             else if (curAction == johnNotInParty)
             {
                 this.state.removeFlag("johnInParty");
                 PartyManager.Instance.RemoveFollowerActive(FollowerID.Warrior);
-                gameObject.tag = "Untagged";
             }
 
             else if (curAction == JohnIntroOver)
@@ -247,19 +264,21 @@ public class NPCDialogue : MonoBehaviour
                 uiRunner.UpdateFace(John);
             }
 
+            else if (curAction == varekSpeaking)
+            {
+                uiRunner.UpdateFace(Varek);
+            }
 
             // Clarissa actions
             else if (curAction == clarissaInParty)
             {
                 this.state.setFlag("clarissaInParty");
                 PartyManager.Instance.AddFollowerActive(FollowerID.Cleric);
-                gameObject.tag = "Follower";
             }
             else if (curAction == clarissaNotInParty)
             {
                 this.state.removeFlag("clarissaInParty");
                 PartyManager.Instance.RemoveFollowerActive(FollowerID.Cleric);
-                gameObject.tag = "Untagged";
             }
             else if (curAction == clarissaIntroOver)
             {
@@ -277,7 +296,7 @@ public class NPCDialogue : MonoBehaviour
             }
             else if (curAction == ogreBossDestroyed)
             {
-                this.state.setFlag("ogreBossDestroyed");
+                // nothing for now 
             }
 
             else if (curAction == clarissaSpeaking)
@@ -299,11 +318,31 @@ public class NPCDialogue : MonoBehaviour
             else if (curAction == runAway)
             {
                 this.state.setFlag("runAway");
+                GameObject[] monsters = GameObject.FindGameObjectsWithTag("Shortcut");
+                foreach (GameObject monster in monsters)
+                {
+                    EnemyID enemyID = monster.GetComponent<EnemyID>();
+                    if (enemyID != null)
+                    {
+                        EnnemiesState.Instance.SetDeadEnnemy(enemyID.getEnemyID());
+                        EnnemiesState.Instance.killEnnemies();
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"GameObject {monster.name} tagged as 'Shortcut' does not have an enemyID component.");
+                    }
+                }
             }
 
             else if (curAction == malakorSpeaking)
             {
                 uiRunner.UpdateFace(Malakor);
+            }
+
+            else if (curAction == defeatedMalakor)
+            {
+                this.state.setFlag("defeatedMalakor");
+                musicController.SetMusic(musicController.GetEndingMusic());
             }
         }
 
@@ -322,21 +361,21 @@ public class NPCDialogue : MonoBehaviour
         uiRunner.OptionSelectedAction -= OnOptionSelected;
         uiRunner.DialogueEndedAction -= OnDialogueEnded;
 
-        if (state.hasFlag(runAway)) // FIX
+        if (state.hasFlag(runAway)) 
         {
-            this.state.removeFlag(runAway); // FIX
+            this.state.removeFlag(runAway); 
             this.state.setFlag(ranAway);
 
-            if (playerAgent == null) playerAgent = player.GetComponent<NavMeshAgent>(); // FIX
+            if (playerAgent == null) playerAgent = player.GetComponent<NavMeshAgent>(); 
 
-            if (playerAgent != null) // FIX
+            if (playerAgent != null) 
             {
                 Vector3 targetPosition = new Vector3(38, 0, -247);
                 NavMeshHit hit;
 
                 if (NavMesh.SamplePosition(targetPosition, out hit, 15.0f, NavMesh.AllAreas))
                 {
-                    playerAgent.Warp(hit.position); // FIX
+                    playerAgent.Warp(hit.position); 
                 }
             }
 

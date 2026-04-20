@@ -18,6 +18,8 @@ public class CaptainController : MonoBehaviour
     [SerializeField] private UIRunner uiRunner;
     [SerializeField] private DialogueRunner runner;
 
+    [SerializeField] private MusicController musicController;
+
     // tracks whether this dialogue ended because player chose to board
     private bool boardedFromDialogue;
 
@@ -25,9 +27,7 @@ public class CaptainController : MonoBehaviour
     public Sprite Face;
 
     private string actionBoard = "board";
-    private string insultedCaptain = "insult";
     private string SkipIntro = "introOver";
-    private string apology = "apology";
 
     // stats selection 
     private string set_strength_2     = "set_strength_2";
@@ -40,6 +40,7 @@ public class CaptainController : MonoBehaviour
     private string set_charisma_5     = "set_charisma_5";
     private string set_charisma_8     = "set_charisma_8";
     private string respec             = "respec";
+    private string foundMalakor       = "foundMalakor";
 
 
     private void Awake()
@@ -64,6 +65,8 @@ public class CaptainController : MonoBehaviour
     {
         state = GameState.Instance;
         SearchForPlayer();
+
+        musicController = MusicController.Instance;
 
     }
 
@@ -142,15 +145,14 @@ public class CaptainController : MonoBehaviour
         shipController.SetControllable(true);
         cameraController.SetTarget(shipController.transform);
         cameraController.SetShipCamera();
-    }
+        
+        // player and captain should not be visible while on the boat. 
+        Player.SetActive(false);
+        gameObject.SetActive(false);
 
-    // when I click on Docks, I should be able to leave the boat
-    public void LeaveShip()
-    {
-        // transfer control back to player and retarget camera
-        shipController.SetControllable(false);
-        playerController.SetControllable(true);
-        cameraController.SetTarget(playerController.transform);
+        // play sailing music
+        musicController.SetMusic(musicController.GetSailingMusic());
+
     }
 
     // leave conversation withoout boarding, re-nable player control
@@ -200,6 +202,11 @@ public class CaptainController : MonoBehaviour
                 BoardShip();
             }
 
+            else if (foundMalakor == curAction)
+            {
+                this.state.setFlag("foundMalakor");
+            }
+
             // stats selection 
             else if (set_strength_2 == curAction)
             {
@@ -233,7 +240,7 @@ public class CaptainController : MonoBehaviour
                 this.state.intelligencePowerUp(8);
                 Debug.Log(state.Charisma);
             }
-             else if (set_charisma_2 == curAction)
+            else if (set_charisma_2 == curAction)
             {
                 this.state.charismaPowerUp(2);
                 Debug.Log(state.Strength);
@@ -243,7 +250,7 @@ public class CaptainController : MonoBehaviour
                 this.state.charismaPowerUp(5);
                 Debug.Log(state.Strength);
             }
-             else if (set_charisma_8 == curAction)
+            else if (set_charisma_8 == curAction)
             {
                 this.state.charismaPowerUp(8);
                 Debug.Log(state.Strength);
@@ -254,22 +261,6 @@ public class CaptainController : MonoBehaviour
                 this.state.resetStats();
             }
 
-
-
-
-
-
-
-
-
-            else if (curAction == insultedCaptain)
-            {
-                this.state.setFlag("insult");
-            }
-            else if (curAction == apology)
-            {
-                this.state.removeFlag("insult");
-            }
             else if (curAction == SkipIntro)
             {
                 this.state.setFlag("introOver");

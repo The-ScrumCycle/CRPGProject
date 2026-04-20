@@ -7,40 +7,37 @@ namespace Game.Combat.AI
 {
     public class HydraGrapplerBrain : IEnemyBrain
     {
-        public ICombatAction DecideAction(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
+        public IEnumerable<ICombatAction> GenerateCandidateActions(Unit enemyUnit, IReadOnlyList<Unit> allUnits, HexGrid grid, ActionResolver resolver)
         {
-            Unit bestTarget = null;
-            int closestDist = int.MaxValue;
+            if (BrainHelpers.ShouldRetreatToHealer(enemyUnit, allUnits, out Unit healer))
+            {
+                var retreat = BrainHelpers.MoveToward(enemyUnit, healer, grid, resolver);
+                if (retreat != null)
+                {
+                    yield return retreat;
+                }
+            }
 
-            // Find closest player
             foreach (var unit in allUnits)
             {
-                if (unit.IsPlayerControlled && unit.IsAlive && !unit.IsGrappled) // Don't grapple already grappled units
+                if (!unit.IsPlayerControlled || !unit.IsAlive || unit.IsGrappled)
                 {
-                    int dist = grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates);
-                    if (dist < closestDist)
-                    {
-                        closestDist = dist;
-                        bestTarget = unit;
-                    }
+                    continue;
                 }
-            }
 
-            if (bestTarget != null)
-            {
-                if (closestDist == 1) 
+                int distance = grid.GetDistance(enemyUnit.Coordinates, unit.Coordinates);
+                if (distance == 1)
                 {
-                    // In range use the Grapple Action
-                    return new GrappleAction(enemyUnit, bestTarget);
+                    var grapple = resolver.CreateGrappleAction(enemyUnit, grid.GetCell(unit.Coordinates));
+                    if (resolver.Validate(grapple)) yield return grapple;
                 }
-                else
+
+                var chaseMove = BrainHelpers.MoveToward(enemyUnit, unit, grid, resolver);
+                if (chaseMove != null)
                 {
-                    // Move towards player
-                    var validMoves = resolver.GetValidMoveDestinations(enemyUnit);
-                    if (validMoves.Count > 0) return resolver.CreateMoveAction(enemyUnit, validMoves[0]); // Simplified move for demo
+                    yield return chaseMove;
                 }
             }
-            return null;
         }
     }
 }

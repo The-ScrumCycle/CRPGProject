@@ -11,7 +11,7 @@ namespace Game.Combat.Actions
     public class MoveAction : ICombatAction
     {
         public Unit Actor { get; }
-        public HexCoordinates Destination { get; }
+        public HexCoordinates Destination { get; private set; }
         public List<HexCoordinates> Path { get; private set; }
 
         public MoveAction(Unit actor, HexCoordinates destination)
@@ -28,19 +28,9 @@ namespace Game.Combat.Actions
 
         public bool IsValid(HexGrid grid)
         {
+            if (Actor == null || !Actor.IsAlive) return false;
             // Can't move if grappled
-            if (Actor.grappler != null)
-            {
-                // Check if grapple is still valid
-                if (grid.GetDistance(Actor.Coordinates, Actor.grappler.Coordinates) > 1 || !Actor.grappler.IsAlive)
-                {
-                    Actor.grappler = null;
-                }
-                else
-                {
-                    return false;
-                }
-            }
+            if (Actor.IsGrappled) return false; 
 
             // Can't move if destination is same as current
             if (Actor.Coordinates == Destination) return false;
@@ -66,9 +56,15 @@ namespace Game.Combat.Actions
             return Path.Count > 0;
         } 
 
+        public void ApplyDisplacement(HexCoordinates offset)
+        {
+            Destination = new HexCoordinates(Destination.q + offset.q, Destination.r + offset.r);
+        }
+
         public void Execute(HexGrid grid)
         {
             grid.MoveUnit(Actor, Destination);
+            Actor.Visual.LookAtCell(Destination);
         }
     }
 }

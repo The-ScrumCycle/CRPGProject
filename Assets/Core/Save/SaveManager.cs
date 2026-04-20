@@ -14,6 +14,9 @@ public class SaveManager : MonoBehaviour
 
     private int pendingLoadSlot;
 
+    private MusicController musicController;
+
+
 
     void Awake()
     {
@@ -28,6 +31,7 @@ public class SaveManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         slot_index = GetSlotCount();
     }
+
 
     public void Register(ISaveable saveable)
     {
@@ -75,12 +79,6 @@ public class SaveManager : MonoBehaviour
         //serialized object into JSON save data
         saveData.saveDateTime = System.DateTime.Now.ToString("dd MMM yyyy  HH:mm");
         //Application.OpenURL(Application.persistentDataPath);
-
-        Texture2D screenshot = ScreenCapture.CaptureScreenshotAsTexture();
-        byte[] screenshotBytes = screenshot.EncodeToPNG();
-        Destroy(screenshot);
-
-        saveData.screenshotData = screenshotBytes;
         StartCoroutine(SaveScreenshot(saveData));
     }
 
@@ -129,6 +127,11 @@ public class SaveManager : MonoBehaviour
     //before being loaded
     public void RequestLoad(int slot)
     {
+        if (CleanUpController.Instance != null) //removed exploration, so load can be called from menus
+        {
+            CleanUpController.Instance.CleanUp();
+        }
+
         saveables = new List<ISaveable>();
         pendingLoadSlot = slot;
         SceneManager.sceneLoaded += OnSceneLoaded;  // subscribe BEFORE loading
@@ -154,4 +157,11 @@ public class SaveManager : MonoBehaviour
             if (player != null) cam.SetTarget(player.transform);
         }
     }
+
+    public int GetLatestSlotIndex()
+    {
+        return GetSlotCount() - 1;
+    }
+
+
 }

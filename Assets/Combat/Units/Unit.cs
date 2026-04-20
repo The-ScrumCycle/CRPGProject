@@ -18,12 +18,33 @@ namespace Game.Combat.Units
         public UnitStats Stats { get; private set; }
         public HexCell CurrentCell { get; set; }
         public AIBehavior AIBehavior { get; }
+        public UnitVisual Visual { get; set; }
 
         public Unit grappler { get; set; }
         public bool IsAlive => Stats.currentHealth > 0;
         public bool IsPlayerControlled => Role == UnitRole.Player;
         public HexCoordinates Coordinates => CurrentCell != null ? CurrentCell.Coordinates : HexCoordinates.Invalid;
-        public bool IsGrappled => grappler != null; 
+        public bool IsGrappled 
+        {
+            get 
+            {
+                // 1. Telegraph Phase Grapple: 
+                // If an enemy is currently targeting us with a Grapple intent, the unit is trapped.
+                if (CombatManager.Instance != null)
+                {
+                    foreach (var intent in CombatManager.Instance.GetEnemyIntents())
+                    {
+                        if (intent.Action is GrappleAction && intent.TargetUnit == this && intent.Actor.IsAlive)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                
+                // 2. Execution Phase fallback
+                return grappler != null && grappler.IsAlive;
+            }
+        }
         public List<CombatActionType> AvailableActions { get; } // actions a unit has avail
 
         public Unit(string id, string displayName, UnitRole role, UnitStats stats, AIBehavior aiBehavior = AIBehavior.Aggressive, List<CombatActionType> availableActions = null)
@@ -32,6 +53,18 @@ namespace Game.Combat.Units
             DisplayName = displayName;
             Role = role;
             Stats = stats;
+            AIBehavior = aiBehavior;
+            // Assign a unit's valid actions or fallback to empty of none provided
+            AvailableActions = availableActions ?? new List<CombatActionType>();
+        }
+
+        public Unit(string id, string displayName, UnitRole role, UnitStats stats, UnitVisual visual, AIBehavior aiBehavior = AIBehavior.Aggressive, List<CombatActionType> availableActions = null)
+        {
+            Id = id;
+            DisplayName = displayName;
+            Role = role;
+            Stats = stats;
+            Visual = visual;
             AIBehavior = aiBehavior;
             // Assign a unit's valid actions or fallback to empty of none provided
             AvailableActions = availableActions ?? new List<CombatActionType>();
@@ -46,13 +79,25 @@ namespace Game.Combat.Units
         // Apply damage to this unit.
         public void TakeDamage(int damage)
         {
+            // --- BOSS INVULNERABILITY LOGIC ---
+            if (AIBehavior == AIBehavior.Malakor && CombatManager.Instance.AreCrystalsAlive())
+            {
+                Debug.Log($"{DisplayName} is INVULNERABLE! Crystals weren't destroyed.");
+                if (Visual != null) 
+                {
+                    Game.Combat.VFX.DamageTextFx.Create(Visual.transform.position, "INVULNERABLE!", Color.cyan);
+                }
+                return;
+            }
             Stats.TakeDamage(damage);
+            if (Visual != null) Visual.Flash();
             Debug.Log($"{DisplayName} took {damage} damage. Remaining HP: {Stats.currentHealth}/{Stats.maxHealth}");
         }
 
         public void Heal(int amount)
         {
             Stats.Heal(amount);
+            if (Visual != null) Visual.HealEffect();
         }
 
         public override string ToString()

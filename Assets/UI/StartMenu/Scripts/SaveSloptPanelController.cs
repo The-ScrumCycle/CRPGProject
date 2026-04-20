@@ -38,37 +38,53 @@ public class SaveSlotPanelController : MonoBehaviour
     {
         if (SaveManager.Instance == null) return;
 
-        int slotIndex = 0;
+        int latestSlot = SaveManager.Instance.GetLatestSlotIndex();
+
+        int cardIndex = 0;
         foreach (Transform child in slotCardContainer)
         {
             var btn = child.GetComponent<Button>();
-            if (btn == null) { slotIndex++; continue; }
+            if (btn == null) { cardIndex++; continue; }
 
-            var labels     = child.GetComponentsInChildren<TextMeshProUGUI>();
+            int realSlotIndex = latestSlot - cardIndex;
+
+            var labels = child.GetComponentsInChildren<TextMeshProUGUI>();
             var titleLabel = labels.Length > 0 ? labels[0] : null;
-            var metaLabel  = labels.Length > 1 ? labels[1] : null;
+            var metaLabel = labels.Length > 1 ? labels[1] : null;
 
             btn.onClick.RemoveAllListeners();
 
-            var data = SaveManager.Instance.GetSlotData(slotIndex);
-            if (data != null)
+            if (realSlotIndex >= 0)
             {
-                if (titleLabel != null) titleLabel.text = $"Slot {slotIndex + 1}";
-                if (metaLabel  != null) metaLabel.text  = data.saveDateTime;
-                LoadScreenshot(child, slotIndex);
-                int captured = slotIndex;
-                btn.onClick.AddListener(() => OnSlotSelected(captured));
-                btn.interactable = true;
+                var data = SaveManager.Instance.GetSlotData(realSlotIndex);
+                if (data != null)
+                {
+                    if (titleLabel != null) titleLabel.text = $"Slot {realSlotIndex + 1}";
+                    if (metaLabel != null) metaLabel.text = data.saveDateTime;
+
+                    LoadScreenshot(child, realSlotIndex);
+
+                    int captured = realSlotIndex;
+                    btn.onClick.AddListener(() => OnSlotSelected(captured));
+                    btn.interactable = true;
+                }
+                else
+                {
+                    if (titleLabel != null) titleLabel.text = $"Slot {realSlotIndex + 1}";
+                    if (metaLabel != null) metaLabel.text = "Empty";
+                    ClearScreenshot(child);
+                    btn.interactable = false;
+                }
             }
             else
             {
-                if (titleLabel != null) titleLabel.text = $"Slot {slotIndex + 1}";
-                if (metaLabel  != null) metaLabel.text  = "Empty";
+                if (titleLabel != null) titleLabel.text = "Empty";
+                if (metaLabel != null) metaLabel.text = "";
                 ClearScreenshot(child);
                 btn.interactable = false;
             }
 
-            slotIndex++;
+            cardIndex++;
         }
     }
 
