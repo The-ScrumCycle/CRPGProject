@@ -1,7 +1,6 @@
 using UnityEngine;
 using Dialogue.Data;
 using System.Collections.Generic;
-using System.IO;
 
 [System.Serializable]
 public class DialogueJsonData
@@ -38,9 +37,22 @@ namespace Dialogue.Core
     {
         public static DialogueGraph LoadGraph(string characterName)
         {
-            string path = Path.Combine(Application.dataPath, "Dialogue", "Data", "NPC", characterName + ".json");
-            string json = File.ReadAllText(path);
-            DialogueJsonData data = JsonUtility.FromJson<DialogueJsonData>(json);
+            string resourcePath = $"Dialogue/Data/NPC/{characterName}";
+            TextAsset jsonAsset = Resources.Load<TextAsset>(resourcePath);
+
+            if (jsonAsset == null)
+            {
+                Debug.LogError($"Dialogue file not found in Resources: {resourcePath}");
+                return null;
+            }
+
+            DialogueJsonData data = JsonUtility.FromJson<DialogueJsonData>(jsonAsset.text);
+
+            if (data == null || data.nodes == null || data.nodes.Length == 0)
+            {
+                Debug.LogError($"Invalid dialogue JSON for character: {characterName}");
+                return null;
+            }
 
             Dictionary<string, Node> nodeMap = new();
 

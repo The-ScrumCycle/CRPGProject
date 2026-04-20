@@ -1,0 +1,713 @@
+{                                                                                                                                                                                                                                                                
+    "startNode": "1000",
+  "nodes": [
+
+    {
+      "id": "1000",
+      "type": "conditional",
+      "eventName": "foundMalakor",
+      "trueNode": "1001",
+      "falseNode": "1"
+    },
+    {
+      "id": "1001",
+      "type": "conditional",
+      "eventName": "defeatedMalakor",
+      "trueNode": "2000",
+      "falseNode": "1003"
+    },
+    {
+      "id": "1003",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"You dare return human?\"",
+      "next": "400"
+    },
+    {
+      "id": "1",
+      "type": "line",
+      "speaker": "npc",
+      "text": "You finally lay eyes on the creature. She is no beast, but a towering, ancient creature. She looks at you. \"I sensed your presence since the moment you arrived. I was beginning to wonder when you humans would dare to pay me a visit.\"",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"Listen closely, for I do not repeat myself. Turn back to your ships. Return to your fleeting lives. If you remain here... you will die.\"",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "type": "option",
+      "options": [ "9", "10", "4", "5", "6", "7", "8" ]
+    },
+    {
+      "id": "9",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "text": "\"We don't have to fight, we can talk first.\"",
+      "next": "12"
+    },
+    {
+      "id": "10",
+      "type": "line",
+      "speaker": "player",
+      "action": "",
+      "maxStrength": 3,
+      "text": "\"[Weak] P-please! Have mercy, oh Great Goddess! \"",
+      "next": "12"
+    },
+    {
+      "id": "4",
+      "type": "line",
+      "speaker": "player",
+      "minStrength": 7,
+      "text": "\"[Strength 7] That's it? That's your threat? I expected more.\"",
+      "next": "11"
+    },
+    {
+      "id": "5",
+      "type": "line",
+      "speaker": "player",
+      "minIntelligence": 5,
+      "maxIntelligence": 6,
+      "text": "\"[Intelligence 5] You're older than I expected.\"",
+      "next": "12"
+    },
+    {
+      "id": "6",
+      "type": "line",
+      "speaker": "player",
+      "minIntelligence": 7,
+      "text": "\"[Intelligence 7] You're ancient. Centuries old, at least. You existed long before the Shattering of the Verge.\"",
+      "next": "12"
+    },
+    {
+      "id": "7",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"[Absolute Ineptitude] Wow... I didn't expect you to be hot. This complicates matters.\"",
+      "next": "200"
+    },
+    {
+      "id": "200",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "201",
+      "falseNode": "202"
+    },
+    {
+      "id": "201",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John stares at you, mouth slightly open. \" Kid, generally I ignore your... special moments. But... fuck. Now it's not the time.\"",
+      "next": "202"
+    },
+    {
+      "id": "202",
+      "type": "conditional",
+      "eventName": "clarissaInParty",
+      "trueNode": "203",
+      "falseNode": "11"
+    },
+    {
+      "id": "203",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa covers her face with one hand. \" Oh Herald... you do disappoint me occasionally.\"",
+      "next": "11"
+    },
+    {
+      "id": "8",
+      "type": "line",
+      "speaker": "player",
+      "maxIntelligence": 3,
+      "text": "\"[Dumb] You sensed my presence... do you mean I smell bad? Oh Zeus, I really need a bath.\"",
+      "next": "200"
+    },
+
+    {
+      "id": "11",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "the creature's eyes turn red. \"Silence, insect. I am Malakor, the Living Foundation, do not speak to me as you would a common human.\"",
+      "next": "12"
+    },
+    {
+      "id": "12",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"Your words are wind. I have no interest in talking with inferior beings such as yourself.\"",
+      "next": "13"
+    },
+
+    {
+      "id": "13",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "14",
+      "falseNode": "15"
+    },
+    {
+      "id": "14",
+      "type": "line",
+      "speaker": "npc",
+      "text": "The creature gaze shifts to the old soldier. \"But I do smell something familiar... John was it? I remember your brother screams. You are the one who ran, twenty years ago. The coward who left his kin to rot.\"",
+      "next": "300"
+    },
+    {
+      "id": "300",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "\"Yes that was me. I did not-... I'm glad you remember me. I'm known for giving an impression.\"",
+      "next": "15"
+    },
+    {
+      "id": "15",
+      "type": "conditional",
+      "eventName": "clarissaInParty",
+      "trueNode": "16",
+      "falseNode": "18"
+    },
+    {
+      "id": "16",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "Malakor turns her massive head toward the Cleric. \"you... Heretic. You wear that sigil on your chest and speak of mercy? Do not lie to me.\"",
+      "next": "301"
+    },
+    {
+      "id": "301",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa looks at you, scared, then at Malakor \"Filthy creature! It is not enough that you defile this land... you dare to lie! This is the star of Eirene! It represents peace and—\" Malakor cuts her off.",
+      "next": "17"
+    },
+    {
+      "id": "17",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": " \"I have no interest in what you have to say Heretic. \"",
+      "next": "18"
+    },
+    {
+      "id": "18",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "Malakor looks at you \" you, Jade, that's your name? I have seen you in my dreams. That's the reason why, I give you the chance of running away.\"",
+      "next": "400"
+    },
+    {
+      "id": "400",
+      "type": "line",
+      "speaker": "npc",
+      "text": "The monster grows larger and more terrifying. It is on a completely different level from anything you have encountered before. You feel in your bones that you currently have no chance of winning.",
+      "next": "19"
+    },
+    {
+      "id": "19",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "20",
+      "falseNode": "21"
+    },
+    {
+      "id": "20",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John grabs your shoulder \"Kid! Look at it! That ain't a fight that we can win! We can't win this. We need to run, now! I will explain later, but we can't win this.\"",
+      "next": "21"
+    },
+    {
+      "id": "21",
+      "type": "conditional",
+      "eventName": "clarissaInParty",
+      "trueNode": "22",
+      "falseNode": "23"
+    },
+    {
+      "id": "22",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa takes a step back \"I... we have to run right now. Trust on me on this. Herald, we must retreat! The prophecy does not demand our deaths today!\"",
+      "next": "23"
+    },
+    {
+      "id": "23",
+      "type": "option",
+      "options": [ "24", "25", "26" ]
+    },
+    {
+      "id": "24",
+      "type": "line",
+      "speaker": "player",
+      "action": "startBossFight, foundMalakor, defeatedMalakor",
+      "text": "\"I don't care how big she is. I'm not running away. We end this now!\"",
+      "next": null
+    },
+    {
+      "id": "25",
+      "type": "line",
+      "speaker": "player",
+      "action": "runAway, foundMalakor",
+      "text": "\" We're outmatched. [Run away is recommended for new players]\"",
+      "next": null
+    },
+    {
+      "id": "26",
+      "type": "line",
+      "speaker": "player",
+      "action": "defeatedMalakor",
+      "text": "\" We defeated Malakor {Debug}\"",
+      "next": "2000"
+    },
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "2000",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"How could a mere human defeat me\"",
+      "next": "2001"
+    },
+
+    {
+      "id": "2001",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "2002",
+      "falseNode": "2003"
+    },
+    {
+      "id": "2002",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John leans heavily on his weapon, panting. \"Turns out even ancient horrors bleed when you hit them hard enough. Who knew?\"",
+      "next": "2003"
+    },
+    {
+      "id": "2003",
+      "type": "conditional",
+      "eventName": "clarissaInParty",
+      "trueNode": "2004",
+      "falseNode": "2005"
+    },
+    {
+      "id": "2004",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa wipes a big smile on her face \"Oh, look at the big monster now! This horrible filth is finally dying.\"",
+      "next": "2005"
+    },
+    {
+      "id": "2005",
+      "type": "option",
+      "options": [ "2006", "2007", "2008", "2009" ]
+    },
+    {
+      "id": "2006",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"You talked a big game for someone who just got beaten by a 'mere human'.\"",
+      "next": "2010"
+    },
+    {
+      "id": "2007",
+      "type": "line",
+      "speaker": "player",
+      "maxIntelligence": 3,
+      "text": "\"[Dumb] Wait, did we win? I closed my eyes halfway through.\"",
+      "next": "2010"
+    },
+    {
+      "id": "2008",
+      "type": "line",
+      "speaker": "player",
+      "minIntelligence": 5,
+      "text": "\"[Intelligence 5] Your crystals were destroyed. We severed your connection to the neighboring islands. It's over\"",
+      "next": "2010"
+    },
+    {
+      "id": "2009",
+      "type": "line",
+      "speaker": "player",
+      "minStrength": 7,
+      "text": "\"[Strength 7] You were weak. As simple as that.\"",
+      "next": "2010"
+    },
+    {
+      "id": "2010",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "Malakor coughs \"Fools... you celebrate your victory, oblivious to the doom you have brought upon yourselves. You have just destroyed your own world.\"",
+      "next": "2011"
+    },
+    {
+      "id": "2011",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "2012",
+      "falseNode": "2013"
+    },
+    {
+      "id": "2012",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "\"And it is all because of your blind arrogance, child... and this weak, pathetic man cowering at your side.\"",
+      "next": "2014"
+    },
+    {
+      "id": "2013",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "\"And it is all because of your blind arrogance, child.\"",
+      "next": "2018"
+    },
+    {
+      "id": "2014",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John frowns, his grip tightening on his weapon. \"Pardon? Mind explaining that before you choke on your own blood, you ugly bastard?\"",
+      "next": "2015"
+    },
+    {
+      "id": "2015",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "\"Your brother... He understood the truth. He let himself be killed to keep me bound, to keep this island whole.\"",
+      "next": "2016"
+    },
+    {
+      "id": "2016",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"But you... you are far dumber than your older brother. You have undone his sacrifice out of sheer, pathetic ignorance.\"",
+      "next": "2017"
+    },
+    {
+      "id": "2017",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John's face drops \"Maxwell... he knew? The crystals... No... he told me to run... that can't be...\"",
+      "next": "2018"
+    },
+    {
+      "id": "2018",
+      "type": "conditional",
+      "eventName": "clarissaInParty",
+      "trueNode": "2019",
+      "falseNode": "2029"
+    },
+    {
+      "id": "2019",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa erupts into a piercing, unhinged cackle. \"Oh, do you hear that, Herald? The foundations are unmade! All of it, crumbling into the void! Countless lives, all that crawling filth... finally being wiped clean! It's perfectly beautiful!\"",
+      "next": "2020"
+    },
+    {
+      "id": "2020",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "Malakor glares at the cleric. \"You are the greatest fool of all, human. You wear the symbol of the Peacebringer, yet you celebrate the death of millions. You are a puppet. You reek of Ares, the God of War.\"",
+      "next": "2021"
+    },
+    {
+      "id": "2021",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa's laughter stops, \"Oh, Malakor, don't insult me. I know exactly who I serve.\" She rips the Eirene pendant from her neck and tosses it away. \"I told you, didn't I? A garden cannot grow if it is choked by weeds. And this entire world... is nothing but filth. Lord Ares demands it all be purged in glorious chaos!\"",
+      "next": "20210"
+    },
+    {
+      "id": "20210",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "The creature shakes its head. \"You trade one delusion for another. There is no victory in this destruction. Even you will die by the Shattering of the world.\"",
+      "next": "20211"
+    },
+    {
+      "id": "20211",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "She smiles brightly. \"Oh, I don't care about surviving, you overgrown lizard! I just wanted to watch it all drown in blood! And you... you were just the biggest weed of them all, standing in the way of true, absolute peace.\"",
+      "next": "2022"
+    },
+    {
+      "id": "2022",
+      "type": "option",
+      "options": [ "2023", "2024", "2025" ]
+    },
+    {
+      "id": "2023",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"Wait... so all that talk about the Herald... the prophecy? It was all a lie?\"",
+      "next": "2026"
+    },
+    {
+      "id": "2024",
+      "type": "line",
+      "speaker": "player",
+      "minIntelligence": 5,
+      "text": "\"[Intelligence 5] You manipulated us. You couldn't do it yourself, so you needed someone strong enough to break the crystals and kill the Living Foundation for you.\"",
+      "next": "2026"
+    },
+    {
+      "id": "2025",
+      "type": "line",
+      "speaker": "player",
+      "maxIntelligence": 3,
+      "text": "\"[Dumb] Wait... does this mean you're not going to heal me anymore?\"",
+      "next": "2026"
+    },
+    {
+      "id": "2026",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa claps her hands together gleefully. \"Of course it was a lie, my dear! The 'Herald of Eirene'? How could someone believe in that... I just needed a blunt instrument stupid enough to do the heavy lifting. And Jade, you were the perfect, gullible weapon to finally bring an end to this wretched world!\"",
+      "next": "2027"
+    },
+    {
+      "id": "2027",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "The creature lets out a deep groan \"You have been played by a madwoman. You have delivered this entire realm into oblivion.\"",
+      "next": "2028"
+    },
+
+    {
+      "id": "2028",
+      "type": "option",
+      "options": [ "2030", "2031", "2032" ]
+    },
+    {
+      "id": "2029",
+      "type": "option",
+      "options": [ "2030", "2031", "2032" ]
+    },
+    {
+      "id": "2030",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"Enough riddles, Malakor. Explain what the hell is actually going to happen now!\"",
+      "next": "2033"
+    },
+    {
+      "id": "2031",
+      "type": "line",
+      "speaker": "player",
+      "minIntelligence": 5,
+      "text": "\"[Intelligence 5] If you and the crystals were the tethers... what happens to the islands now that they are gone?\"",
+      "next": "2033"
+    },
+    {
+      "id": "2032",
+      "type": "line",
+      "speaker": "player",
+      "minStrength": 7,
+      "text": "\"[Strength 7] Speak clearly before I crush your skull. What is happening to the world?\"",
+      "next": "2033"
+    },
+    {
+      "id": "2033",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "\"A century ago, your kind arrived upon the Verge. You built your homes... and claimed the land as your own. Yet, my kin and I showed you mercy.\"",
+      "next": "2034"
+    },
+    {
+      "id": "2034",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "\"We allowed you to stay. We even permitted you to harvest the surface minerals to build your little empires. If only you did as promised and stayed in your lane.\"",
+      "next": "2035"
+    },
+    {
+      "id": "2035",
+      "type": "line",
+      "speaker": "npc",
+      "text": "\"But human greed is a bottomless pit. You lied. You marched your armies across the border to steal the very heart of this island. We did not start the Verge War. We were simply defending our home from parasites.\"",
+      "next": "2036"
+    },
+    {
+      "id": "2036",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "\"For defending ourselves, you called us monsters... \"",
+      "next": "2037"
+    },
+    {
+      "id": "2037",
+      "type": "option",
+      "options": [ "2038", "2039", "2040", "2048", "2049" ]
+    },
+    {
+      "id": "2038",
+      "type": "line",
+      "speaker": "player",
+      "text": "\"I didn't know... We were the invaders all along. I'm sorry.\"",
+      "next": "2041"
+    },
+    {
+      "id": "2039",
+      "type": "line",
+      "speaker": "player",
+      "minStrength": 7,
+      "text": "\"[Strength 7] I don't care about your history lesson! Humanity survives because we take what we need!\"",
+      "next": "2041"
+    },
+    {
+      "id": "2040",
+      "type": "line",
+      "speaker": "player",
+      "maxIntelligence": 3,
+      "text": "\"[Dumb] Wait, so all this fighting... and there's no treasure at the end?\"",
+      "next": "2041"
+    },
+    {
+      "id": "2048",
+      "type": "line",
+      "speaker": "player",
+      "minIntelligence": 5,
+      "text": "\"[Intelligence 5] It was a resource war. We mined the structural integrity of the island, and you fought back to prevent ecological collapse.\"",
+      "next": "2041"
+    },
+    {
+      "id": "2049",
+      "type": "line",
+      "speaker": "player",
+      "maxStrength": 3,
+      "text": "\"[Weak] I just wanted to survive... I didn't want to destroy the world! Please, can we fix it?\"",
+      "next": "2041"
+    },
+    {
+      "id": "2041",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "The ground begins to shake violently. \"Your words mean nothing now. The damage is done. I'm dying.\"",
+      "next": "2042"
+    },
+    {
+      "id": "2042",
+      "type": "conditional",
+      "eventName": "johnInParty",
+      "trueNode": "2043",
+      "falseNode": "2046"
+    },
+    {
+      "id": "2043",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John drops his weapon \"I was there... Maxwell and I stood side-by-side in the dirt. We thought we were righteous. We thought we were fighting for the gods, defending our homes... but we were just greedy thieves.\"",
+      "next": "2044"
+    },
+    {
+      "id": "2044",
+      "type": "conditional",
+      "eventName": "clarissaInParty",
+      "trueNode": "2045",
+      "falseNode": "2046"
+    },
+    {
+      "id": "2045",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "Clarissa throws her head back, laughing wildly over the rumbling earth. \"Oh, the irony! The great, honorable heroes were just glittering locusts! Your precious war was a joke, Uncle! But it doesn't matter who started it, only how beautifully it ends!\"",
+      "next": "2050"
+    },
+    {
+      "id": "2050",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John stares at her, his voice cracking with heavy grief. \"He was your father, Clarissa. He gave his life thinking he was saving you. Why on earth did you lie about this...\"",
+      "next": "2051"
+    },
+    {
+      "id": "2051",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "\"He was a weak, blind fool! Just like you!\" Clarissa looks at you. \"And you couldn't waste an opportunity to be the big hero, could you? You aren't greedy for gold, just greedy for the chance to feel bigger than the small, pathetic being you are.\"",
+      "next": "2052"
+    },
+    {
+      "id": "2052",
+      "type": "line",
+      "speaker": "npc",
+      "action": "johnSpeaking",
+      "text": "John lowers his head in defeat. \"You're completely gone. My little niece died a long time ago... and I just helped a madwoman end the world.\"",
+      "next": "2053"
+    },
+    {
+      "id": "2053",
+      "type": "line",
+      "speaker": "npc",
+      "action": "clarissaSpeaking",
+      "text": "She hesitates for a moment. \"Uncle... It's the only way to true peace. Ares promised me. We will be heroes.\"",
+      "next": "2046"
+    },
+    {
+      "id": "2046",
+      "type": "line",
+      "speaker": "npc",
+      "action": "malakorSpeaking",
+      "text": "Chunks of the ceiling begin to collapse. The roaring of the ocean grows deafening as the island splinters. \"The tethers are broken. The sea rises to reclaim its stolen domain.\"",
+      "next": "2047"
+    },
+    {
+      "id": "2047",
+      "type": "line",
+      "speaker": "npc",
+      "action": "gameOver",
+      "text": "\"It is over. We all return to the abyss...\"",
+      "next": null
+    }
+
+
+
+
+  ]
+}

@@ -147,13 +147,21 @@ namespace Dialogue.Core
 
         public void InitializeDialogue(GameObject from, string characterName)
         {
-            Debug.Log("Init dialogue");
+            Debug.Log($"Init dialogue for: {characterName}");
+
             DialogueGraph graph = DialogueGraphLoader.LoadGraph(characterName);
-            if(graph == null)
+            if (graph == null)
             {
-                Debug.LogError("graph did not load correctly");
+                Debug.LogError($"Graph did not load correctly for character: {characterName}");
+                return;
             }
-            DialogueRunner runner = from.AddComponent<DialogueRunner>();
+
+            DialogueRunner runner = from.GetComponent<DialogueRunner>();
+            if (runner == null)
+            {
+                runner = from.AddComponent<DialogueRunner>();
+            }
+
             runner.DialogueGraph = graph;
             SetDialogueRunner(runner);
         }
