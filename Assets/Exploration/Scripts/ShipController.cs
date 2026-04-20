@@ -2,8 +2,9 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
+using Core.Save;
 
-public class ShipController : MonoBehaviour
+public class ShipController : MonoBehaviour, ISaveable
 {
     [Header("Movement Settings")]
     public float shipSpeed = 12f;
@@ -30,6 +31,15 @@ public class ShipController : MonoBehaviour
         //int water = UnityEngine.AI.NavMesh.GetAreaFromName("Water");
         //agent.areaMask = 1 << water;
 
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.Register(this);
+        }
+    }
+
+    public bool IsControllable()
+    {
+        return isControllable;
     }
 
     // Update is called once per frame
@@ -99,6 +109,27 @@ public class ShipController : MonoBehaviour
         {
             agent.ResetPath();
         }
+    }
+
+    public void SetSaveData(SaveData saveData)
+    {
+        saveData.ship.position = transform.position;
+        saveData.ship.rotation = transform.rotation;
+        saveData.ship.controllable = isControllable;
+    }
+
+    public void LoadSaveData(SaveData saveData)
+    {
+        if (agent != null && agent.enabled)
+        {
+            agent.Warp(saveData.ship.position);
+        }
+        else
+        {
+            transform.position = saveData.ship.position;
+        }
+        transform.rotation = saveData.ship.rotation;
+        SetControllable(saveData.ship.controllable);
     }
 
 

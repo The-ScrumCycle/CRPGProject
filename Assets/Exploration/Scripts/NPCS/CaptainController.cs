@@ -2,8 +2,9 @@ using UnityEngine;
 using Dialogue.Core;
 using Dialogue.Data;
 using State;
+using Core.Save;
 
-public class CaptainController : MonoBehaviour
+public class CaptainController : MonoBehaviour, ISaveable
 {
 
     [Header("Components")]
@@ -68,6 +69,10 @@ public class CaptainController : MonoBehaviour
 
         musicController = MusicController.Instance;
 
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.Register(this);
+        }
     }
 
     private void OnDestroy()
@@ -284,6 +289,20 @@ public class CaptainController : MonoBehaviour
         }
 
         LeaveWithoutBoarding();
+    }
+
+    public void SetSaveData(SaveData saveData)
+    {
+        saveData.captain.position = transform.position;
+        saveData.captain.rotation = transform.rotation;
+        saveData.captain.active = gameObject.activeSelf;
+    }
+
+    public void LoadSaveData(SaveData saveData)
+    {
+        transform.position = saveData.captain.position;
+        transform.rotation = saveData.captain.rotation;
+        gameObject.SetActive(saveData.captain.active);
     }
 
 

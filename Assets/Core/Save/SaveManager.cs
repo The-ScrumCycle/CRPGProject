@@ -106,14 +106,14 @@ public class SaveManager : MonoBehaviour
         return JsonUtility.FromJson<SaveData>(File.ReadAllText(path));
     }
 
-    public void Load(int slot)
+    public SaveData Load(int slot)
     {
         string savePath = GetSavePath(slot);
         if (!File.Exists(Path.Combine(savePath, "save.json")))
         {
             Debug.LogWarning("No save file found at slot " + slot);
-            return;
-        }       
+            return null;
+        }
         string json = File.ReadAllText(Path.Combine(savePath, "save.json"));
         SaveData saveData = JsonUtility.FromJson<SaveData>(json);
 
@@ -121,6 +121,8 @@ public class SaveManager : MonoBehaviour
         {
             saveable.LoadSaveData(saveData);
         }
+
+        return saveData;
     }
 
     //these functions ensure whenever a new game is loaded, ISaveable objects are able to subscribe to SaveManager
@@ -147,14 +149,50 @@ public class SaveManager : MonoBehaviour
     private IEnumerator LoadAfterFrame()
     {
         yield return null;                          // one frame passes, all Start()s run
-        Load(pendingLoadSlot);                      // saveables list is now populated
+        SaveData saveData = Load(pendingLoadSlot);  // saveables list is now populated
         pendingLoadSlot = -1;
 
+        if (saveData == null) yield break;
+
+        RestoreSailingMode(saveData);
+    }
+
+    // restore camera target, music, and player/ship/captain activation based on whether
+    // the save was taken while sailing (ship controllable) or on an island
+    private void RestoreSailingMode(SaveData saveData)
+    {
         CameraController cam = FindObjectOfType<CameraController>();
-        if (cam != null)
+        ShipController ship = FindObjectOfType<ShipController>();
+        MusicController music = MusicController.Instance;
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject captain = GameObject.FindGameObjectWithTag("Captain");
+
+        bool onShip = saveData.ship.controllable;
+
+        if (player != null)
         {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) cam.SetTarget(player.transform);
+            player.SetActive(!onShip);
+            PlayerController pc = player.GetComponent<PlayerController>();
+            if (pc != null) pc.SetControllable(!onShip);
+        }
+
+        if (onShip)
+        {
+            if (cam != null && ship != null)
+            {
+                cam.SetTarget(ship.transform);
+                cam.SetShipCamera();
+            }
+            if (music != null) music.SetMusic(music.GetSailingMusic());
+        }
+        else
+        {
+            if (cam != null && player != null)
+            {
+                cam.SetTarget(player.transform);
+                cam.SetPlayerCamera();
+            }
+            if (music != null) music.SetMusic(music.GetExplorationMusic());
         }
     }
 

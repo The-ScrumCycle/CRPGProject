@@ -12,6 +12,8 @@ namespace Core.Save
         public StatsData stats;//done
         public PartyData party;//done
         public EnemyData enemy;//done
+        public ShipData ship;
+        public CaptainData captain;
         public string saveDateTime;
         public byte[] screenshotData;
 
@@ -21,6 +23,8 @@ namespace Core.Save
             stats = new StatsData();
             party = new PartyData();
             enemy = new EnemyData();
+            ship = new ShipData();
+            captain = new CaptainData();
         }
     }
 
