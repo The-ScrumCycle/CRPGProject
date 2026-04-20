@@ -67,6 +67,15 @@ public class SaveManager : MonoBehaviour
     }
     public void Save()
     {
+        // saving while sailing would leave the captain/player invisible and the
+        // ship mid-water; skip silently so the UI action is a no-op instead
+        ShipController ship = FindObjectOfType<ShipController>();
+        if (ship != null && ship.IsControllable())
+        {
+            Debug.LogWarning("[SaveManager] Save skipped: cannot save while sailing.");
+            return;
+        }
+
         Debug.Log($"[SaveManager] Save() called. Saveables count: {saveables.Count}. Path: {GetSavePath(slot_index)}");
         SaveData saveData = new SaveData();
         foreach(ISaveable saveable in saveables)
@@ -106,13 +115,13 @@ public class SaveManager : MonoBehaviour
         return JsonUtility.FromJson<SaveData>(File.ReadAllText(path));
     }
 
-    public SaveData Load(int slot)
+    public void Load(int slot)
     {
         string savePath = GetSavePath(slot);
         if (!File.Exists(Path.Combine(savePath, "save.json")))
         {
             Debug.LogWarning("No save file found at slot " + slot);
-            return null;
+            return;
         }
         string json = File.ReadAllText(Path.Combine(savePath, "save.json"));
         SaveData saveData = JsonUtility.FromJson<SaveData>(json);
@@ -121,8 +130,6 @@ public class SaveManager : MonoBehaviour
         {
             saveable.LoadSaveData(saveData);
         }
-
-        return saveData;
     }
 
     //these functions ensure whenever a new game is loaded, ISaveable objects are able to subscribe to SaveManager
@@ -149,50 +156,14 @@ public class SaveManager : MonoBehaviour
     private IEnumerator LoadAfterFrame()
     {
         yield return null;                          // one frame passes, all Start()s run
-        SaveData saveData = Load(pendingLoadSlot);  // saveables list is now populated
+        Load(pendingLoadSlot);                      // saveables list is now populated
         pendingLoadSlot = -1;
 
-        if (saveData == null) yield break;
-
-        RestoreSailingMode(saveData);
-    }
-
-    // restore camera target, music, and player/ship/captain activation based on whether
-    // the save was taken while sailing (ship controllable) or on an island
-    private void RestoreSailingMode(SaveData saveData)
-    {
         CameraController cam = FindObjectOfType<CameraController>();
-        ShipController ship = FindObjectOfType<ShipController>();
-        MusicController music = MusicController.Instance;
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        GameObject captain = GameObject.FindGameObjectWithTag("Captain");
-
-        bool onShip = saveData.ship.controllable;
-
-        if (player != null)
+        if (cam != null)
         {
-            player.SetActive(!onShip);
-            PlayerController pc = player.GetComponent<PlayerController>();
-            if (pc != null) pc.SetControllable(!onShip);
-        }
-
-        if (onShip)
-        {
-            if (cam != null && ship != null)
-            {
-                cam.SetTarget(ship.transform);
-                cam.SetShipCamera();
-            }
-            if (music != null) music.SetMusic(music.GetSailingMusic());
-        }
-        else
-        {
-            if (cam != null && player != null)
-            {
-                cam.SetTarget(player.transform);
-                cam.SetPlayerCamera();
-            }
-            if (music != null) music.SetMusic(music.GetExplorationMusic());
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) cam.SetTarget(player.transform);
         }
     }
 
