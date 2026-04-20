@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: ClarissaStats
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitStatsConfig
   availableActions: 0200000007000000
-  maxHealth: 100
+  maxHealth: 80
   attackPower: 20
-  healPower: 20
-  movementRange: 3
-  attackRange: 2
+  healPower: 40
+  movementRange: 2
+  attackRange: 5

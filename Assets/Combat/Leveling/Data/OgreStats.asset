@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: OgreStats
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Units.UnitStatsConfig
   availableActions: 04000000
-  maxHealth: 300
-  attackPower: 45
+  maxHealth: 200
+  attackPower: 35
   healPower: 0
   movementRange: 4
   attackRange: 3
