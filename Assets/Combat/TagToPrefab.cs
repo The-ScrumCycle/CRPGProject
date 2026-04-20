@@ -1,38 +1,39 @@
-
 using UnityEngine;
-using System.Collections.Generic;
-
+using System;
 
 public class TagToPrefab : MonoBehaviour
 {
-    [SerializeField] private List<GameObject> prefabs;
-    public static TagToPrefab Instance { get; private set; }
+    [SerializeField] private GameObject[] prefabs;
+    [SerializeField] private GameObject fallbackPrefab;
 
-    // Function that returns the prefab that is associated with the tag
     public GameObject GetPrefabForTag(string tag)
     {
-        foreach (GameObject prefab in prefabs)
+        if (string.IsNullOrEmpty(tag)) 
         {
-            Debug.Log(prefab.tag);
-            if (prefab.CompareTag(tag))
+            Debug.LogWarning("[TagToPrefab] Encounter requested an empty tag. Spawning fallback enemy unit.");
+            return GetFallback();
+        }
+
+        // 1. Case-Insensitive Search
+        foreach (var prefab in prefabs)
+        {
+            if (prefab.tag.Equals(tag, StringComparison.OrdinalIgnoreCase))
             {
                 return prefab;
             }
         }
 
-        Debug.LogWarning($" Found no Prefab for the selected tag : {tag}");
-        return null;
+        // 2. The Hardened Fallback (Prevents the NullReferenceException crash)
+        Debug.LogWarning($"[TagToPrefab] CRITICAL: No prefab found for tag '{tag}'. Spawning fallback enemy unit.");
+        return GetFallback();
     }
 
-    void Awake()
+    private GameObject GetFallback()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+        if (fallbackPrefab != null) return fallbackPrefab;
+        if (prefabs != null && prefabs.Length > 0) return prefabs[0]; // fallback
+        
+        Debug.LogError("[TagToPrefab] No fallback available! Game will likely crash.");
+        return null;
     }
 }
